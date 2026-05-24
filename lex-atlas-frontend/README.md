@@ -55,8 +55,6 @@ Hosted cost (Sonnet): ~€0.045 / query. Both fit comfortably under the brief's
 - **Live demo:** <https://taxxa-graphrag-demo.vercel.app>
 - **Methodology:** <https://taxxa-graphrag-demo.vercel.app/methodology>
 - **Ask page:** <https://taxxa-graphrag-demo.vercel.app/ask>
-- **90s walkthrough video:** <https://taxxa-graphrag-demo.vercel.app/demo.mp4>
-  (also embedded inline on the landing page, sourced from `public/demo.mp4`)
 
 The live deploy has no Python sidecar attached, so `/api/ask` falls back to
 the built-in SSE fixture replay (`app/api/ask/route.ts`). The cinematic

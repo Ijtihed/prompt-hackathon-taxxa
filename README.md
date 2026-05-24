@@ -9,18 +9,7 @@
 | **Cinematic Next.js UI** *(deployed)* | **<https://taxxa-graphrag-demo.vercel.app>**                                                   |
 | Methodology write-up                  | <https://taxxa-graphrag-demo.vercel.app/methodology>                                           |
 | Ask page (interactive)                | <https://taxxa-graphrag-demo.vercel.app/ask>                                                   |
-| 90s walkthrough video                 | <https://taxxa-graphrag-demo.vercel.app/demo.mp4>                                              |
 | Streamlit demo *(self-hosted, free)*  | see [`web/`](web/) - one-click deploy on [Streamlit Community Cloud](https://streamlit.io/cloud) |
-
-### Watch the graph build itself
-
-[![RAGTAG demo poster: landing page hero with the cinematic graph build](https://taxxa-graphrag-demo.vercel.app/demo-poster.jpg)](https://taxxa-graphrag-demo.vercel.app/demo.mp4)
-
-[Play the recording](https://taxxa-graphrag-demo.vercel.app/demo.mp4) (1.6 MB,
-no audio). Captured against the live Vercel deploy with Playwright: the N1
-prompt walks vector seeds into a typed triangular-VAT subgraph (AVL S63h,
-EU VAT Directive Art. 141, KHO 2018:117, Vero ohje), streams a cited
-answer, then fires the KHO-vs-Vero debate path for the multi-agent panel.
 
 The Vercel demo runs the real `app/api/ask` SSE route. When no Python sidecar
 is reachable (the default for the free deploy), it falls back to an in-route
