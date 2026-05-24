@@ -1,16 +1,60 @@
 # Taxxa — Finnish legal RAG / GraphRAG
 
-Query the Finnish tax-law corpus (Finlex statutes + KHO case law + Vero
-guidance + treaties — 402,088 embedded chunks, 1.97M graph nodes) with one
-of two retrieval pipelines:
+> Fork of [`behramulukir/prompt-hackathon-taxxa`](https://github.com/behramulukir/prompt-hackathon-taxxa) — Aalto · Prompt Finance Hackathon 2026 entry by team **Lex Atlas / RAGTAG**.
 
-- **v1** — vector-only baseline (cosine + metadata rerank)
-- **v2** — GraphRAG: strategy router → vector seeds → graph expansion → rerank
+## Live demo
 
-Both share the same answer schema (`AnswerResult`) and the same Finnish
-LLM generation step (DeepSeek-V4-Flash via Featherless).
+| What                                  | URL                                                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Cinematic Next.js UI** *(deployed)* | **<https://taxxa-graphrag-demo.vercel.app>**                                                   |
+| Methodology write-up                  | <https://taxxa-graphrag-demo.vercel.app/methodology>                                           |
+| Ask page (interactive)                | <https://taxxa-graphrag-demo.vercel.app/ask>                                                   |
+| Streamlit demo *(self-hosted, free)*  | see [`web/`](web/) — one-click deploy on [Streamlit Community Cloud](https://streamlit.io/cloud) |
 
-## Quick start
+The Vercel demo runs the real `app/api/ask` SSE route. When no Python sidecar
+is reachable (the default for the free deploy), it falls back to an in-route
+fixture replay so the graph traversal, multi-agent debate, and citation
+streaming all animate end-to-end — **no API keys required**. The Streamlit
+demo uses `MockPipeline` + three hand-crafted `DEMO_OVERRIDES` for the same
+reason (see `web/DEMO_QUESTIONS.md`).
+
+If you want the real retrieval stack (Voyage embeddings → LanceDB → graph
+expansion → DeepSeek generation), follow [`### Run locally`](#run-locally)
+below — that needs `VOYAGE_API_KEY` + `FEATHERLESS_API_KEY` and the
+402k-chunk corpus.
+
+## Repo audit (this fork)
+
+- No API keys, tokens, or secrets present anywhere in the tree or in
+  git history (full history scanned for `sk-…`, `hf_…`, `gho_…`, AWS,
+  Voyage, Featherless, OpenAI key shapes).
+- `.env` is `.gitignored`; only `.env.example` is tracked (placeholder
+  `NEO4J_PASSWORD=password`).
+- `VOYAGE_API_KEY` and `FEATHERLESS_API_KEY` are read from the process
+  env at call time (`src/indexing/voyage_client.py`, `src/retrieval/generate.py`).
+- Author emails visible in git metadata (`ilya.nekrasov@visma.com`,
+  `behramulukir@gmail.com`, `ijtihedk@gmail.com`) are standard git
+  commit identities and were already public on the upstream repo.
+
+## Deploy your own copy (free)
+
+```bash
+# 1. Cinematic Next.js UI to Vercel (no env vars needed — uses fixture replay)
+cd lex-atlas-frontend
+npm install
+vercel link --yes
+vercel deploy --prod --yes
+
+# 2. Streamlit demo to Streamlit Community Cloud
+#    a. Push this fork to your GitHub
+#    b. Go to https://share.streamlit.io → "New app"
+#    c. Repo: your-fork  ·  Branch: main  ·  Main file: web/app.py
+#    d. Click Deploy. No secrets required — uses MockPipeline + DEMO_OVERRIDES.
+```
+
+Both deployments boot in <2 min on the free tier with zero API keys.
+
+## Run locally (full pipeline)
 
 ```bash
 # v1, full corpus, default flags

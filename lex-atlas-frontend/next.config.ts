@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
   // @react-pdf/renderer uses Node internals and can't be bundled for client / RSC.
   // Same for neo4j-driver. Marking them as external server packages avoids the
   // "Component is not a constructor" runtime error on Next 15 + React 19.
   serverExternalPackages: ["@react-pdf/renderer", "neo4j-driver"],
+
+  // Pin the workspace root to this folder so Next.js doesn't walk up looking
+  // for a stray lockfile (matters on Vercel where the repo is cloned at /).
+  outputFileTracingRoot: path.join(__dirname),
 
   experimental: {
     // Allow the SSE Route Handler to keep long-lived connections during agent runs

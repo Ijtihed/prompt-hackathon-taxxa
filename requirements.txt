@@ -1,0 +1,10 @@
+# Minimal deps for the Streamlit demo (`web/app.py`).
+#
+# This file is intentionally tiny so the demo can boot for free on
+# Streamlit Community Cloud / Hugging Face Spaces / Render without
+# pulling the full RAG stack. The real pipeline (Voyage embeddings,
+# Featherless DeepSeek, LanceDB, sentence-transformers, etc.) lives
+# in pyproject/uv land and is only needed when you actually run
+# `python -m scripts.ask`.
+streamlit>=1.36,<2
+pydantic>=2.7,<3

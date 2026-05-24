@@ -22,6 +22,7 @@ build/
 # Next.js
 .next/
 out/
+*.tsbuildinfo
 
 # Production
 *.local
@@ -65,3 +66,4 @@ neo4j_logs/
 # DSPy optimization artifacts
 agents/*.json.lock
 *.dspy-cache/
+.vercel

@@ -52,10 +52,14 @@ Hosted cost (Sonnet): ~€0.045 / query. Both fit comfortably under the brief's
 
 ## Try it
 
-- Live: `https://lex-atlas.vercel.app` *(deployed Sunday afternoon)*
+- **Live demo:** <https://taxxa-graphrag-demo.vercel.app>
+- **Methodology:** <https://taxxa-graphrag-demo.vercel.app/methodology>
+- **Ask page:** <https://taxxa-graphrag-demo.vercel.app/ask>
 - 90-sec demo: `docs/demo.mp4`
-- Live eval on all 83 question-bank entries: `/eval`
-- Methodology: `/methodology`
+
+The live deploy has no Python sidecar attached, so `/api/ask` falls back to
+the built-in SSE fixture replay (`app/api/ask/route.ts`). The cinematic
+graph + multi-agent debate animate end-to-end without any API keys.
 
 ## Run locally
 
