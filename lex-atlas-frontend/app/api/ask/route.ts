@@ -116,19 +116,38 @@ export async function POST(req: NextRequest) {
 
 /**
  * Demo fixture replay — for when the Python sidecar is down. Walks through
- * a canned event sequence for Q4 (avainhenkilö withholding) at realistic
- * timing so the UI shows the full demo motion. Pass `instant: true` to skip
- * all delays (used for screenshots and e2e tests).
+ * a canned event sequence at realistic timing so the UI shows the full
+ * demo motion. Pass `instant: true` to skip all delays (used for
+ * screenshots and e2e tests).
+ *
+ * Three deterministic paths, picked by question content:
+ *   - N1 / Triangular VAT (kolmikanta simplification)  → buildN1Fixture
+ *   - Debate (KHO vs Vero, reverse-charge construction) → buildDebateFixture
+ *   - Q4 / key-personnel withholding (default)         → buildQ4Fixture
+ *
+ * Routing happens before the debate regex on purpose: the Finnish word
+ * "kolmikanta" is both the N1 topic and a debate-trigger keyword in the
+ * old regex, so N1 wins when both could match.
  */
 async function replayFixture(
   send: (event: object) => void,
   body: AskBody
 ) {
+  const q = body.question;
+  const wantsN1 =
+    /triangular|kolmikanta|chain transaction|three-party|swedish customer|german supplier|simplification/i.test(
+      q
+    );
   const wantsDebate =
-    body.mode === "debate_only" ||
-    /debate|kho|conflict|kolmikanta|disagree|override/i.test(body.question);
+    !wantsN1 &&
+    (body.mode === "debate_only" ||
+      /debate|kho|conflict|disagree|override|reverse[- ]charge|demolition|avl\s*§?\s*8c/i.test(
+        q
+      ));
 
-  const events: Array<[number, object]> = wantsDebate
+  const events: Array<[number, object]> = wantsN1
+    ? buildN1Fixture()
+    : wantsDebate
     ? buildDebateFixture()
     : buildQ4Fixture();
 
@@ -241,5 +260,210 @@ function buildDebateFixture(): Array<[number, object]> {
     [6300, { type: "draft_token", text: "[cite:node:work:vero-ohje:reverse-charge-construction]Vero ohje[/cite]. " }],
     [6700, { type: "cost", cents: 0.082 }],
     [6900, { type: "done" }],
+  ];
+}
+
+/**
+ * N1 fixture — the triangular VAT simplification question (DE supplier →
+ * FI middle → SE customer, single transport). Deterministic chain through
+ * AVL §63h, the EU VAT Directive Article 141 anchor, the Vero ohje on
+ * kolmikantakauppa, and a recent KHO ruling that confirms the conditions.
+ *
+ * No conflict / debate — this is a "structural" path question: the answer
+ * is a checklist of conditions plus an invoice-marking caveat. The orbit
+ * shows EU law as the parent of the Finnish §, with guidance + case law
+ * as interpreters of the same node.
+ */
+function buildN1Fixture(): Array<[number, object]> {
+  return [
+    [
+      200,
+      {
+        type: "ner_pulse",
+        entityNodeIds: [
+          "concept:kolmikantakauppa",
+          "concept:intra-community-acquisition",
+          "work:avl",
+          "work:eu-vat-directive",
+        ],
+      },
+    ],
+    [
+      750,
+      {
+        type: "plan",
+        subQuestions: [
+          "Do the three parties sit in three different Member States?",
+          "Is there a single direct transport from MS1 to MS3?",
+          "Who accounts for VAT in the destination Member State?",
+        ],
+        entityNodeIds: [
+          "work:avl",
+          "work:eu-vat-directive",
+          "comp:avl:§63h",
+        ],
+      },
+    ],
+    [1150, { type: "walked", nodeId: "comp:avl:§63h", score: 0.94, step: 1 }],
+    [
+      1330,
+      {
+        type: "walked",
+        nodeId: "comp:eu-vat-directive:art-141",
+        score: 0.91,
+        step: 2,
+      },
+    ],
+    [
+      1510,
+      {
+        type: "walked",
+        nodeId: "work:vero-ohje:kolmikantakauppa-2022",
+        score: 0.83,
+        step: 3,
+      },
+    ],
+    [1690, { type: "walked", nodeId: "case:kho-2018-117", score: 0.76, step: 4 }],
+    [
+      1870,
+      {
+        type: "walked",
+        nodeId: "comp:avl:§72g",
+        score: 0.62,
+        step: 5,
+      },
+    ],
+    [
+      2150,
+      {
+        type: "subgraph_ready",
+        orbitNodes: [
+          {
+            id: "concept:kolmikantakauppa",
+            kind: "concept",
+            label: "concept · kolmikantakauppa",
+            authorityRank: 1,
+            isActive: true,
+            isCenter: true,
+          },
+          {
+            id: "work:eu-vat-directive",
+            kind: "work",
+            label: "EU VAT Directive 2006/112/EC",
+            authorityRank: 9,
+            isActive: true,
+          },
+          {
+            id: "comp:eu-vat-directive:art-141",
+            kind: "action",
+            label: "Art. 141 · triangular simplification",
+            authorityRank: 8,
+            isActive: true,
+            tValid: "2007-01-01",
+          },
+          {
+            id: "work:avl",
+            kind: "work",
+            label: "Arvonlisäverolaki (1501/1993)",
+            authorityRank: 8,
+            isActive: true,
+          },
+          {
+            id: "comp:avl:§63h",
+            kind: "action",
+            label: "AVL §63h · kolmikantakauppa",
+            authorityRank: 7,
+            isActive: true,
+            tValid: "1994-06-01",
+          },
+          {
+            id: "comp:avl:§72g",
+            kind: "action",
+            label: "AVL §72g · invoice marking",
+            authorityRank: 6,
+            isActive: true,
+            tValid: "1994-06-01",
+          },
+          {
+            id: "work:vero-ohje:kolmikantakauppa-2022",
+            kind: "guidance",
+            label: "Vero ohje · Kolmikantakauppa (VH/3247/00.01.00/2022)",
+            authorityRank: 3,
+            isActive: true,
+            tValid: "2022-06-15",
+          },
+          {
+            id: "case:kho-2018-117",
+            kind: "case",
+            label: "KHO 2018:117 · chain transaction conditions",
+            authorityRank: 7,
+            isActive: true,
+            tValid: "2018-09-21",
+          },
+        ],
+        orbitEdges: [
+          {
+            source: "concept:kolmikantakauppa",
+            target: "comp:eu-vat-directive:art-141",
+            relation: "defined_by",
+          },
+          {
+            source: "comp:eu-vat-directive:art-141",
+            target: "work:eu-vat-directive",
+            relation: "has_part",
+          },
+          {
+            source: "comp:avl:§63h",
+            target: "comp:eu-vat-directive:art-141",
+            relation: "implements",
+          },
+          {
+            source: "comp:avl:§63h",
+            target: "work:avl",
+            relation: "has_part",
+          },
+          {
+            source: "comp:avl:§72g",
+            target: "work:avl",
+            relation: "has_part",
+          },
+          {
+            source: "work:vero-ohje:kolmikantakauppa-2022",
+            target: "comp:avl:§63h",
+            relation: "interprets",
+          },
+          {
+            source: "case:kho-2018-117",
+            target: "comp:avl:§63h",
+            relation: "rules_on",
+          },
+        ],
+      },
+    ],
+    [2900, { type: "draft_token", text: "Yes — the triangular VAT simplification applies, provided the three standard conditions are met. " }],
+    [3200, { type: "draft_token", text: "Under " }],
+    [3300, { type: "draft_token", text: "[cite:node:comp:avl:§63h]AVL §63h[/cite] " }],
+    [3450, { type: "draft_token", text: "(implementing " }],
+    [3550, { type: "draft_token", text: "[cite:node:comp:eu-vat-directive:art-141]EU VAT Directive Art. 141[/cite]" }],
+    [3700, { type: "draft_token", text: "), an intra-Community chain transaction qualifies for the simplification when " }],
+    [3950, { type: "draft_token", text: "(1) three taxable persons are identified for VAT in three different Member States, " }],
+    [4200, { type: "draft_token", text: "(2) the goods move under a single transport directly from the first supplier to the final customer, and " }],
+    [4500, { type: "draft_token", text: "(3) the final customer accounts for VAT in the destination Member State under reverse charge. " }],
+    [4800, { type: "draft_token", text: "Your scenario fits: DE supplier → FI intermediary → SE customer, with a single direct shipment from Germany to Sweden. " }],
+    [5150, { type: "draft_token", text: "The Finnish company uses its FI VAT number for the acquisition; no Swedish VAT registration is required. " }],
+    [5500, { type: "draft_token", text: "Per " }],
+    [5600, { type: "draft_token", text: "[cite:node:comp:avl:§72g]AVL §72g[/cite] " }],
+    [5750, { type: "draft_token", text: "and " }],
+    [5850, { type: "draft_token", text: "[cite:node:work:vero-ohje:kolmikantakauppa-2022]Vero ohje on kolmikantakauppa[/cite]" }],
+    [6000, { type: "draft_token", text: ", the invoice to the Swedish customer must carry the explicit marking " }],
+    [6250, { type: "draft_token", text: "\"Käännetty verovelvollisuus — kolmikantakauppa\" (Reverse charge — triangular transaction) " }],
+    [6500, { type: "draft_token", text: "and reference Article 141. " }],
+    [6750, { type: "draft_token", text: "The conditions were confirmed in " }],
+    [6900, { type: "draft_token", text: "[cite:node:case:kho-2018-117]KHO 2018:117[/cite]" }],
+    [7050, { type: "draft_token", text: ", which held that the single-transport requirement breaks if the intermediary takes physical possession in its own Member State before onward shipment. " }],
+    [7400, { type: "draft_token", text: "Confirm with the Swedish customer that they will self-account the VAT, and keep transport documents proving the direct DE → SE move. " }],
+    [7800, { type: "confidence", level: "high" }],
+    [8000, { type: "cost", cents: 0.061 }],
+    [8200, { type: "done" }],
   ];
 }

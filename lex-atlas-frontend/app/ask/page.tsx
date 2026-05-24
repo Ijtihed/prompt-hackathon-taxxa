@@ -1,17 +1,19 @@
 "use client";
 
 /**
- * /ask — chat-style multi-turn workspace.
+ * /ask — curated-demo workspace (no free-form input).
  *
- * The thread is the source of truth: each submit appends a `ChatTurn` and
- * mounts an <AnswerStream> for the latest one. Completed turns render via
- * <RenderedAnswer> — same cite anchors, no streaming UI. The history sent
- * to the sidecar on each follow-up is built from prior turns' question +
- * cite-stripped answer pairs.
+ * Only the three deterministic demo prompts can drive a run. Clicking a
+ * prompt auto-submits and streams the fixture replay end-to-end. There is
+ * no composer / textarea — the live deploy has no Python sidecar attached,
+ * so allowing arbitrary questions would produce mismatched answers. Pick
+ * any prompt to start a new conversation; "New conversation" resets the
+ * thread.
  *
  * Layout
- *  - Empty state (no turns):  hero composer at top + demo prompts + history
- *  - Chat state (≥1 turn):    scrolling thread above, sticky composer at bottom
+ *  - Empty state (no turns):  demo prompts + history
+ *  - Chat state (≥1 turn):    scrolling thread above, "Run another prompt"
+ *    picker pinned at the bottom
  *  - Side rail: orbit/timeline tracks the LATEST turn (resets on new turn)
  */
 
@@ -93,7 +95,6 @@ function buildHistory(turns: ChatTurn[]): ChatMessage[] {
 }
 
 export default function AskPage() {
-  const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [graphView, setGraphView] = useState<"graph" | "timeline">("graph");
 
@@ -124,8 +125,8 @@ export default function AskPage() {
   } = useQueryHistory();
 
   const submit = useCallback(
-    (override?: string, opts?: { demo?: HistoryEntry["demo"]; asof?: string }) => {
-      const q = (override ?? question).trim();
+    (override: string, opts?: { demo?: HistoryEntry["demo"]; asof?: string }) => {
+      const q = override.trim();
       if (!q) return;
       // Reset the global orbit so the new turn's SSE stream populates fresh.
       // Previous turns lose their orbit visualization but keep their answer
@@ -147,9 +148,8 @@ export default function AskPage() {
         };
         return [...prev, newTurn];
       });
-      setQuestion("");
     },
-    [question, reset, setAsof, asof]
+    [reset, setAsof, asof]
   );
 
   /* Recall a saved query: starts a NEW conversation with the recalled
@@ -162,7 +162,6 @@ export default function AskPage() {
        2. No snapshot (legacy entry) — fall back to a live submit. */
   const recall = useCallback(
     (entry: HistoryEntry) => {
-      setQuestion("");
       reset();
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -204,7 +203,6 @@ export default function AskPage() {
 
   const newConversation = useCallback(() => {
     setTurns([]);
-    setQuestion("");
     reset();
   }, [reset]);
 
@@ -271,8 +269,10 @@ export default function AskPage() {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [latestTurnId]);
 
-  // URL-driven auto-submit: ?demo=q4|debate|n1 or ?q=<text>, with ?instant=1
-  // to flush the SSE fixture without delays (used for screenshots/e2e).
+  // URL-driven auto-submit: ?demo=q4|debate|n1, with ?instant=1 to flush
+  // the SSE fixture without delays (used for screenshots/e2e). Free-form
+  // ?q= is intentionally not supported — only the three deterministic
+  // fixtures may drive a run.
   const ranAutoSubmit = useRef(false);
   const [instant, setInstant] = useState(false);
   useEffect(() => {
@@ -280,17 +280,15 @@ export default function AskPage() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const demo = params.get("demo");
-    const q = params.get("q");
     if (params.get("instant") === "1") setInstant(true);
     const map: Record<string, string> = {
       q4: PROMPTS[0].text,
       debate: PROMPTS[1].text,
       n1: PROMPTS[2].text,
     };
-    const auto = q?.trim() || (demo ? map[demo] : undefined);
+    const auto = demo ? map[demo] : undefined;
     if (auto) {
       ranAutoSubmit.current = true;
-      setQuestion(auto);
       setTimeout(() => submit(auto), 0);
     }
     // Allow URL-driven Inspector preselect for screenshots / e2e.
@@ -331,29 +329,42 @@ export default function AskPage() {
           className="flex min-w-0 flex-1 flex-col"
           style={{ gap: "var(--space-7)" }}
         >
-          {/* ─── Composer (HERO) ─── empty state only. */}
-          {isEmpty && (
-            <Composer
-              question={question}
-              setQuestion={setQuestion}
-              onSubmit={() => submit()}
-              asof={asof}
-              variant="hero"
-            />
-          )}
-
           {/* ─── Demo prompts ─── empty state only. */}
           {isEmpty && (
             <section style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-baseline justify-between border-b border-outline-variant"
+                style={{ paddingBottom: "var(--space-3)" }}
+              >
+                <div className="flex flex-col" style={{ gap: "var(--space-2)" }}>
+                  <h1
+                    className="font-serif font-medium text-on-surface"
+                    style={{
+                      fontSize: "clamp(28px, 3vw, 38px)",
+                      lineHeight: 1.1,
+                      letterSpacing: "-0.015em",
+                    }}
+                  >
+                    Pick a demo prompt.
+                  </h1>
+                  <p
+                    className="text-on-surface-variant"
+                    style={{
+                      fontSize: "var(--text-body)",
+                      lineHeight: 1.5,
+                      maxWidth: "62ch",
+                    }}
+                  >
+                    Each one streams the full pipeline — entity pulse →
+                    plan → graph walk → orbit subgraph → cited answer —
+                    against a deterministic fixture. No free-form input
+                    on the live demo; the real retrieval backend is not
+                    attached here (see the methodology page for the full
+                    architecture).
+                  </p>
+                </div>
                 <p
-                  className="font-mono uppercase tracking-widest text-on-surface-variant"
-                  style={{ fontSize: "var(--text-overline)" }}
-                >
-                  Try a demo prompt
-                </p>
-                <p
-                  className="font-mono uppercase tracking-wider text-on-surface-variant"
+                  className="hidden font-mono uppercase tracking-wider text-on-surface-variant sm:inline"
                   style={{ fontSize: "var(--text-meta)" }}
                 >
                   {PROMPTS.length} reproducible
@@ -363,12 +374,12 @@ export default function AskPage() {
                 {PROMPTS.map((p) => (
                   <li key={p.label}>
                     <button
-                      onClick={() => setQuestion(p.text)}
+                      onClick={() => submit(p.text)}
                       className="group flex w-full items-center text-left transition-colors hover:bg-surface-container-low/60"
                       style={{
                         gap: "var(--space-5)",
                         paddingInline: "var(--space-2)",
-                        paddingBlock: "var(--space-3)",
+                        paddingBlock: "var(--space-4)",
                       }}
                     >
                       <span
@@ -378,24 +389,18 @@ export default function AskPage() {
                         {p.tag}
                       </span>
                       <span
-                        className="flex min-w-0 flex-1 items-baseline truncate"
-                        style={{ gap: "var(--space-3)" }}
+                        className="flex min-w-0 flex-1 flex-col"
+                        style={{ gap: "var(--space-1)" }}
                       >
                         <span
-                          className="shrink-0 font-sans font-semibold text-on-surface"
+                          className="font-sans font-semibold text-on-surface"
                           style={{ fontSize: "var(--text-body)" }}
                         >
                           {p.label}
                         </span>
                         <span
-                          className="hidden text-on-surface-variant sm:inline"
-                          style={{ fontSize: "var(--text-body)" }}
-                        >
-                          /
-                        </span>
-                        <span
-                          className="min-w-0 flex-1 truncate font-sans text-on-surface-variant"
-                          style={{ fontSize: "var(--text-body-sm)" }}
+                          className="min-w-0 font-sans text-on-surface-variant"
+                          style={{ fontSize: "var(--text-body-sm)", lineHeight: 1.45 }}
                         >
                           {p.text}
                         </span>
@@ -414,7 +419,8 @@ export default function AskPage() {
                 className="font-sans italic text-on-surface-variant"
                 style={{ fontSize: "var(--text-meta)" }}
               >
-                Pick any prompt above or type your own. Each follow-up keeps the prior turns as context.
+                Click any prompt to auto-run it. Use “New conversation” at
+                any point to reset the thread and pick another.
               </p>
             </section>
           )}
@@ -675,8 +681,9 @@ export default function AskPage() {
         </aside>
       </div>
 
-      {/* ─── Sticky bottom composer ─── chat state only. Backdrop blur so
-          the thread fades behind it instead of bleeding into the textarea. */}
+      {/* ─── Sticky bottom prompt picker ─── chat state only. Replaces
+          the free-form composer: the live demo has no real backend, so
+          the only way to start a new run is to pick another fixture. */}
       {!isEmpty && (
         <div
           className="sticky bottom-0 z-20 border-t border-outline-variant bg-surface/85 backdrop-blur supports-[backdrop-filter]:bg-surface/70"
@@ -684,12 +691,12 @@ export default function AskPage() {
         >
           <div className="mx-auto w-full max-w-6xl px-6">
             <div className="md:pr-80 lg:pr-[336px]">
-              <Composer
-                question={question}
-                setQuestion={setQuestion}
-                onSubmit={() => submit()}
-                asof={asof}
-                variant="sticky"
+              <PromptPicker
+                prompts={PROMPTS}
+                onPick={(text) => {
+                  newConversation();
+                  setTimeout(() => submit(text), 0);
+                }}
                 disabled={isStreaming}
                 disabledReason={
                   isStreaming
@@ -712,179 +719,86 @@ export default function AskPage() {
    Components
    ───────────────────────────────────────────────────────────────────────── */
 
-/** Composer in two visual modes:
- *  - `hero`:    full three-strip card with meta pills (empty state)
- *  - `sticky`:  slim single-line textarea + Ask button (bottom of chat)
- */
-function Composer({
-  question,
-  setQuestion,
-  onSubmit,
-  asof,
-  variant,
+/** Bottom-of-chat picker: three labelled buttons that each start a new
+ *  conversation with a fixed prompt. Replaces the old free-form composer
+ *  in the chat (≥1 turn) state. Disabled while a turn is mid-stream so a
+ *  user can't fire a second SSE on top of the first. */
+function PromptPicker({
+  prompts,
+  onPick,
   disabled,
   disabledReason,
 }: {
-  question: string;
-  setQuestion: (v: string) => void;
-  onSubmit: () => void;
-  asof: string;
-  variant: "hero" | "sticky";
+  prompts: typeof PROMPTS;
+  onPick: (text: string) => void;
   disabled?: boolean;
   disabledReason?: string;
 }) {
-  const placeholder =
-    variant === "hero"
-      ? "What is the withholding rate on key-personnel pay in 2026?"
-      : "Ask a follow-up… (Cmd + Enter to send)";
-
-  if (variant === "sticky") {
-    return (
-      <div className="border border-outline-variant bg-surface-container-lowest">
-        <div
-          className="flex items-end"
-          style={{
-            paddingInline: "var(--space-4)",
-            paddingBlock: "var(--space-3)",
-            gap: "var(--space-3)",
-          }}
-        >
-          <textarea
-            value={question}
-            onChange={(e) => {
-              setQuestion(e.target.value);
-              const el = e.currentTarget;
-              el.style.height = "auto";
-              el.style.height = Math.min(el.scrollHeight, 200) + "px";
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-            }}
-            aria-label="Follow-up question"
-            placeholder={placeholder}
-            rows={1}
-            disabled={disabled}
-            style={{ minHeight: 44, lineHeight: 1.4, fontSize: 17 }}
-            className="block w-full resize-none border-0 bg-transparent p-0 font-sans text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-0 disabled:opacity-60"
-          />
-          <button
-            onClick={onSubmit}
-            disabled={disabled || !question.trim()}
-            className="btn-primary btn-sm shrink-0"
-            title={disabledReason}
-          >
-            {disabled ? "Streaming…" : "Ask"}
-            {!disabled && (
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "var(--icon-sm)" }}
-              >
-                send
-              </span>
-            )}
-          </button>
-        </div>
-        <div
-          className="flex items-center justify-between border-t border-outline-variant"
-          style={{
-            paddingInline: "var(--space-4)",
-            paddingBlock: "var(--space-2)",
-          }}
-        >
-          <span
-            className="font-mono uppercase tracking-wider text-on-surface-variant"
-            style={{ fontSize: "var(--text-overline)" }}
-          >
-            AS OF {asof.replace(/-/g, ".")} · context carries
-          </span>
-          <span
-            className="hidden font-mono text-on-surface-variant sm:flex"
-            style={{ fontSize: "var(--text-overline)" }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "var(--icon-xs)" }}
-            >
-              keyboard_command_key
-            </span>
-            + Enter
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  // hero variant
   return (
-    <section className="border border-outline-variant bg-gradient-to-b from-surface-container-lowest to-surface-container-low/40">
+    <div className="border border-outline-variant bg-surface-container-lowest">
       <div
         className="flex items-center justify-between border-b border-outline-variant"
-        style={{ paddingInline: "var(--space-5)", paddingBlock: "var(--space-2)" }}
-      >
-        <div className="flex flex-wrap items-center" style={{ gap: "var(--space-2)" }}>
-          <span className="meta-pill">AS OF {asof.replace(/-/g, ".")}</span>
-          <span className="meta-pill">EN-FI</span>
-          <span
-            className="meta-pill"
-            style={{ color: "var(--color-secondary)", borderColor: "var(--color-secondary)" }}
-            title="1,967,776 nodes + 2,250,021 edges (96.9% resolved)"
-          >
-            1.97M N · 2.25M E
-          </span>
-        </div>
-        <div
-          className="hidden items-center font-mono text-on-surface-variant sm:flex"
-          style={{ gap: "var(--space-2)", fontSize: "var(--text-overline)" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "var(--icon-xs)" }}>
-            keyboard_command_key
-          </span>
-          + Enter
-        </div>
-      </div>
-
-      <div style={{ paddingInline: "var(--space-6)", paddingBlock: "var(--space-6)" }}>
-        <textarea
-          value={question}
-          onChange={(e) => {
-            setQuestion(e.target.value);
-            const el = e.currentTarget;
-            el.style.height = "auto";
-            el.style.height = Math.min(el.scrollHeight, 280) + "px";
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-          }}
-          aria-label="Question"
-          placeholder={placeholder}
-          rows={1}
-          style={{ minHeight: 72, lineHeight: 1.35, fontSize: 26 }}
-          className="block w-full resize-none border-0 bg-transparent p-0 font-serif text-on-surface placeholder:font-serif placeholder:font-normal placeholder:italic placeholder:text-on-surface-variant/55 focus:outline-none focus:ring-0"
-        />
-      </div>
-
-      <div
-        className="flex items-center justify-between border-t border-outline-variant"
-        style={{ paddingInline: "var(--space-5)", paddingBlock: "var(--space-3)" }}
+        style={{
+          paddingInline: "var(--space-4)",
+          paddingBlock: "var(--space-2)",
+        }}
       >
         <span
           className="font-mono uppercase tracking-wider text-on-surface-variant"
           style={{ fontSize: "var(--text-overline)" }}
         >
-          {question.trim() ? `${question.trim().length} chars` : "Cmd + Enter to ask"}
+          Run another prompt
         </span>
-        <button
-          onClick={onSubmit}
-          disabled={!question.trim()}
-          className="btn-primary btn-sm shrink-0"
+        <span
+          className="hidden font-mono uppercase tracking-wider text-on-surface-variant sm:inline"
+          style={{ fontSize: "var(--text-meta)" }}
         >
-          Ask
-          <span className="material-symbols-outlined" style={{ fontSize: "var(--icon-sm)" }}>
-            send
-          </span>
-        </button>
+          starts a new conversation
+        </span>
       </div>
-    </section>
+      <div
+        className="flex flex-wrap"
+        style={{
+          gap: "var(--space-2)",
+          paddingInline: "var(--space-4)",
+          paddingBlock: "var(--space-3)",
+        }}
+      >
+        {prompts.map((p) => (
+          <button
+            key={p.label}
+            onClick={() => onPick(p.text)}
+            disabled={disabled}
+            title={disabledReason ?? p.text}
+            className="group flex items-center border border-outline-variant bg-surface-container-lowest transition-colors hover:border-secondary hover:bg-surface-container-low/60 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              gap: "var(--space-2)",
+              paddingInline: "var(--space-3)",
+              paddingBlock: "var(--space-2)",
+            }}
+          >
+            <span
+              className="font-mono uppercase tracking-wider text-on-surface-variant"
+              style={{ fontSize: "var(--text-overline)" }}
+            >
+              {p.tag}
+            </span>
+            <span
+              className="font-sans font-medium text-on-surface"
+              style={{ fontSize: "var(--text-body-sm)" }}
+            >
+              {p.label}
+            </span>
+            <span
+              className="material-symbols-outlined text-on-surface-variant transition-all group-hover:translate-x-0.5 group-hover:text-secondary"
+              style={{ fontSize: "var(--icon-sm)" }}
+            >
+              arrow_forward
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
