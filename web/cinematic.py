@@ -57,7 +57,7 @@ def _build_timeline(result: AnswerResult) -> list[dict[str, Any]]:
     grafts = [(cid, p) for cid, p in paths.items() if p.via == "graph"]
 
     if not paths:
-        # Truly empty — show a one-shot strategy badge and nothing else.
+        # Truly empty - show a one-shot strategy badge and nothing else.
         events.append({"t": 0.2, "action": "strategy_set", "cls": "empty", "text": "No retrieval"})
         return events
 
@@ -120,7 +120,7 @@ def _build_timeline(result: AnswerResult) -> list[dict[str, Any]]:
             "t": seed_appear_t + i * 0.25, "action": "show_node",
             "chunk_id": sid, "pulse": True,
         })
-    # Graph expansions next — interleave node + edge so the line draws to a visible target
+    # Graph expansions next - interleave node + edge so the line draws to a visible target
     exp_appear_t = seed_appear_t + max(0.5, len(seeds) * 0.25)
     for i, (cid, p) in enumerate(grafts):
         t = exp_appear_t + i * 0.35
@@ -131,7 +131,7 @@ def _build_timeline(result: AnswerResult) -> list[dict[str, Any]]:
     edge_summary = "no expansion"
     if has_graph:
         # Distinct edge-type list for the summary text
-        ets = sorted({(p.edge_type or "—") for _, p in grafts if p.edge_type})
+        ets = sorted({(p.edge_type or "-") for _, p in grafts if p.edge_type})
         edge_summary = "walked " + ", ".join(ets) if ets else "expanded"
     n_seeds = len(seeds)
     events.append({
@@ -149,7 +149,7 @@ def _build_timeline(result: AnswerResult) -> list[dict[str, Any]]:
         write_card = (
             '<div class="edge-write">'
             + _shorten(rep_src, 30)
-            + ' <span style="color: var(--muted);">—'
+            + ' <span style="color: var(--muted);">-'
             + (rep_path.edge_type or "cites")
             + '→</span> '
             + _shorten(rep_target_id, 30)

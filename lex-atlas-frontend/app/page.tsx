@@ -1,5 +1,5 @@
 /**
- * Landing — "Utility Focus" — ported from Stitch.
+ * Landing - "Utility Focus" - ported from Stitch.
  *
  * 5-col hero text + 7-col canvas topology box, then a 4-card hard-bordered
  * utility grid ("Core Utility Architecture v2.4.0"). Editorial EB Garamond
@@ -117,6 +117,55 @@ export default function LandingPage() {
             </div>
             <TopologyCanvas />
           </div>
+        </section>
+
+        {/* ─── Live walkthrough ─── inline screen recording of the demo,
+            captured against the live deploy. Loops silently so the
+            landing page reads like the product instead of pitching it. */}
+        <section
+          className="flex flex-col"
+          style={{ gap: "var(--space-4)" }}
+        >
+          <div
+            className="flex items-baseline justify-between border-b border-outline-variant"
+            style={{ gap: "var(--space-4)", paddingBottom: "var(--space-3)" }}
+          >
+            <h2
+              className="font-serif font-medium text-on-surface"
+              style={{ fontSize: "var(--text-h3)", lineHeight: 1.15 }}
+            >
+              See it build the graph.
+            </h2>
+            <span className="system-label">SYS.VIS.02 // WALKTHROUGH</span>
+          </div>
+          <div className="relative overflow-hidden border border-outline-variant bg-surface-container-lowest">
+            <video
+              src="/demo.mp4"
+              poster="/demo-poster.jpg"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="Screen recording of the RAGTAG demo running the Triangular VAT prompt: the orbit graph wires up node-by-node as the cited answer streams in."
+              className="block h-auto w-full"
+            />
+          </div>
+          <p
+            className="font-sans text-on-surface-variant"
+            style={{
+              fontSize: "var(--text-body-sm)",
+              lineHeight: 1.55,
+              maxWidth: "70ch",
+            }}
+          >
+            Recorded against the live Vercel deploy with Playwright. The N1
+            prompt (Finnish company - German supplier - Swedish customer)
+            walks the vector seeds into a triangular-VAT subgraph, the
+            answer streams with inline citations to AVL S63h and EU VAT
+            Directive Article 141, then a second prompt fires the KHO vs
+            Vero debate path.
+          </p>
         </section>
 
         {/* ─── Core Utility Architecture ─── 4-pillar grid, hairline-divided. */}

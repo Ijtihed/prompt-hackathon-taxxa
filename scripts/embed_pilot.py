@@ -1,4 +1,4 @@
-"""Step 4a.3 — Pilot embedding pass (1000 chunks, stratified by source).
+"""Step 4a.3 - Pilot embedding pass (1000 chunks, stratified by source).
 
 Mandatory before the full corpus pass. Catches text-composition bugs and
 schema mismatches while spending ~0.3% of the token budget.
@@ -45,7 +45,7 @@ STRATA = {
 
 
 def _arrow_schema() -> pa.Schema:
-    """Mirror src.models.VectorRecord — keep fields in sync if the model changes."""
+    """Mirror src.models.VectorRecord - keep fields in sync if the model changes."""
     return pa.schema(
         [
             pa.field("chunk_id", pa.string()),

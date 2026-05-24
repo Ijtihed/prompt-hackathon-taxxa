@@ -1,8 +1,8 @@
-# Hybrid Cinematic Demo — UI Concept Documentation
+# Hybrid Cinematic Demo - UI Concept Documentation
 
 ## Purpose
 
-Demo concept for the **Agentic GraphRAG** challenge (Aalto × Taxxa hackathon). Designed for hackathon judges with an emphasis on visual wow factor — proves simultaneously that the graph is real, that agents are doing real work, and that the system produces a usable accountant-grade memo.
+Demo concept for the **Agentic GraphRAG** challenge (Aalto × Taxxa hackathon). Designed for hackathon judges with an emphasis on visual wow factor - proves simultaneously that the graph is real, that agents are doing real work, and that the system produces a usable accountant-grade memo.
 
 ## Audience and goals
 
@@ -10,7 +10,7 @@ Demo concept for the **Agentic GraphRAG** challenge (Aalto × Taxxa hackathon). 
 |-----------|--------|
 | Primary audience | Hackathon judges |
 | Proof emphasis | Graph is real + agents are doing real work |
-| Answer surface | Hybrid — chat that produces an inline report |
+| Answer surface | Hybrid - chat that produces an inline report |
 | Animation mode | Cinematic on first load, snappy fallback via Skip |
 | Reasoning panel | Equal-weight split (Graph + Agents), tabs swap emphasis |
 
@@ -39,11 +39,11 @@ The left column is the user-facing surface. The right column is the "show your w
 ## Components
 
 ### Header bar
-Brand mark + active context (Finland, tax year 2025, source set: Finlex + Vero). The context band frames every answer in the same scope — judges immediately understand the system is jurisdiction-aware.
+Brand mark + active context (Finland, tax year 2025, source set: Finlex + Vero). The context band frames every answer in the same scope - judges immediately understand the system is jurisdiction-aware.
 
 ### Reasoning strip
 Horizontal band directly under the user question. Aggregates live state from the reasoning panel into four counters:
-- **Strategy badge** — "Routing…" → "Multi-hop" once the Planner classifies the question
+- **Strategy badge** - "Routing…" → "Multi-hop" once the Planner classifies the question
 - **Nodes · edges** traversed
 - **Agents** active / total
 - **Time** elapsed
@@ -56,28 +56,28 @@ This strip is what a viewer sees first. It tells them "something non-trivial is 
 A document, not a chat bubble. Structure:
 - Meta line: `Memo · date · sources in force at issuance`
 - Title and sub-line (serif, mirrors a real research memo)
-- Assumption chip — surfaced by the Clarifier when the question is under-specified
+- Assumption chip - surfaced by the Clarifier when the question is under-specified
 - Numbered sections: governing rule, exception, conflict callout, partial exemption, conclusion
 - Citation pills colored by source (blue = Finlex, amber = Vero)
 - Inline conflict callout (amber, with explicit resolution rule)
 - Footer with Export · Share · Copy memo · feedback buttons
 
-The conflict callout sits *between* sections 2 and 3, where the divergence is relevant — not appended at the end as an afterthought. This is the single most important detail for proving the Verifier is doing real work.
+The conflict callout sits *between* sections 2 and 3, where the divergence is relevant - not appended at the end as an afterthought. This is the single most important detail for proving the Verifier is doing real work.
 
-### Reasoning panel — Graph block
+### Reasoning panel - Graph block
 A small SVG graph showing the actual traversal path for the current question.
 
-- **Seed node** (`§114 AVL`) — pulsing blue border, marked as vector hit
-- **Expanded nodes** — appear sequentially as the BFS walks edges:
+- **Seed node** (`§114 AVL`) - pulsing blue border, marked as vector hit
+- **Expanded nodes** - appear sequentially as the BFS walks edges:
   - `§114.2` via `parent_of`
   - `§117 AVL` via `cites`
-  - `Vero 2019` via `interprets` (amber — different source)
-- **Conflict edge** — amber, dashed, animated stroke between Vero 2019 and §114.2
-- **Ghost nodes** — faded gray peripheral dots, hinting at the larger graph not traversed
+  - `Vero 2019` via `interprets` (amber - different source)
+- **Conflict edge** - amber, dashed, animated stroke between Vero 2019 and §114.2
+- **Ghost nodes** - faded gray peripheral dots, hinting at the larger graph not traversed
 - Live counter in the header tracks nodes/edges as they appear
 - Legend at the bottom: Finlex / Vero / not-traversed
 
-### Reasoning panel — Agent timeline
+### Reasoning panel - Agent timeline
 Five rows, one per agent. Each row dims when inactive, brightens when active, and shows a green check when complete.
 
 | Agent | What it shows |
@@ -85,7 +85,7 @@ Five rows, one per agent. Each row dims when inactive, brightens when active, an
 | Clarifier | "Missing: tax year, entity type. Proceeding with defaults." |
 | Planner | Three numbered sub-questions revealed inline |
 | Retriever | "Vector hit on §114 · walked 1 hop on parent_of, cites, interprets" |
-| Extractor | New edge written: `vero:2019 —interprets→ §114.2` (the visible learning-loop moment) |
+| Extractor | New edge written: `vero:2019 -interprets→ §114.2` (the visible learning-loop moment) |
 | Verifier | Conflict mini-callout: "Vero 2019 stricter than §114.2. Finlex (100) > Vero (60)" |
 
 Progress indicator in the header: `n/4 done`.
@@ -100,15 +100,15 @@ Standard input + send button. Placeholder text suggests a follow-up that exercis
 
 ## Animation choreography
 
-Cinematic timeline runs once on load, replayable via the Replay button. Total wall-clock: roughly 11 seconds. Final answer time displayed is 3.4s (the *simulated* answer time — the animation is dilated for legibility).
+Cinematic timeline runs once on load, replayable via the Replay button. Total wall-clock: roughly 11 seconds. Final answer time displayed is 3.4s (the *simulated* answer time - the animation is dilated for legibility).
 
 | Time (s) | Phase | Visible action |
 |----------|-------|----------------|
 | 0.2 | Setup | Strategy badge appears: "Routing…" |
 | 0.5–1.1 | Clarifier | Row activates (blinking dot), then completes |
-| 1.2 | — | Assumption chip slides into the report area |
+| 1.2 | - | Assumption chip slides into the report area |
 | 1.4–2.2 | Planner | Row activates, three sub-questions reveal |
-| 2.3 | — | Strategy badge updates to "Multi-hop" |
+| 2.3 | - | Strategy badge updates to "Multi-hop" |
 | 2.4–4.5 | Retriever / graph | Seed node appears pulsing; edges and nodes unfold sequentially (parent_of, cites, interprets) |
 | 4.6–5.6 | Extractor | Row activates, edge-write code block reveals, edges-added counter ticks 0 → 1 |
 | 5.8–6.9 | Verifier | Row activates; amber conflict edge appears on graph with dashed-stroke animation; conflicts counter ticks 0 → 1 |
@@ -122,7 +122,7 @@ The choreography is *narrative* rather than algorithmically faithful. A real BFS
 | Control | Effect |
 |---------|--------|
 | **Replay** | Re-runs the cinematic from scratch |
-| **Skip** | Collapses immediately to the completed snappy state — final memo, all nodes/edges visible, all counters at final values |
+| **Skip** | Collapses immediately to the completed snappy state - final memo, all nodes/edges visible, all counters at final values |
 | **Both** tab | Default. Equal-weight split, neither side dimmed |
 | **Graph** tab | Highlights graph block (info background), dims the timeline |
 | **Agents** tab | Highlights timeline (warning background), dims the graph |
@@ -147,16 +147,16 @@ Every visible element corresponds to a component from the plan:
 
 | UI element | Plan reference |
 |------------|----------------|
-| Assumption chip | Phase 8 — Clarifier agent |
-| Sub-question list | Phase 8 — Planner agent |
-| Graph traversal | Phase 7 — graph expansion module |
-| Strategy badge | Phase 7 — strategy router |
-| Edge-write block | Phase 8 — on-demand Extractor + write-back |
-| Conflict callout | Phase 8 — Verifier agent |
-| Authority tier in conflict resolution | Phase 3 — authority_rank metadata |
-| Citation pill colors | Phase 1 — source field on nodes |
+| Assumption chip | Phase 8 - Clarifier agent |
+| Sub-question list | Phase 8 - Planner agent |
+| Graph traversal | Phase 7 - graph expansion module |
+| Strategy badge | Phase 7 - strategy router |
+| Edge-write block | Phase 8 - on-demand Extractor + write-back |
+| Conflict callout | Phase 8 - Verifier agent |
+| Authority tier in conflict resolution | Phase 3 - authority_rank metadata |
+| Citation pill colors | Phase 1 - source field on nodes |
 
-Nothing in the UI is purely cosmetic — every element traces to a component that the build plan instructs the team to build.
+Nothing in the UI is purely cosmetic - every element traces to a component that the build plan instructs the team to build.
 
 ## Honest caveats for the team
 
@@ -172,18 +172,18 @@ Things that are simplified for the demo and worth being explicit about if a judg
 1. Show the question typed in Finnish. Pause for half a second.
 2. The cinematic plays. Let judges watch it once without commentary.
 3. On replay, narrate three things in order:
-   - "The Clarifier surfaces that we don't know the tax year or entity type — it picks defaults and labels them"
+   - "The Clarifier surfaces that we don't know the tax year or entity type - it picks defaults and labels them"
    - "Watch the graph: vector search lands here, then the BFS walks the citation edges to pull in the exception clause and the apportionment rule"
-   - "The Extractor just wrote a new edge back to the graph — it'll be there next time someone asks a related question"
+   - "The Extractor just wrote a new edge back to the graph - it'll be there next time someone asks a related question"
 4. Click Skip to show the final memo cleanly. Highlight the conflict callout and the authority resolution rule.
 5. Type a follow-up: *"What if it's a foundation instead?"* Show that the Clarifier picks up the entity type change and the pipeline re-runs against the same graph.
 
 ## Possible extensions
 
-- **Follow-up variant** — typing a follow-up question triggers a faster, partial re-run that only re-traverses changed parts. Demonstrates the system is interactive, not a one-shot animation.
-- **Baseline comparison toggle** — a "what would naive RAG return?" button that side-by-sides the worse vanilla-vector answer. Directly proves the graph + agents are doing load-bearing work.
-- **Citation hover previews** — hover any citation pill to see a source snippet. Standard product polish.
-- **Conflict drill-down** — click the conflict callout to expand into a side-by-side diff of the statute wording and the Vero guidance wording. The "regulation diff" idea from earlier concepts, applied surgically only when it matters.
+- **Follow-up variant** - typing a follow-up question triggers a faster, partial re-run that only re-traverses changed parts. Demonstrates the system is interactive, not a one-shot animation.
+- **Baseline comparison toggle** - a "what would naive RAG return?" button that side-by-sides the worse vanilla-vector answer. Directly proves the graph + agents are doing load-bearing work.
+- **Citation hover previews** - hover any citation pill to see a source snippet. Standard product polish.
+- **Conflict drill-down** - click the conflict callout to expand into a side-by-side diff of the statute wording and the Vero guidance wording. The "regulation diff" idea from earlier concepts, applied surgically only when it matters.
 
 ## File location
 

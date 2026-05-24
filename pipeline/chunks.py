@@ -32,7 +32,7 @@ HARD_MAX = 2000
 
 
 # Finnish abbreviations that end in '.' but don't end a sentence. Conservative
-# list — only the very common ones — to avoid false negatives.
+# list - only the very common ones - to avoid false negatives.
 _FI_ABBR = {
     "esim", "ks", "yms", "ym", "mm", "jne", "ml", "ns", "vrt", "tms", "n",
     "nro", "ent", "vs", "yht", "tjsp", "tarv", "ko", "tk",
@@ -131,7 +131,7 @@ def _render_node(node: Node) -> str:
     """
     parts: list[str] = []
     if node.label:
-        # Keep label terse — it's a navigation hint, not duplicated content.
+        # Keep label terse - it's a navigation hint, not duplicated content.
         if node.title:
             parts.append(f"{node.label} {node.title}")
         else:
@@ -163,7 +163,7 @@ def pack_section(bundle: SectionBundle) -> list[Chunk]:
         rendered.append((m, t, count_tokens(t)))
 
     if not rendered:
-        # Section has no children — emit head alone if there's anything.
+        # Section has no children - emit head alone if there's anything.
         if not head:
             return []
         cid = f"{sec.id}#0"

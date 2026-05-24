@@ -15,7 +15,7 @@ Layout (mirrors our-docs/hybrid_cinematic_concept.md):
 
 # ─── Pipeline swap point ──────────────────────────────────────────
 # Change ANSWER_FN below when Track D's real pipeline ships. The rest
-# of the app is pipeline-agnostic — it only calls ANSWER_FN(question)
+# of the app is pipeline-agnostic - it only calls ANSWER_FN(question)
 # and treats the AnswerResult as opaque.
 """
 
@@ -49,7 +49,7 @@ def _safe(s: str) -> str:
     )
 
 # ─────────────────────────────────────────────────────────────────────
-# SWAP POINT — change these two lines when Track D ships pipeline.py
+# SWAP POINT - change these two lines when Track D ships pipeline.py
 # ─────────────────────────────────────────────────────────────────────
 ANSWER_FN = MockPipeline().answer
 # from src.retrieval.pipeline import Pipeline
@@ -68,7 +68,7 @@ def get_answer(question: str) -> AnswerResult:
     2. Free-text input → seed random by question hash so the same typed
        question always produces the same MockPipeline variant on Replay.
        MockPipeline still fuzzes the UI against varied AnswerResult
-       shapes (single/multi-source/empty/conflict) — just deterministically.
+       shapes (single/multi-source/empty/conflict) - just deterministically.
     """
     if USE_DEMO_OVERRIDES and question in DEMO_OVERRIDES:
         return DEMO_OVERRIDES[question]
@@ -183,7 +183,7 @@ st.markdown(
 with st.container():
     col_q, col_btn = st.columns([5, 1], gap="small")
     with col_q:
-        pick_labels = ["— Type your own question —"] + [p["label"] for p in DEMO_PICKS]
+        pick_labels = ["- Type your own question -"] + [p["label"] for p in DEMO_PICKS]
         pick_choice = st.selectbox(
             "Try a curated demo question",
             pick_labels,
@@ -195,7 +195,7 @@ with st.container():
         st.write("")
         run_clicked = st.button("Run", use_container_width=True)
 
-    if pick_choice == "— Type your own question —":
+    if pick_choice == "- Type your own question -":
         composer_value = st.text_area(
             "Or ask your own question",
             value=st.session_state.get("composer_value", ""),

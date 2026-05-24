@@ -3,7 +3,7 @@
 Usage:
     python scripts/fetch_data.py
 
-No third-party dependencies — uses only the stdlib so you can run this
+No third-party dependencies - uses only the stdlib so you can run this
 before you've set up any environment.
 """
 
@@ -39,7 +39,7 @@ def fetch(base: str) -> None:
                     print(f"   {read / 1e6:6.1f} / {total / 1e6:6.1f} MB ({pct:5.1f}%)", end="\r")
         print()
     except urllib.error.HTTPError as e:
-        print(f"   !! {e.code} {e.reason} — is the release tag published yet?")
+        print(f"   !! {e.code} {e.reason} - is the release tag published yet?")
         print(f"   !! ask in Slack if you think it should be live.")
         dest.unlink(missing_ok=True)
         raise SystemExit(1)

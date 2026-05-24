@@ -1,4 +1,4 @@
-"""Track D — Retrieval v1 (vector-only baseline).
+"""Track D - Retrieval v1 (vector-only baseline).
 
 The path below is the one-line swap when the full embed (Step 4a) completes:
 flip ``VECTOR_DB_PATH`` from the pilot to the full store and re-run.

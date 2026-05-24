@@ -1,4 +1,4 @@
-"""Step 10 / Move 1 — Extract operative payload from amendment instruments.
+"""Step 10 / Move 1 - Extract operative payload from amendment instruments.
 
 A "Laki X muuttamisesta" / "Laki X kumoamisesta" instrument-LAW contains:
 
@@ -17,7 +17,7 @@ graph and emits ``amends_section`` edges.
 
 We deliberately *do not* parse the AMENDMENT_BLOCK nodes that live
 inside consolidated laws (``/c<n>/a14-5-2010-409``-style). Those carry
-only voimaantulo clauses, not directives — verified by sampling. The
+only voimaantulo clauses, not directives - verified by sampling. The
 operative payload lives exclusively in amendment-instrument LAW roots.
 
 Outputs:
@@ -85,10 +85,10 @@ _VERB_RE = re.compile(
 )
 
 # Section identifier inside a directive scope:
-#   - "11 §" — base
-#   - "11 a §" / "11a §" — letter suffix (with or without space)
-#   - "11–14 §" — range (not handled in v1; flagged as chain_complex)
-#   - "§ 11" — leading § (rare in Finnish legal prose, but seen in
+#   - "11 §" - base
+#   - "11 a §" / "11a §" - letter suffix (with or without space)
+#   - "11–14 §" - range (not handled in v1; flagged as chain_complex)
+#   - "§ 11" - leading § (rare in Finnish legal prose, but seen in
 #     translated material)
 #
 # Capture groups:
@@ -100,11 +100,11 @@ _SECTION_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Range marker — `5–8`, `5—8`, `5-8`. Used only to detect chain_complex,
+# Range marker - `5–8`, `5-8`, `5-8`. Used only to detect chain_complex,
 # not to expand the range. Expanding a range needs metadata we don't have
 # in v1 (do § 5, 6, 7 exist in the target law? what are their labels?),
 # and a wrong expansion is worse than a missed one.
-_RANGE_RE = re.compile(r"\d+\s*[\-–—]\s*\d+")
+_RANGE_RE = re.compile(r"\d+\s*[\-–-]\s*\d+")
 
 # Momentti: "§:n 4 momentti" / "11 a §:n 4 momentti".
 # Used to enrich the most-recently-seen § identifier with a subsection
@@ -115,7 +115,7 @@ _MOMENTTI_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Effective date — same window as backfill_amendment_edges. The amendment
+# Effective date - same window as backfill_amendment_edges. The amendment
 # instrument's effective date typically lives in the *last* momentti of
 # the *last* section (the "Tämä laki tulee voimaan 1 päivänä …" clause).
 _VOIMAAN_WINDOW_RE = re.compile(
@@ -164,9 +164,9 @@ class _Section:
 def _open_db() -> sqlite3.Connection:
     if not GRAPH_DB.exists():
         raise SystemExit(
-            f"ERROR: {GRAPH_DB} not found — run scripts.load_graph first."
+            f"ERROR: {GRAPH_DB} not found - run scripts.load_graph first."
         )
-    # Read-only connection — Move 1 doesn't write to the graph.
+    # Read-only connection - Move 1 doesn't write to the graph.
     conn = sqlite3.connect(GRAPH_DB, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA query_only=ON")
@@ -203,7 +203,7 @@ def _load_children(
     the SECTION text alone is sometimes empty (when the entire body lives
     in momentti children) so we also fold in concatenated momentti bodies.
     """
-    # All children — we paginate by id LIKE prefix because the schema has
+    # All children - we paginate by id LIKE prefix because the schema has
     # parent_id columns but no full-subtree index. ``{law}/_%`` would be
     # nicer SQL but SQLite's ``LIKE`` doesn't have a regex equivalent.
     cur = conn.execute(
@@ -276,7 +276,7 @@ def _normalize_section_label(label: str) -> str | None:
     if not out:
         return None
     res = "".join(out)
-    # Must start with a digit — pure-letter labels aren't § identifiers.
+    # Must start with a digit - pure-letter labels aren't § identifiers.
     if not res[0].isdigit():
         return None
     return res
@@ -294,7 +294,7 @@ def _normalize_verb(raw: str) -> str:
         return "muutetaan"
     if v.startswith("kumotaan"):
         return "kumotaan"
-    # lisätään / lisätaan / lisätään — Finnish ä/a folding seen in some sources
+    # lisätään / lisätaan / lisätään - Finnish ä/a folding seen in some sources
     return "lisätään"
 
 
@@ -333,7 +333,7 @@ def _directive_scopes(text: str) -> list[tuple[str, int, int]]:
             elif ch == "." and depth == 0:
                 # Real sentence break only if followed by whitespace + capital
                 # or end-of-text. Otherwise it's a decimal in "( 585/1986 )"
-                # — but those are inside parens, so they shouldn't reach here.
+                # - but those are inside parens, so they shouldn't reach here.
                 rest = text[j + 1: j + 3]
                 if not rest or rest[0] in (" ", "\n", "\t"):
                     period = j
@@ -358,7 +358,7 @@ def _parse_directive_scope(verb: str, scope: str) -> list[_DirectiveHit]:
     """Pull every § identifier out of one verb's scope.
 
     Records ``chain_complex=True`` on hits when the scope contains a
-    range marker — the LLM/UI should treat those ops as advisory.
+    range marker - the LLM/UI should treat those ops as advisory.
     """
     has_range = bool(_RANGE_RE.search(scope))
     hits: list[_DirectiveHit] = []
@@ -394,7 +394,7 @@ def _parse_effective_date(instrument: _Instrument) -> date | None:
     """Find the instrument's effective date.
 
     Search order:
-      1. The *last* SECTION's last momentti — that's where the
+      1. The *last* SECTION's last momentti - that's where the
          ``Tämä laki tulee voimaan …`` clause typically lives.
       2. Any momentti in any SECTION (some instruments inline the
          voimaantulo in the first SECTION).
@@ -475,7 +475,7 @@ def parse_instrument(instrument: _Instrument) -> list[AmendmentOp]:
                         confidence = 0.7
                 else:
                     # Directive points to a section we couldn't find as
-                    # a child — likely the directive parser over-matched
+                    # a child - likely the directive parser over-matched
                     # (e.g. caught a § inside the operative scope that
                     # was actually a citation). Drop the op rather than
                     # emit a noisy one.
@@ -483,7 +483,7 @@ def parse_instrument(instrument: _Instrument) -> list[AmendmentOp]:
 
             if h.chain_complex:
                 # We have a verb + target, but the directive also
-                # contains a range — the LLM should treat ``new_text``
+                # contains a range - the LLM should treat ``new_text``
                 # as approximate.
                 confidence = min(confidence, 0.6)
 
@@ -546,7 +546,7 @@ def run(
             if not sections:
                 # Pure-repeal instruments often have no SECTION children
                 # (the directive is the whole thing). We still emit the
-                # ``kumotaan`` op — the parser will see a verb without a
+                # ``kumotaan`` op - the parser will see a verb without a
                 # matching section_norm and we'll allow it through with
                 # ``new_text=None``. To support that we add a synthetic
                 # entry to the instrument.sections map below.
@@ -561,7 +561,7 @@ def run(
             # Special case: kumotaan instruments may have no SECTION
             # children at all. ``parse_instrument`` ``continue``s for
             # missing sections, but for kumotaan the directive itself
-            # is enough — re-parse and emit kumotaan ops without a
+            # is enough - re-parse and emit kumotaan ops without a
             # section_norm guard.
             if not ops and "kumotaan" in directive.lower():
                 for verb, start, end in _directive_scopes(directive):

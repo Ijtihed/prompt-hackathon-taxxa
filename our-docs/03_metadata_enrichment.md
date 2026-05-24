@@ -1,4 +1,4 @@
-# Step 3 — Metadata Enrichment
+# Step 3 - Metadata Enrichment
 
 > Step 1 produced nodes with structural fields. Step 2 produced edges. This step adds the **filterable signals** retrieval needs: dates, in-force status, authority, version.
 >
@@ -12,7 +12,7 @@
 
 ## Annotations added to nodes
 
-Annotations live in a new field `node.metadata = {...}` — the Step 1 schema is not modified.
+Annotations live in a new field `node.metadata = {...}` - the Step 1 schema is not modified.
 
 | Field | Type | Why |
 |-------|------|-----|
@@ -21,14 +21,14 @@ Annotations live in a new field `node.metadata = {...}` — the Step 1 schema is
 | `repeal_date` | ISO date or null | Filter out repealed law |
 | `in_force` | bool | Direct ranking signal |
 | `authority` | str | "Finlex" / "Vero" (one of a small fixed set) |
-| `authority_rank` | int | Numeric tier — used by reranker |
+| `authority_rank` | int | Numeric tier - used by reranker |
 | `superseded_by` | str or null | Canonical ID of newer version |
 | `language` | "fi" / "sv" / "en" | Language filter |
 | `usable` | bool | Composite: in_force AND not superseded |
 
 ## Verification tasks
 
-### V3.1 — Metadata coverage audit
+### V3.1 - Metadata coverage audit
 
 For each source, run a script that counts how often each field can be populated from parsed HTML:
 
@@ -41,7 +41,7 @@ For each source, run a script that counts how often each field can be populated 
 
 Anything below 80% coverage in its source needs either a better extractor or a documented gap. Write to `findings/03_metadata_coverage.md`.
 
-### V3.2 — Authority hierarchy sanity check
+### V3.2 - Authority hierarchy sanity check
 
 Confirm the hierarchy the system will rely on:
 
@@ -52,25 +52,25 @@ vero_guidance   →  authority_rank = 60
 
 For 20 hand-picked queries where both sources address the same topic, verify by inspection that this ordering matches expert intuition (Finlex statute is binding; Vero is an interpreter). If a team member with tax expertise can review, get sign-off.
 
-**Output:** `findings/03_authority_ranks.md` — the numeric assignments and the rationale.
+**Output:** `findings/03_authority_ranks.md` - the numeric assignments and the rationale.
 
 ## Build tasks
 
-### B3.1 — Metadata extractor (per source)
+### B3.1 - Metadata extractor (per source)
 
 `src/extraction/metadata_finlex.py`:
 - Publication / effective / repeal dates from Finlex document headers
 - Status flag from Finlex's explicit "in force" / "repealed" markup
-- Amendment chain from `amends` / `repeals` edges in Step 2 — set `superseded_by` to the latest amender
+- Amendment chain from `amends` / `repeals` edges in Step 2 - set `superseded_by` to the latest amender
 
 `src/extraction/metadata_vero.py`:
 - Publication date from page header
 - Vero guidance is generally assumed in force unless explicitly marked obsolete
-- Older guidance superseded by newer guidance on the same topic — detected via Vero's own "tämä ohje korvaa" markers when present
+- Older guidance superseded by newer guidance on the same topic - detected via Vero's own "tämä ohje korvaa" markers when present
 
-### B3.2 — Authority tagging
+### B3.2 - Authority tagging
 
-`src/extraction/authority.py` — applies fixed `authority` and `authority_rank` based on `source`:
+`src/extraction/authority.py` - applies fixed `authority` and `authority_rank` based on `source`:
 
 ```python
 AUTHORITY_RANK = {
@@ -81,7 +81,7 @@ AUTHORITY_RANK = {
 
 Trivial code; the point is keeping the table in one place so retrieval can import it directly.
 
-### B3.3 — Composite `usable` flag
+### B3.3 - Composite `usable` flag
 
 For every node compute:
 
@@ -93,9 +93,9 @@ usable = (
 )
 ```
 
-This is what the default retrieval filter checks. Repealed nodes aren't deleted — historical queries may still need them — but they're filtered out by default.
+This is what the default retrieval filter checks. Repealed nodes aren't deleted - historical queries may still need them - but they're filtered out by default.
 
-### B3.4 — Pipeline runner
+### B3.4 - Pipeline runner
 
 `scripts/enrich_metadata.py`:
 
@@ -109,7 +109,7 @@ This is what the default retrieval filter checks. Repealed nodes aren't deleted 
 
 `scripts/qa_check_metadata.py` rejects if:
 - More than 5% of nodes per source are missing `publication_date`
-- More than 5% are missing `authority` (this is a fixed mapping — should be ~0%)
+- More than 5% are missing `authority` (this is a fixed mapping - should be ~0%)
 - An `amends` / `repeals` edge exists but `superseded_by` was not propagated to the source
 - `usable` is true for a node with `repeal_date < today`
 
@@ -117,5 +117,5 @@ This is what the default retrieval filter checks. Repealed nodes aren't deleted 
 
 - All nodes have `authority`, `authority_rank`, `language`, `in_force`, `usable` populated
 - ≥95% of nodes have `publication_date`
-- Amendment chains are correctly propagated — a hand-picked example of an amended statute shows `superseded_by` pointing to the amender
+- Amendment chains are correctly propagated - a hand-picked example of an amended statute shows `superseded_by` pointing to the amender
 - A spot-check query "find all SECTION nodes about ALV deductions currently in force" returns only `usable=true` results

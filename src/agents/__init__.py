@@ -1,4 +1,4 @@
-"""Track H — Agent layer.
+"""Track H - Agent layer.
 
 Four standalone agents (Clarifier, Planner, Verifier, Extractor) plus their
 result types. Agents are pure callables: synchronous, no shared state, no
@@ -68,7 +68,7 @@ class Plan:
     """Output of the Planner agent.
 
     ``is_compound=False`` and ``len(sub_questions)==1`` is the pass-through
-    case — the question is atomic and v2 should answer it directly.
+    case - the question is atomic and v2 should answer it directly.
     Otherwise each sub-question is fed independently through ``answer_v2``
     and the orchestrator synthesises a combined answer.
     """
@@ -111,7 +111,7 @@ class VerifyResult:
 # Extractor
 # --------------------------------------------------------------------------
 #
-# The Extractor returns ``list[models.Edge]`` directly — no wrapper type.
+# The Extractor returns ``list[models.Edge]`` directly - no wrapper type.
 # Every extracted edge is dangling (``target_id=None``,
 # ``dangling_reason="not_yet_parsed"``) because the on-demand extractor runs
 # on retrieved chunks at query time, with no node-resolution context. Step

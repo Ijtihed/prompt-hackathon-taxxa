@@ -2,7 +2,7 @@
 
 Step 2's regex extractor resolved only a few dozen ``amends`` edges
 between standalone "Laki X muuttamisesta" acts and the consolidated
-LAW they amend. The rest — hundreds of amendment instruments — sit in
+LAW they amend. The rest - hundreds of amendment instruments - sit in
 the graph as orphaned roots, even though their title encodes the
 target deterministically (X is in the Finnish genitive).
 
@@ -70,7 +70,7 @@ def _build_law_root_index(conn: sqlite3.Connection) -> dict[str, list[str]]:
     cur = conn.execute(
         "SELECT id FROM nodes WHERE type='LAW' AND source='finlex'"
     )
-    # Extract a "stem" — the last hyphen-delimited token before "-html-".
+    # Extract a "stem" - the last hyphen-delimited token before "-html-".
     # The previous LIKE pattern matched ``%-<nominative>-html-%`` so the
     # stem is the token immediately before ``-html-``.
     import re as _re
@@ -81,7 +81,7 @@ def _build_law_root_index(conn: sqlite3.Connection) -> dict[str, list[str]]:
         if not m:
             continue
         by_stem.setdefault(m.group(1).lower(), []).append(law_id)
-    # Prefer ``finlex/laki/`` over ``finlex/laki_skk/`` — same convention
+    # Prefer ``finlex/laki/`` over ``finlex/laki_skk/`` - same convention
     # as the original SQL ORDER BY clause.
     def _sort_key(lid: str) -> int:
         return 0 if lid.startswith("finlex/laki/") else 1
@@ -108,7 +108,7 @@ def _parse_dates(law_id: str, text: str) -> tuple[str | None, str | None, str | 
     document publication year for some files) and the LAW's first SUBSECTION
     text (which often starts with ``Tämä laki tulee voimaan …``).
     """
-    # Act number — sometimes present in slug as ``-NN-html-`` where NN is
+    # Act number - sometimes present in slug as ``-NN-html-`` where NN is
     # the act number. Not always.
     act_match = re.search(r"-(\d{1,4})-html-", law_id)
     act_number = act_match.group(1) if act_match else None
@@ -234,7 +234,7 @@ def main() -> int:
           f"already_has_edge={stats['already_has_edge']:,}")
 
     if args.dry_run:
-        print("[muuttamisesta] DRY RUN — no writes.")
+        print("[muuttamisesta] DRY RUN - no writes.")
         return 0
 
     # Wipe prior backfill, then insert fresh.
@@ -270,7 +270,7 @@ def main() -> int:
 
 
 def _refresh_degree(conn: sqlite3.Connection, node_ids: list[str]) -> None:
-    """Same shape as backfill_amendment_edges._refresh_degree_for — copy of
+    """Same shape as backfill_amendment_edges._refresh_degree_for - copy of
     the logic kept here to keep this script standalone.
     """
     BATCH = 500

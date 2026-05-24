@@ -1,4 +1,4 @@
-"""Eval harness driver — runs configs from ``eval/configs.json`` against the
+"""Eval harness driver - runs configs from ``eval/configs.json`` against the
 question bank in ``eval/questions.json`` and writes one JSONL row per
 (config, question) to ``eval/runs/<config_id>.jsonl``.
 
@@ -101,7 +101,7 @@ def _gold_citation_publishers(entry: dict[str, Any]) -> list[str]:
 def _build_pipeline(config: dict[str, Any], defaults: dict[str, Any]):
     """Construct a fresh pipeline. We bypass the module-level singletons in
     ``src.retrieval.pipeline`` / ``pipeline_v2`` because they cache by path
-    only — successive configs with different flags would silently reuse a
+    only - successive configs with different flags would silently reuse a
     stale instance.
     """
     vector_db_path = defaults["vector_db_path"]
@@ -196,7 +196,7 @@ def _run_one_config(
             error: str | None = None
             try:
                 result = _call_answer(pipe, config, question)
-            except Exception as exc:  # noqa: BLE001 — record and continue
+            except Exception as exc:  # noqa: BLE001 - record and continue
                 error = f"{type(exc).__name__}: {exc}"[:200]
                 traceback.print_exc(file=sys.stderr)
             elapsed_ms = int((time.perf_counter() - t0) * 1000)
@@ -219,7 +219,7 @@ def _run_one_config(
     finally:
         try:
             pipe.close()
-        except Exception:  # noqa: BLE001 — close best-effort
+        except Exception:  # noqa: BLE001 - close best-effort
             traceback.print_exc(file=sys.stderr)
     return stats
 

@@ -91,7 +91,7 @@ def embed_batch(
     - Retries 429/503/timeout up to max_retries.
     - On InvalidRequestError (most often per-batch token cap), splits the batch
       in half and recurses. Caller's accounting still sums correctly because
-      results are concatenated in order. Single-text batches are not split —
+      results are concatenated in order. Single-text batches are not split -
       they re-raise so the caller can decide whether to drop the chunk.
     """
     try:

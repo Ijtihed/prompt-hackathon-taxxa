@@ -1,4 +1,4 @@
-"""B3.2 — Authority tagging.
+"""B3.2 - Authority tagging.
 
 Fixed mapping from ``(source, source_subcorpus)`` to ``(authority, rank)``.
 
@@ -12,9 +12,9 @@ The on-disk corpus also contains KHO precedents and tax treaties under
 ``src/models.py`` already includes ``"KHO"`` and ``"Treaty"``, so we extend
 the mapping rather than collapse them into "Finlex". Rationale:
 
-* **Treaty (rank 90)** — international tax treaties have direct legal force
+* **Treaty (rank 90)** - international tax treaties have direct legal force
   but are narrower than domestic statute, so they sit just below.
-* **KHO (rank 80)** — supreme administrative court precedent is binding in
+* **KHO (rank 80)** - supreme administrative court precedent is binding in
   similar fact patterns but interprets statute rather than enacting it.
 
 Findings: see ``findings/03_authority_ranks.md``.
@@ -25,7 +25,7 @@ from typing import Literal
 
 Authority = Literal["Finlex", "Vero", "KHO", "Treaty"]
 
-# Authority tier — used by reranker. Higher = more authoritative.
+# Authority tier - used by reranker. Higher = more authoritative.
 AUTHORITY_RANK: dict[Authority, int] = {
     "Finlex": 100,
     "Treaty":  90,
@@ -47,7 +47,7 @@ def tag(source: str, source_subcorpus: str) -> tuple[Authority, int]:
     """Return ``(authority, rank)`` for a node.
 
     Falls back to ``("Finlex", 100)`` if the prefix is unrecognized but the
-    source is finlex, and ``("Vero", 60)`` for vero. Unknown sources raise —
+    source is finlex, and ``("Vero", 60)`` for vero. Unknown sources raise -
     silent fallback would hide a parser regression.
     """
     for (src_pfx, sub_pfx), authority in _SUBCORPUS_AUTHORITY.items():

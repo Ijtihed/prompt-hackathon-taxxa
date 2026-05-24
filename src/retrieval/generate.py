@@ -1,4 +1,4 @@
-"""LLM generation step — DeepSeek via Featherless (OpenAI-compatible API).
+"""LLM generation step - DeepSeek via Featherless (OpenAI-compatible API).
 
 Owns three concerns:
 1. Build the system + user prompt against the assembled context.
@@ -7,7 +7,7 @@ Owns three concerns:
    back to chunk_ids via ``AssembledContext.chunk_id_for_label``.
 
 Asymmetry with voyage_client: the OpenAI SDK already retries on transient
-errors internally, so we keep the loop short — one extra outer retry on
+errors internally, so we keep the loop short - one extra outer retry on
 network-level failures is plenty.
 """
 from __future__ import annotations
@@ -28,12 +28,12 @@ from src.retrieval.assemble import AssembledContext
 # --------------------------------------------------------------------------
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
-# Model slug. Featherless typically uses HF-style names — if the exact slug
+# Model slug. Featherless typically uses HF-style names - if the exact slug
 # differs, update here only.
 MODEL = "deepseek-ai/DeepSeek-V4-Pro"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DEFAULT_TEMPERATURE = 0.1  # low — we want faithful citation, not creativity
+DEFAULT_TEMPERATURE = 0.1  # low - we want faithful citation, not creativity
 DEFAULT_MAX_TOKENS = 1800
 
 
@@ -51,14 +51,14 @@ Rules:
 - Finlex statutes are binding law; Vero guidance is interpretive. If Vero guidance appears to conflict with a Finlex section on the same point, surface the conflict explicitly and explain that the Finlex section prevails.
 - If the sources do not contain enough information to answer, say so plainly. Do not guess, do not draw on outside knowledge.
 - Be specific. Quote thresholds, percentages, and section numbers verbatim from the sources.
-- Keep the answer concise — up to about 10 sentences.
+- Keep the answer concise - up to about 10 sentences.
 - When sources are connected (you see "Cites:", "Interpreted by:", "Amended by:" etc. between them), use those relationships to structure your reasoning: e.g. "The general rule is [Source 1], but [Source 1] cites [Source 3] for the exception..."
-- If a prior assistant turn appears in this conversation, treat it as context for the user's follow-up. The Source numbering in the CURRENT turn refers to the CURRENT source list only — never re-cite an old [Source N] number that no longer exists in the current list.
+- If a prior assistant turn appears in this conversation, treat it as context for the user's follow-up. The Source numbering in the CURRENT turn refers to the CURRENT source list only - never re-cite an old [Source N] number that no longer exists in the current list.
 
 Temporal awareness:
 - Each source header may carry `status=suspect | stale | repealed`, and the block may include `Amendments to parent LAW`, `Interpretations on file`, or `Note:` lines. Read these.
-- If a cited source's status is `suspect`, `stale`, or `repealed`, add a short "Huomioitavaa:" / "Note:" block (one or two sentences) after the answer. Name the source and explain why it might be outdated: e.g. "[Source 3] kuuluu lakiin, johon on tehty 200+ muutosta, joista uusin on voimassa 2025 alkaen — varmista nykytila." Never silently rely on a suspect/stale source.
-- For `repealed` sources, do not present them as current law — describe them as historical and prefer a non-repealed alternative if one is in the sources.
+- If a cited source's status is `suspect`, `stale`, or `repealed`, add a short "Huomioitavaa:" / "Note:" block (one or two sentences) after the answer. Name the source and explain why it might be outdated: e.g. "[Source 3] kuuluu lakiin, johon on tehty 200+ muutosta, joista uusin on voimassa 2025 alkaen - varmista nykytila." Never silently rely on a suspect/stale source.
+- For `repealed` sources, do not present them as current law - describe them as historical and prefer a non-repealed alternative if one is in the sources.
 
 - Always answer in English. For Finnish legal terms, companies, regulations, keep the original Finnish wording (e.g. "osakeyhtiö", "verolaki", "Vero") even if the question is in English. Keep those words italicized. For non-legal terms, match the language of the question (e.g. "company" vs "yhtiö").
 """
@@ -73,7 +73,7 @@ Answer:"""
 
 
 # --------------------------------------------------------------------------
-# API key loading — mirrors voyage_client._load_api_key.
+# API key loading - mirrors voyage_client._load_api_key.
 # --------------------------------------------------------------------------
 
 
@@ -113,7 +113,7 @@ def get_client() -> OpenAI:
 
 
 # ``[Source 1]``, ``[Source 12]``, ``[source 3]``, ``[SOURCE 4]``,
-# ``[Source 2, kappale 58]``, ``[Source 5, 1 kappale]`` — the LLM commonly
+# ``[Source 2, kappale 58]``, ``[Source 5, 1 kappale]`` - the LLM commonly
 # adds a paragraph qualifier inside the brackets, which still points at the
 # same numbered source. We accept any trailing content up to the closing ].
 # Does not match ``[Source A]`` or ``Source 1`` without brackets.
@@ -137,16 +137,16 @@ def parse_citations(answer: str) -> list[int]:
 
 # Patterns the LLM has been observed to lead with even when the system
 # prompt forbids preambles. Stripped at the start of the answer only
-# (the ``\A`` anchor matters — temporal "Huomioitavaa:" / "Note:" blocks
+# (the ``\A`` anchor matters - temporal "Huomioitavaa:" / "Note:" blocks
 # the prompt explicitly asks for trail at the END and must survive).
 #
 # Deliberately NOT stripped:
-#   "(a) …" / "(1) …" / "(see Source 2)"  — these are content (section
+#   "(a) …" / "(1) …" / "(see Source 2)"  - these are content (section
 #   labels for multi-part questions or inline citations), not preambles.
 #   An earlier version of this list had a generic "\A\s*\([^)\n]+\)\s*"
 #   pattern that ate `(a)` labels and, on nested parens like ``((a))``,
 #   produced ``) The correction…`` (greedy match consumed through the
-#   FIRST ``)``). We rely on header keywords instead — much safer.
+#   FIRST ``)``). We rely on header keywords instead - much safer.
 #
 # Tested against:
 #   "<think>Let me check...</think>The answer is..."     → "The answer is..."
@@ -155,19 +155,19 @@ def parse_citations(answer: str) -> list[int]:
 #   "Based on the sources, Yhtiöt..."                    → "Yhtiöt..."
 #   "(a) The procedure is..."                            → unchanged
 _PREAMBLE_PATTERNS: tuple[re.Pattern[str], ...] = (
-    # DeepSeek-style reasoning block — strip the whole <think>…</think>
+    # DeepSeek-style reasoning block - strip the whole <think>…</think>
     re.compile(r"\A\s*<think>.*?</think>\s*", re.DOTALL | re.IGNORECASE),
     # Leading bold header like **Vastaus:** or **Answer:** (with trailing
-    # colon, dash, or em-dash — the header form, not a bold first phrase).
+    # colon, dash, or em-dash - the header form, not a bold first phrase).
     re.compile(
         r"\A\s*\*\*\s*(?:vastaus|answer|note|huomio|huomioitavaa|yhteenveto|summary)"
-        r"\s*[:\-—]\s*\*\*\s*",
+        r"\s*[:\--]\s*\*\*\s*",
         re.IGNORECASE,
     ),
     # Bare header word: "Vastaus: …", "Answer: …", "Note: …"
     re.compile(
         r"\A\s*(?:vastaus|answer|note|huomio|huomioitavaa|yhteenveto|summary)"
-        r"\s*[:\-—]\s+",
+        r"\s*[:\--]\s+",
         re.IGNORECASE,
     ),
     # Stock prefaces: "Based on the sources, …", "Lähteiden perusteella, …"
@@ -233,7 +233,7 @@ def generate(
 
     ``history`` is prior conversation turns as OpenAI-format messages
     (``{"role": "user"|"assistant", "content": str}``). Source numbering in
-    each turn is local — the system prompt warns the model not to reuse a
+    each turn is local - the system prompt warns the model not to reuse a
     [Source N] reference from a prior turn against the current source list.
     """
     if not context.sources:
@@ -281,7 +281,7 @@ def generate(
                 raise
             time.sleep(delay)
             delay = min(delay * 2, 30.0)
-    else:  # pragma: no cover — defensive
+    else:  # pragma: no cover - defensive
         raise RuntimeError(f"LLM call failed: {last_err}")
 
     answer = (resp.choices[0].message.content or "").strip()

@@ -1,4 +1,4 @@
-# Edge Count Discrepancies — Brief vs. `output/graph.db`
+# Edge Count Discrepancies - Brief vs. `output/graph.db`
 
 > Flagged during Track F kick-off (V7.2 pilot prep). The numbers in the parallel-execution brief do not match what the loaded graph store actually contains.
 >
@@ -15,8 +15,8 @@
 |-------------|-------------:|--------------:|----------------------------|-------|
 | parent_of   | 1,904,115    | 1,904,115     | match                      | Structural; loader-faithful as expected. |
 | defines     |   234,570    |   234,570     | match                      | Confirmed dominant non-structural type. |
-| applies     |    18,259    |    18,259     | match                      | — |
-| interprets  |    16,613    |    16,613     | match                      | — |
+| applies     |    18,259    |    18,259     | match                      | - |
+| interprets  |    16,613    |    16,613     | match                      | - |
 | **cites**   |  **67,834**  |   **7,164**   | **−60,670 (≈10× fewer)**   | **Material.** v2's `cites` traversal is much thinner than planned. |
 | **transposes** | **8,453** |       **0**   | **completely absent**      | No `transposes` rows in the edge table. |
 | amends      |        75    |        24     | −51                        | Already small; impact minor. |
@@ -25,13 +25,13 @@
 ## Why this matters for Step 7
 
 1. **`cites` is a primary multi-hop lever.** The Step 7 strategy table assigns `cites` to *multi-hop (rule + exception)* and *cross-reference* categories. With 10× less material, those expansions will surface fewer neighbors than the brief assumed. Multi-hop quality on v2 is therefore at higher risk than the plan implied.
-2. **`transposes` is gone.** EU-law transposition is out of corpus scope per `00_overview.md`, so the missing `transposes` edges do not block any in-scope question. Worth confirming whether Step 2 emitted them at all or whether the loader dropped them — if the former, no action; if the latter, the loader has a silent filter.
+2. **`transposes` is gone.** EU-law transposition is out of corpus scope per `00_overview.md`, so the missing `transposes` edges do not block any in-scope question. Worth confirming whether Step 2 emitted them at all or whether the loader dropped them - if the former, no action; if the latter, the loader has a silent filter.
 3. **`amends` / `repeals` smaller but still functional** for the recency strategy (1 hop is enough to find the superseding instrument). Less worry.
 
 ## Track F response
 
 - **Include `applies` in the V7.2 pilot edge set** (alongside `parent_of`, `cites`, `interprets`) as a partial compensation for the thinner `cites`. 18k `applies` edges may carry some of the rule-chain signal we would otherwise have hoped to get from `cites`.
-- **Test `defines` IN vs OUT** as already planned — the 234k count was correct and is the main noise risk.
+- **Test `defines` IN vs OUT** as already planned - the 234k count was correct and is the main noise risk.
 - **Lower expectations for `cites`-driven gains.** If V7.2's cross-reference question (Q34 candidate, treaty Art 16 → Art 17/19/20/21) surfaces few or no expected neighbors, the diagnosis is upstream (Step 2 extractor missed citation forms), not Track F's expansion logic.
 - **Do not chase the gap from Track F.** Re-running Step 2 is out of this track's scope. If the pilot fails because of edge sparsity, the finding goes back to Step 2's owner with a concrete failing-example list.
 

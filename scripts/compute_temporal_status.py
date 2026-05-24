@@ -15,7 +15,7 @@ into every node's ``metadata_json``, computed by:
      segments) and folding the LAW summary together with the node's own
      publication_date to produce a four-state ``effective_usable`` rating.
 
-The new field never replaces ``usable`` — both coexist. ``usable`` is the
+The new field never replaces ``usable`` - both coexist. ``usable`` is the
 narrow self-only flag the rest of the pipeline already reads;
 ``temporal_status.effective_usable`` is the ancestor-aware grade that
 Move 3 (rerank) consumes.
@@ -78,7 +78,7 @@ def _parse_iso(s: str | None) -> date | None:
 
 
 # Heuristic: "X-muuttamisesta-annetun-lain-kumoamisesta" laws are
-# meta-repeals — they repeal an amendment law, not the underlying law.
+# meta-repeals - they repeal an amendment law, not the underlying law.
 # The existing enrich_metadata.walk_amendment_chains picks them up
 # anyway and sets superseded_by on the underlying law, which is wrong
 # for retrieval purposes. We detect and unwind that here.
@@ -106,7 +106,7 @@ class LawSummary:
     amendment_effective_dates: list[date] = field(default_factory=list)
     amendment_count: int = 0
     repeal_amendment_count: int = 0
-    # The amendment node id with the latest effective_date — useful for
+    # The amendment node id with the latest effective_date - useful for
     # surfacing as a caveat ("amended on YYYY-MM-DD by act NNN").
     nearest_amendment_id: str | None = None
     nearest_amendment_date: date | None = None
@@ -131,7 +131,7 @@ class LawSummary:
             return
         # If half or more of the amendment activity is repeal-shaped,
         # treat the law as repealed by accumulation. Conservative threshold
-        # — most consolidated laws have many amendments and ≤1 repeal block,
+        # - most consolidated laws have many amendments and ≤1 repeal block,
         # so this only fires on laws that have been comprehensively replaced.
         if self.repeal_amendment_count >= 3 and self.repeal_amendment_count * 2 >= self.amendment_count:
             self.law_status = "repealed"
@@ -143,7 +143,7 @@ def build_law_summaries(conn: sqlite3.Connection, today: date) -> dict[str, LawS
     """Build ``{law_id: LawSummary}`` covering every LAW root in the graph."""
     summaries: dict[str, LawSummary] = {}
 
-    # Step A — pull all LAW root rows.
+    # Step A - pull all LAW root rows.
     cur = conn.execute(
         "SELECT id, metadata_json FROM nodes WHERE type='LAW'"
     )
@@ -162,14 +162,14 @@ def build_law_summaries(conn: sqlite3.Connection, today: date) -> dict[str, LawS
         )
         summaries[nid] = s
 
-    # Step B — aggregate AMENDMENT_BLOCK metadata into the relevant LAW.
+    # Step B - aggregate AMENDMENT_BLOCK metadata into the relevant LAW.
     # Each AMENDMENT_BLOCK lives under its consolidated LAW (id prefix);
     # the amends/repeals edges Move 1 inserted target the LAW directly.
     # We use the edge table here because it carries the per-amendment
-    # effective_date in properties_json — the AMENDMENT_BLOCK's own
+    # effective_date in properties_json - the AMENDMENT_BLOCK's own
     # metadata is inherited LAW-root metadata and is not per-amendment.
     #
-    # We also fold in Fix C's ``backfill_muuttamisesta`` edges — the
+    # We also fold in Fix C's ``backfill_muuttamisesta`` edges - the
     # slug-inferred ``Laki X muuttamisesta`` → consolidated-LAW edges.
     # Those targets (ennakkoperintälaki, sairausvakuutuslaki, …) had
     # zero amendments in the graph before Fix C, so picking them up
@@ -208,7 +208,7 @@ def build_law_summaries(conn: sqlite3.Connection, today: date) -> dict[str, LawS
                 s.nearest_amendment_date = eff
                 s.nearest_amendment_id = src
 
-    # Step C — also fold in legacy regex-extracted amends/repeals edges
+    # Step C - also fold in legacy regex-extracted amends/repeals edges
     # whose target is a LAW root (Step 2 produced ~48 of these). They
     # don't always carry effective_date, but they confirm a real repeal/
     # amend event.
@@ -224,9 +224,9 @@ def build_law_summaries(conn: sqlite3.Connection, today: date) -> dict[str, LawS
         s = summaries[tgt]
         # Only count repeals from a non-meta-repeal source. If a "X
         # muuttamisesta-annetun-lain kumoamisesta" file emits a repeal
-        # edge to TVL, we treat it as a meta-action — see _is_meta_repeal_id.
+        # edge to TVL, we treat it as a meta-action - see _is_meta_repeal_id.
         if etype == "repeals" and not _is_meta_repeal_id(src):
-            # A real external repeal — bump repeal count to make the
+            # A real external repeal - bump repeal count to make the
             # threshold in finalize() trip if multiple confirm the same.
             s.repeal_amendment_count += 1
 
@@ -238,7 +238,7 @@ def build_law_summaries(conn: sqlite3.Connection, today: date) -> dict[str, LawS
 
 
 # ---------------------------------------------------------------------------
-# Inbound interprets — per-node
+# Inbound interprets - per-node
 # ---------------------------------------------------------------------------
 
 
@@ -320,7 +320,7 @@ def compute_node_status(
     )
 
     if summary is None:
-        # No LAW root — non-Finlex nodes (KHO, Vero, Treaty, Guide). Their
+        # No LAW root - non-Finlex nodes (KHO, Vero, Treaty, Guide). Their
         # temporal_status is just self-only.
         return {
             "effective_usable":          "repealed" if self_repealed else "ok",
@@ -478,7 +478,7 @@ def main() -> int:
     today = date.fromisoformat(args.today) if args.today else date.today()
 
     if not GRAPH_DB.exists():
-        print(f"ERROR: {GRAPH_DB} not found — run scripts.load_graph first.",
+        print(f"ERROR: {GRAPH_DB} not found - run scripts.load_graph first.",
               file=sys.stderr)
         return 1
 

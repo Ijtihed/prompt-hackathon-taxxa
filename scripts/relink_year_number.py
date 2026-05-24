@@ -1,4 +1,4 @@
-"""Step 2.5 — close dangling `(year, number)` edges.
+"""Step 2.5 - close dangling `(year, number)` edges.
 
 Step 2 left ~34k anchor edges and ~10k regex edges with reason
 ``not_yet_parsed`` because ``NodeIndex.by_law_year_number`` only contained
@@ -23,7 +23,7 @@ Pipeline:
        misses stay in ``output/dangling_edges.log``.
     4. Update ``output/edge_stats.json``.
 
-Purely additive — never deletes edges, never changes ``source_id`` /
+Purely additive - never deletes edges, never changes ``source_id`` /
 ``type`` / ``confidence``. Backs up both touched files before rewriting.
 """
 from __future__ import annotations
@@ -187,7 +187,7 @@ def relink_dangling(
                 continue
             d = json.loads(line)
             # Only attempt to upgrade edges that previously failed for
-            # in-corpus reasons. Out-of-corpus refs stay dangling — they
+            # in-corpus reasons. Out-of-corpus refs stay dangling - they
             # are genuinely outside what we ingest.
             if d.get("dangling_reason") != "not_yet_parsed":
                 f_dang.write(line)
@@ -315,7 +315,7 @@ def main() -> int:
     index_dump = out_dir / "year_number_index.json"
 
     if not (edges_jsonl.exists() and dangling_log.exists()):
-        print("missing edges.jsonl or dangling_edges.log — run Step 2 first")
+        print("missing edges.jsonl or dangling_edges.log - run Step 2 first")
         return 1
 
     print(f"loading NodeIndex from {nodes_jsonl}…")

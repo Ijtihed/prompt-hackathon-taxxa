@@ -3,7 +3,7 @@
 These differ from säädöskokoelma in two ways:
 
   1. Big consolidated laws (Tuloverolaki.html, Rikoslaki.html, etc.) contain
-     only the *amendment history* — h1=law title, h2="Muutossäädösten
+     only the *amendment history* - h1=law title, h2="Muutossäädösten
      voimaantulo ja soveltaminen", then a long sequence of:
         <h4>30.4.1993/391:</h4>
         <p>Tämä laki tulee voimaan ...</p>
@@ -66,7 +66,7 @@ SUBCORPUS_BY_DIR = {
 
 def detect_subcorpus(rel_path: str) -> str | None:
     parts = rel_path.split(os.sep)
-    # Reject säädöskokoelma — handled by the other parser.
+    # Reject säädöskokoelma - handled by the other parser.
     for p in parts:
         if "säädöskokoelma" in p.lower():
             return None
@@ -101,7 +101,7 @@ def _gather_text_until(children: list[Tag], start: int, stop: set) -> Tuple[str,
             if t:
                 parts.append(t)
         elif ch.name in {"div", "section"}:
-            # Some files wrap text — just take its text content as one block.
+            # Some files wrap text - just take its text content as one block.
             t = get_text(ch)
             if t:
                 parts.append(t)
@@ -266,7 +266,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
                         ))
                 j += 1
             nodes.extend(members)
-            head = f"{title} — {marker} §"
+            head = f"{title} - {marker} §"
             if sec_title:
                 head = f"{head} {sec_title}"
             bundles.append(SectionBundle(section=sec_node, head_text=head, members=members))
@@ -303,7 +303,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             nodes.append(amt)
             bundles.append(SectionBundle(
                 section=amt,
-                head_text=f"{title} — muutos {txt}",
+                head_text=f"{title} - muutos {txt}",
                 members=[],
             ))
             i = new_i
@@ -335,7 +335,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
         # Anything else: skip silently.
         i += 1
 
-    # Files with no sections/amendments at all (rare) — emit one bundle so the
+    # Files with no sections/amendments at all (rare) - emit one bundle so the
     # law title still produces a chunk.
     if not bundles:
         orphan = [n_ for n_ in nodes if n_.type in {SUBSECTION, DEFINITION} and n_.parent_id == law_root]

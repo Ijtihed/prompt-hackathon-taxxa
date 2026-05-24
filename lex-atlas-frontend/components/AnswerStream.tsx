@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AnswerStream — consumes SSE events from /api/ask. Stitch-styled output
+ * AnswerStream - consumes SSE events from /api/ask. Stitch-styled output
  * with terracotta highlights on color-coded cite anchors. Strips reflection
  * tokens. Hovering a sentence sets the orbit's hoveredNodeId.
  */
@@ -16,7 +16,7 @@ interface AnswerStreamProps {
   asof: string;
   lang: "fi" | "sv" | "en";
   mode?: "ask" | "draft_email" | "debate_only";
-  /** Skip SSE timing delays — used by screenshot/e2e tests. */
+  /** Skip SSE timing delays - used by screenshot/e2e tests. */
   instant?: boolean;
   /** Prior turns as OpenAI-format messages. Empty/undefined on first turn. */
   history?: ChatMessage[];
@@ -339,7 +339,7 @@ export function AnswerStream({ question, asof, lang, mode = "ask", instant = fal
 
 /**
  * Static renderer for an already-streamed answer (no SSE, no skeleton, no
- * cursor). Used by completed turns in the chat thread — they keep their
+ * cursor). Used by completed turns in the chat thread - they keep their
  * clickable cite anchors, but don't re-run the pipeline. Reuses the same
  * `renderAnswer` machinery as the streaming variant so hover/click still
  * flips the global `hoveredNodeId` / `selectedNodeId`.
@@ -403,7 +403,7 @@ function renderAnswer(
       const between = cleaned.slice(lastIdx, m.index);
       parts.push(...renderMarkdownInline(between, `t-${counter}`));
       // ``prevWasCite`` only stays true when there was no visible text
-      // between two cite tokens — that's the case we need to separate.
+      // between two cite tokens - that's the case we need to separate.
       prevWasCite = false;
     }
     // Two cite tokens back-to-back with nothing between → inject a thin
@@ -442,7 +442,7 @@ function renderAnswer(
 }
 
 // Minimal inline markdown: **bold**, *italic*, _italic_. Anything else
-// (lists, headers, code blocks) passes through as plain text — the
+// (lists, headers, code blocks) passes through as plain text - the
 // agent's answers don't use them and we don't want to invite XSS via
 // dangerouslySetInnerHTML.
 const _BOLD_RE = /\*\*([^*\n]+?)\*\*/;

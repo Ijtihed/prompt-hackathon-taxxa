@@ -10,7 +10,7 @@ graph is therefore effectively typeless and the ``RECENCY`` strategy in
 
 This script closes the gap. Each AMENDMENT_BLOCK becomes one typed edge
 back to its consolidated LAW root, carrying enactment/effective dates in
-``properties_json``. The output is idempotent — re-running it deletes any
+``properties_json``. The output is idempotent - re-running it deletes any
 prior rows it inserted before writing fresh ones, identified by
 ``extracted_by='backfill_amendment'``.
 
@@ -57,7 +57,7 @@ CONFIDENCE = 0.95
 _AMEND_LABEL_RE = re.compile(r"\b(\d{1,2})\.(\d{1,2})\.(\d{4})\s*/\s*(\d+)\b")
 
 # "tulee voimaan ... <date>" scope. Mirrors ``metadata_finlex._VOIMAAN_RE``
-# — the date we want is the *first* date inside this window, not just the
+# - the date we want is the *first* date inside this window, not just the
 # first spelled date in the entire body. Without scoping, blocks that
 # contain "Tämä laki, jolla kumotaan ... <old date>, tulee voimaan ..."
 # pick up the old asetus date instead of the voimaantulo date.
@@ -83,7 +83,7 @@ class _Block:
 
 
 def _law_root_of(node_id: str) -> str:
-    """First three path segments — the LAW root id by construction.
+    """First three path segments - the LAW root id by construction.
 
     See ``scripts/enrich_metadata._root_of`` for the same convention.
     """
@@ -115,7 +115,7 @@ def _classify_change(text: str) -> str:
 def _parse_label(label: str | None) -> tuple[str | None, str | None]:
     """Return ``(enactment_date_iso, act_number)`` parsed from ``label``.
 
-    The label is what the parser captured as the h4 heading text — for
+    The label is what the parser captured as the h4 heading text - for
     consolidated Finlex it is shaped like ``14.5.2010/409``. We accept it
     even when followed by ``:`` or whitespace.
     """
@@ -138,7 +138,7 @@ def _parse_effective(text: str) -> str | None:
     """Best-effort effective_date from the block body.
 
     Most blocks lead with ``Tämä laki tulee voimaan 1 päivänä joulukuuta
-    2010.`` — a spelled date scoped right after "tulee voimaan". A few
+    2010.`` - a spelled date scoped right after "tulee voimaan". A few
     use the numeric form. We deliberately scope to the voimaantulo window
     because blocks that mention an older asetus the new law repeals
     ("kumotaan ... 24 päivänä helmikuuta 1873") would otherwise grab the
@@ -150,7 +150,7 @@ def _parse_effective(text: str) -> str | None:
         d = parse_any(m.group(0))
         if d is not None:
             return d.isoformat()
-    # No voimaantulo clause — fall back to the first date in the whole
+    # No voimaantulo clause - fall back to the first date in the whole
     # block. This is the case for a small number of blocks whose
     # boilerplate phrasing differs; better than null.
     d = parse_spelled(text) or parse_numeric(text)
@@ -167,11 +167,11 @@ def _iter_amendment_blocks(conn: sqlite3.Connection) -> Iterator[_Block]:
 
 def _open_db() -> sqlite3.Connection:
     if not GRAPH_DB.exists():
-        raise SystemExit(f"ERROR: {GRAPH_DB} not found — run scripts.load_graph first.")
+        raise SystemExit(f"ERROR: {GRAPH_DB} not found - run scripts.load_graph first.")
     # ``timeout`` makes us wait politely for a writer rather than fail
     # instantly. The demo UI may hold a read connection in WAL mode.
     conn = sqlite3.connect(GRAPH_DB, timeout=30.0)
-    # Stay in WAL — the live UI is a reader and switching journal modes
+    # Stay in WAL - the live UI is a reader and switching journal modes
     # needs an exclusive lock we cannot get. WAL already gives us
     # concurrent-reader / single-writer semantics which is what we need.
     conn.execute("PRAGMA synchronous=NORMAL")
@@ -222,7 +222,7 @@ def _build_edge_row(
     enactment_iso, act_number = _parse_label(block.label)
     effective_iso = _parse_effective(block.text)
 
-    # target_ref: a human-readable handle — keep the act number when we
+    # target_ref: a human-readable handle - keep the act number when we
     # have it, otherwise the LAW id tail. The schema requires this field
     # be populated.
     if act_number:
@@ -230,7 +230,7 @@ def _build_edge_row(
     else:
         target_ref = block.label or law_root.rsplit("/", 1)[-1]
 
-    # ~60 chars of context — the opening of the amendment body. Helps
+    # ~60 chars of context - the opening of the amendment body. Helps
     # downstream review; mirrors what regex-extracted edges carry.
     snippet = (block.text or "")[:80].replace("\n", " ").strip() or None
 
@@ -246,7 +246,7 @@ def _build_edge_row(
 
     sql_row = (
         block.node_id,                # source_id
-        law_root,                     # target_id (resolved — not dangling)
+        law_root,                     # target_id (resolved - not dangling)
         target_ref,                   # target_ref
         edge_type,                    # type
         CONFIDENCE,                   # confidence
@@ -274,7 +274,7 @@ def _refresh_degree_for(
 ) -> int:
     """Recompute degree per node id and merge into ``metadata_json``.
 
-    Only the supplied node ids are recomputed — the rest of the graph is
+    Only the supplied node ids are recomputed - the rest of the graph is
     untouched. We aggregate one SQL pass for outgoing, one for incoming,
     then write back updated metadata. Mirrors ``load_graph._backfill_degree``
     but restricted in scope.
@@ -323,7 +323,7 @@ def _refresh_degree_for(
             # Preserve any directions that didn't change (e.g. parent_of).
             existing = meta.get("degree") or {}
             # The recompute is authoritative for any (et, dir) we touched,
-            # but other (et, dir) entries should remain — they weren't
+            # but other (et, dir) entries should remain - they weren't
             # affected by inserting amends/repeals edges. We only overwrite
             # the keys we just computed.
             for k, v in merged.items():
@@ -371,13 +371,13 @@ def main() -> int:
         for b in blocks:
             law_root = _law_root_of(b.node_id)
             if law_root == b.node_id:
-                # Block id is shorter than 3 segments — should not happen
+                # Block id is shorter than 3 segments - should not happen
                 # given parser conventions. Skip defensively.
                 stats["missing_law_root"] += 1
                 continue
             if not _law_root_exists(conn, law_root):
                 # Orphan AMENDMENT_BLOCK whose LAW root somehow isn't in the
-                # graph. Skip — emitting a dangling edge would mask the
+                # graph. Skip - emitting a dangling edge would mask the
                 # underlying load problem.
                 stats["missing_law_root"] += 1
                 continue
@@ -404,7 +404,7 @@ def main() -> int:
               f"missing enactment_date={stats['missing_enactment']:,}")
 
         if args.dry_run:
-            print("[backfill] DRY RUN — no writes.")
+            print("[backfill] DRY RUN - no writes.")
             return 0
 
         # Delete any prior backfill, insert fresh.

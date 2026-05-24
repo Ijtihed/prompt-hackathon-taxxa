@@ -1,16 +1,16 @@
-"""Step 10 / Move 2 — Resolve AmendmentOps to target SECTION ids.
+"""Step 10 / Move 2 - Resolve AmendmentOps to target SECTION ids.
 
 Reads ``output/amendment_ops.jsonl`` (Move 1) and, for each op, locates
 the SECTION node in the *target* consolidated LAW the op refers to.
 Resolution combines two independent signals:
 
-1. **Target LAW inference** — slug-based genitive→nominative on the
+1. **Target LAW inference** - slug-based genitive→nominative on the
    amendment-instrument LAW id. Mirrors ``backfill_muuttamisesta_edges``
    and ``caveats._amends_target_for`` so the three callers stay in
    lockstep. The lookup is O(1) per op via a pre-built stem index over
    every Finlex LAW.
 
-2. **Target SECTION matching** — normalize the directive's
+2. **Target SECTION matching** - normalize the directive's
    ``target_section_label`` (e.g. ``"11 a §"`` → ``"11a"``) and try, in
    order:
      a) ``{target_law}/s{N}{letter?}``        (no chapter)
@@ -23,7 +23,7 @@ carrying ``verb``, ``new_text``, ``effective_date``, and
 ``target_subsection`` in ``properties_json``. Unresolved ops are logged
 to ``output/amendment_ops_unresolved.jsonl`` with a reason.
 
-Idempotent via ``extracted_by='amends_section_resolve'`` — re-runs
+Idempotent via ``extracted_by='amends_section_resolve'`` - re-runs
 delete previous rows from this extractor before re-inserting.
 
 CLI::
@@ -57,7 +57,7 @@ EXTRACTED_BY = "amends_section_resolve"
 
 
 # --------------------------------------------------------------------------
-# Slug inference — shared with caveats and backfill_muuttamisesta
+# Slug inference - shared with caveats and backfill_muuttamisesta
 # --------------------------------------------------------------------------
 
 
@@ -140,7 +140,7 @@ def _infer_target_law(
 def _normalize_section_norm(label: str) -> str | None:
     """Same normaliser the Move 1 directive parser used.
 
-    Duplicated here intentionally — keeping the two scripts decoupled is
+    Duplicated here intentionally - keeping the two scripts decoupled is
     worth the duplication. If the rule changes, update both.
     """
     if not label:
@@ -188,7 +188,7 @@ def _resolve_section(
 ) -> str | None:
     """Pick the best concrete SECTION id for ``(target_law, section_norm)``.
 
-    When multiple sections share a normalised label (rare — would only
+    When multiple sections share a normalised label (rare - would only
     happen if a law has the same § number under two chapters, which is
     valid in Finnish hierarchy), prefer the *first* one in document
     order. We use the sorted id as a stable proxy because section ids
@@ -263,7 +263,7 @@ def run(dry_run: bool = False) -> dict:
         print(f"[resolve]   {sum(len(v) for v in stem_index.values()):,} laws "
               f"under {len(stem_index):,} stems in {time.time()-t0:.1f}s")
 
-        # Cache per-target-LAW section indices — most ops cluster on a
+        # Cache per-target-LAW section indices - most ops cluster on a
         # small number of target LAWs (TVL, AVL, etc.).
         section_index_cache: dict[str, dict[str, list[str]]] = {}
 
@@ -303,7 +303,7 @@ def run(dry_run: bool = False) -> dict:
                 # ``lisätään`` ops often target a § that doesn't exist
                 # yet (the whole point is to add it). For those we emit
                 # a dangling edge so Step 9 can still pick up the
-                # voimaantulo signal — the target SECTION will appear
+                # voimaantulo signal - the target SECTION will appear
                 # once the consolidated law is re-ingested.
                 if op["verb"] == "lisätään":
                     counts["dangling_lisätään"] += 1
@@ -345,7 +345,7 @@ def run(dry_run: bool = False) -> dict:
                                    "target_law": target_law})
                 continue
 
-            # Resolved — build the typed edge row.
+            # Resolved - build the typed edge row.
             properties = {
                 "verb": op["verb"],
                 "target_law": target_law,

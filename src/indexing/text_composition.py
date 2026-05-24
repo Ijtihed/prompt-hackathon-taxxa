@@ -1,6 +1,6 @@
 """Hierarchy-prefixed embedding text composition (Step 4a.2, Option B).
 
-Pure function — no I/O. Used both during the embedding pass and for spot
+Pure function - no I/O. Used both during the embedding pass and for spot
 checks. Format::
 
     [Source: finlex_laki · in force]
@@ -49,7 +49,7 @@ def compose_embedding_text(
     """Build the hierarchy-prefixed text that gets embedded.
 
     Pure function: only reads from the supplied node_index. Missing fields
-    simply collapse — the relevant brackets are omitted rather than faked.
+    simply collapse - the relevant brackets are omitted rather than faked.
     """
     chain = walk_to_root(section_id, node_index)
     primary = chain[0] if chain else None

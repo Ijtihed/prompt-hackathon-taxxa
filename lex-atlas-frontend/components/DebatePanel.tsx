@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DebatePanel — when the Verifier detects an equal-rank conflict (typically
+ * DebatePanel - when the Verifier detects an equal-rank conflict (typically
  * Vero guidance vs a KHO ruling), the agent splits the draft into a public
  * AgenticSimLaw-style debate.
  *
@@ -83,17 +83,17 @@ export function DebatePanel() {
 
    A compact SVG that does three things at once:
 
-     (a) Balance widget — a fulcrum at the top with two arms. The arm
+     (a) Balance widget - a fulcrum at the top with two arms. The arm
          angle is driven by the judge's resolution (A = tilt left toward
          Vero, B = tilt right toward KHO, synthesis = level). While the
          debate is still streaming the beam wobbles gently with the
          current text-length ratio so the user sees it shift in real time.
 
-     (b) Argument metrics — claim count (sentences) and citation count
+     (b) Argument metrics - claim count (sentences) and citation count
          (\[cite:node:…\] tokens) per party. These are derived from the
          streamed text so they update live.
 
-     (c) Principle ribbon — the priority principle that resolved the
+     (c) Principle ribbon - the priority principle that resolved the
          conflict (e.g. "Court ruling > Vero guidance").
 
    ───────────────────────────────────────────────────────────────────── */

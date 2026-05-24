@@ -1,4 +1,4 @@
-"""Clarifier agent — detects under-specified Finnish tax questions and
+"""Clarifier agent - detects under-specified Finnish tax questions and
 fills in safe defaults (year, entity_type, jurisdiction) for batch mode.
 
 Per Step 8 brief (B8.1):

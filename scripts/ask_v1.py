@@ -1,4 +1,4 @@
-"""Standalone v1 retrieval CLI — vector-only baseline, no GraphRAG.
+"""Standalone v1 retrieval CLI - vector-only baseline, no GraphRAG.
 
 This is the pre-Step-7 pipeline frozen behind its own entry point so it can
 run in parallel with the v2 / GraphRAG CLI without sharing config:
@@ -13,7 +13,7 @@ Why this exists separately:
   chunks) across reverts. v1 *looks* broken whenever the default points
   at the pilot because 0.25 % of the corpus can't answer most questions.
 - This script hard-codes the **full** store as the default and ignores
-  anything v2 imports — strategy router, graph expansion, cross-encoder.
+  anything v2 imports - strategy router, graph expansion, cross-encoder.
   Pure RAG, pre-GraphRAG.
 
 If you want to test the full v2/GraphRAG pipeline use ``scripts/ask.py
@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 
-# Hard-coded defaults — deliberately not read from src.retrieval so a config
+# Hard-coded defaults - deliberately not read from src.retrieval so a config
 # revert there can't change v1 behavior here.
 FULL_VECTOR_DB_PATH = "output/lancedb"
 GRAPH_DB_PATH = "output/graph.db"

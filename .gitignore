@@ -5,3 +5,9 @@ __pycache__/
 *.pyc
 .env
 output.zip
+
+# Local recording / preview artifacts (not tracked; see scripts/record_demo_video.py)
+.video-tmp/
+video_rec.log
+playwright_install.log
+og-preview.png

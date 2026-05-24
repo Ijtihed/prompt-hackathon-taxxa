@@ -503,7 +503,7 @@ export function OrbitGraph() {
                   setHoveredEdgeKey(null);
                   setHoverAnchor(null);
                 }}
-                /* Edges intentionally have no onClick — they're informational
+                /* Edges intentionally have no onClick - they're informational
                    only. The arrow markerEnd below carries direction; clicking
                    them used to open the Inspector but that surfaced too many
                    layout-scaffolding edges with no real metadata. */

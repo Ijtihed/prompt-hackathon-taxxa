@@ -7,7 +7,7 @@
 The frontend at ``lex-atlas-frontend/`` proxies to whatever URL is in
 ``AGENT_SIDECAR_URL`` (default ``http://localhost:8000``). Falls back to
 its built-in fixture replay when this sidecar is unreachable, so the UI
-never dead-ends — but you want the real pipeline running for the demo.
+never dead-ends - but you want the real pipeline running for the demo.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def main() -> int:
     p.add_argument(
         "--reload",
         action="store_true",
-        help="Auto-reload on source change. Dev only — disables the in-process pipeline cache on each reload.",
+        help="Auto-reload on source change. Dev only - disables the in-process pipeline cache on each reload.",
     )
     args = p.parse_args()
 

@@ -3,7 +3,7 @@
 Treaties are signed on a specific day, ratified later, and enter into
 force on a third day. The HTML usually contains all three in spelled-out
 form ("16 päivänä lokakuuta 2006"). We extract the *first* spelled date
-found in the document — for the synthesized text shipped by Finlex, this
+found in the document - for the synthesized text shipped by Finlex, this
 is the signing date of the underlying treaty, which is the closest
 analogue to ``publication_date`` for this corpus.
 

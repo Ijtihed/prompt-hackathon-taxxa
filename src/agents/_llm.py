@@ -2,16 +2,16 @@
 
 Designed for Featherless (https://featherless.ai) hosting DeepSeek, but works
 against any provider that implements the OpenAI ``/chat/completions`` shape.
-No SDK dependency — pure stdlib HTTP — so this stays a leaf module.
+No SDK dependency - pure stdlib HTTP - so this stays a leaf module.
 
 Configuration is read from environment variables (all overridable per-call):
 
-    FEATHERLESS_API_KEY   — required at call time, not at import time
-    FEATHERLESS_BASE_URL  — default "https://api.featherless.ai/v1"
-    AGENT_MODEL           — default "deepseek-ai/DeepSeek-V4-Pro"
+    FEATHERLESS_API_KEY   - required at call time, not at import time
+    FEATHERLESS_BASE_URL  - default "https://api.featherless.ai/v1"
+    AGENT_MODEL           - default "deepseek-ai/DeepSeek-V4-Pro"
 
 Each agent module re-imports ``MODEL_DEFAULT`` and may override it via its
-own module-level constant — keep model selection visible per-file.
+own module-level constant - keep model selection visible per-file.
 """
 
 from __future__ import annotations
@@ -91,7 +91,7 @@ def chat(
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT_S) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:  # noqa: PERF203 — explicit narrow
+    except urllib.error.HTTPError as e:  # noqa: PERF203 - explicit narrow
         detail = e.read().decode("utf-8", errors="replace")
         raise LLMError(f"HTTP {e.code} from LLM provider: {detail}") from e
     except urllib.error.URLError as e:

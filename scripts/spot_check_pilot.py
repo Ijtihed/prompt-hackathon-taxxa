@@ -52,7 +52,7 @@ def main() -> int:
     print(f"[spot] {store.count()} rows in {args.db}")
 
     out_lines: list[str] = []
-    out_lines.append("# 04a Pilot — spot-check findings\n")
+    out_lines.append("# 04a Pilot - spot-check findings\n")
     out_lines.append(
         f"Pilot vector store: `{args.db}` with {store.count()} chunks. "
         "10 Finnish tax queries, top-5 results each. Lower distance = closer.\n"

@@ -1,4 +1,4 @@
-"""Annotated context assembly — Layer 5 of the cross-reference architecture.
+"""Annotated context assembly - Layer 5 of the cross-reference architecture.
 
 A flat list of chunks lets the LLM treat sources as independent. Inline
 cross-references between sources are what make the LLM reason about the
@@ -12,14 +12,14 @@ Format (mandated by 05_retrieval_v1_vector_only.md §B5.4)::
       Cites: §117 AVL → [Source 3]
       Interpreted by: Vero 2019 → [Source 2]
 
-      <chunk body — minus the embedded_text prefix>
+      <chunk body - minus the embedded_text prefix>
 
 The Source label is the LLM's stable handle for citations. The header carries
 authority signals so the LLM (and the Verifier later) can reason about rank
 without us re-stating it in prose.
 
 Path and Title are parsed back out of ``embedded_text`` instead of loading
-the full 1.97M-node index — see the constraint notes in the plan.
+the full 1.97M-node index - see the constraint notes in the plan.
 """
 from __future__ import annotations
 
@@ -33,14 +33,14 @@ from src.retrieval.rerank import RerankedHit
 
 
 # Edge types we render between retrieved sources. ``parent_of`` is structural
-# (everyone has a parent) — including it would clutter the prompt without
+# (everyone has a parent) - including it would clutter the prompt without
 # adding signal. The four below are the cross-document relationships that
 # make the graph load-bearing.
 RENDERED_EDGE_TYPES: tuple[str, ...] = ("cites", "interprets", "amends", "defines")
 
 
 # --------------------------------------------------------------------------
-# Source — one rendered block in the assembled context.
+# Source - one rendered block in the assembled context.
 # --------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ class Source:
     Step 10 extension: each source carries the ``version_chain`` that
     produced its rendered body (empty when the section has no chain) and
     a ``has_future_amendments`` flag for the UI. ``effective_text`` is
-    the actual body string the LLM saw — may differ from the section's
+    the actual body string the LLM saw - may differ from the section's
     raw ``text`` when amendments have been applied.
     """
 
@@ -64,7 +64,7 @@ class Source:
     cosine_sim: float
     rendered_block: str
 
-    # Step 10 — point-in-time provenance for the rendered body.
+    # Step 10 - point-in-time provenance for the rendered body.
     effective_text: str | None = None
     version_chain: tuple[VersionStep, ...] = field(default_factory=tuple)
     has_future_amendments: bool = False
@@ -75,7 +75,7 @@ class AssembledContext:
     """The text handed to the LLM, plus the mapping back to chunk_ids.
 
     ``as_of_used`` (Step 10) is the date the assembler passed to
-    ``GraphStore.text_at`` when fetching effective bodies — pipeline
+    ``GraphStore.text_at`` when fetching effective bodies - pipeline
     callers forward it onto ``AnswerResult.as_of_date_used`` so the UI
     and the Verifier can see which point-in-time the prompt was built
     against.
@@ -88,8 +88,8 @@ class AssembledContext:
     def chunk_id_for_label(self, label: str) -> str | None:
         """Resolve ``[Source N]`` back to the underlying chunk_id.
 
-        Tolerant of common LLM citation variants — ``Source 1``,
-        ``[source 1]``, ``[Source 1].`` — so the parser in ``generate.py``
+        Tolerant of common LLM citation variants - ``Source 1``,
+        ``[source 1]``, ``[Source 1].`` - so the parser in ``generate.py``
         doesn't have to duplicate this normalization.
         """
         norm = label.strip().lower().strip("[]().,;:")
@@ -128,7 +128,7 @@ def dedup_by_section(reranked: list[RerankedHit]) -> list[RerankedHit]:
 
 
 # --------------------------------------------------------------------------
-# Prefix parsing — extract Path and Title from embedded_text
+# Prefix parsing - extract Path and Title from embedded_text
 # --------------------------------------------------------------------------
 
 
@@ -226,7 +226,7 @@ def _temporal_lines(temporal_status: dict | None) -> list[str]:
     """Render the amendment + interpretation history as bullet lines.
 
     These come straight from the ``temporal_status`` dict written by
-    ``scripts.compute_temporal_status`` — no DB hops here. Lines are
+    ``scripts.compute_temporal_status`` - no DB hops here. Lines are
     emitted only when there's something to say; sources with a clean
     history stay compact.
     """
@@ -238,7 +238,7 @@ def _temporal_lines(temporal_status: dict | None) -> list[str]:
     if count and after:
         lines.append(
             f"  Amendments to parent LAW: {count} "
-            f"(latest effective {after} — may post-date this text)"
+            f"(latest effective {after} - may post-date this text)"
         )
     elif count:
         lines.append(f"  Amendments to parent LAW: {count}")
@@ -255,14 +255,14 @@ def _temporal_lines(temporal_status: dict | None) -> list[str]:
 
     grade = temporal_status.get("effective_usable")
     if grade == "stale":
-        lines.append("  Note: parent LAW has been superseded — verify before citing.")
+        lines.append("  Note: parent LAW has been superseded - verify before citing.")
     elif grade == "repealed":
         lines.append("  Note: this section or its parent LAW has been repealed.")
     return lines
 
 
 # --------------------------------------------------------------------------
-# Version-chain rendering — Step 10 / Move 5b
+# Version-chain rendering - Step 10 / Move 5b
 # --------------------------------------------------------------------------
 
 
@@ -271,7 +271,7 @@ def _version_chain_lines(
 ) -> list[str]:
     """Render the section's version chain as inline annotation lines.
 
-    Silent when the chain has only the ``original`` step — that's the
+    Silent when the chain has only the ``original`` step - that's the
     overwhelming majority of sections and we don't want to clutter the
     prompt. For sections with applied amendments, we list each step on
     its own line and mark the one that produced the current text. Future
@@ -295,11 +295,11 @@ def _version_chain_lines(
         marker = "·"
         date_str = step.effective_date.isoformat() if step.effective_date else "undated"
         verb = step.provenance
-        tag = " — current text used" if step is last_applied and verb != "original" else ""
+        tag = " - current text used" if step is last_applied and verb != "original" else ""
         lines.append(f"    {marker} {date_str} {verb}{tag}")
     if effective.has_future_amendments:
         lines.append(
-            f"    · future amendments exist (effective after {as_of.isoformat() if as_of else 'today'} — not applied)"
+            f"    · future amendments exist (effective after {as_of.isoformat() if as_of else 'today'} - not applied)"
         )
     return lines
 
@@ -311,11 +311,11 @@ def _kumotaan_placeholder(as_of: date | None) -> str:
     write a short, explicit placeholder it can cite.
     """
     when = f"as of {as_of.isoformat()}" if as_of else "as of the requested date"
-    return f"[Section repealed {when} — no operative text.]"
+    return f"[Section repealed {when} - no operative text.]"
 
 
 # --------------------------------------------------------------------------
-# Edge rendering — Layer 5
+# Edge rendering - Layer 5
 # --------------------------------------------------------------------------
 
 
@@ -323,7 +323,7 @@ def _edge_arrow_phrase(edge_type: str, outgoing: bool) -> str:
     """Map (edge_type, direction) → a human-readable verb phrase.
 
     Outgoing means "this source has the edge pointing out at the other
-    source" — e.g. source A *cites* source B. Incoming flips voice.
+    source" - e.g. source A *cites* source B. Incoming flips voice.
     """
     if outgoing:
         return {
@@ -348,7 +348,7 @@ def _render_edges_for_source(
     """Return one rendered edge line per inter-source edge.
 
     De-duplicates parallel edges (multiple ``cites`` between the same pair
-    collapse into a single line — the LLM doesn't benefit from seeing the
+    collapse into a single line - the LLM doesn't benefit from seeing the
     same arrow twice).
     """
     own_index = section_id_to_index[section_id]
@@ -422,7 +422,7 @@ def assemble(
 
     ``as_of`` (Step 10): when supplied, the assembler calls
     ``GraphStore.text_at(section_id, as_of=as_of)`` for every cited
-    SECTION and uses the resulting effective text as the body — so
+    SECTION and uses the resulting effective text as the body - so
     a question about 2019-era rules gets 2019-era wording, not the
     consolidated current text. Defaults to None, which means
     ``text_at`` uses today.
@@ -456,14 +456,14 @@ def assemble(
         effective: EffectiveText = graph.text_at(hit.section_id, as_of=as_of)
         # Use the effective body when (a) there is a chain that changes
         # things, or (b) the chunk's embedded body is empty. Otherwise
-        # the chunk's embedded body is the safer choice — it includes
+        # the chunk's embedded body is the safer choice - it includes
         # all the subsection/item children that pack_section bundled,
         # which text_at on a SECTION alone may not.
         chain_changed = len(effective.chain) > 1 or any(
             s.provenance != "original" for s in effective.chain
         )
         if effective.text is None and chain_changed:
-            # kumotaan as of as_of — write the placeholder explicitly.
+            # kumotaan as of as_of - write the placeholder explicitly.
             body_for_render = _kumotaan_placeholder(as_of)
         elif chain_changed and effective.text:
             body_for_render = effective.text

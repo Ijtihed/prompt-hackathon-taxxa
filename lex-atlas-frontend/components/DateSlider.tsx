@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * DateSlider — the time-travel scrub.
+ * DateSlider - the time-travel scrub.
  *
  * Drag from 1990-01-01 to today. The Lex Atlas store's `asof` updates,
  * which triggers a CSS-selector swap in ProvenanceOrbit (active/inactive
  * halo jumps to the newly-valid CTV) and a word-level FLIP cross-fade in
- * the answer text. No re-query of the agent — the cached subgraph holds
+ * the answer text. No re-query of the agent - the cached subgraph holds
  * every dated version.
  *
  * Notches mark major amendment dates of the active statutes (passed via

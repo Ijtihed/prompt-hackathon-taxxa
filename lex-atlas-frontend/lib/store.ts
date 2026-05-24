@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import type { OrbitEdge, OrbitNode, NodeKind, DebateTrace, ConfidenceLevel } from "./types";
 
-/** Streamed debate fragment — accumulated per party as `debate_token` events arrive. */
+/** Streamed debate fragment - accumulated per party as `debate_token` events arrive. */
 export interface DebateFragment {
   party: "A" | "B";
   text: string;
@@ -36,7 +36,7 @@ export type AgentPhase =
   | "error";
 
 /**
- * Cross-component graph state — the spine that ties together Constellation,
+ * Cross-component graph state - the spine that ties together Constellation,
  * ProvenanceOrbit, AnswerStream, CitationDrawer, and DateSlider.
  *
  * Design principle: every viz component subscribes to a thin slice of this
@@ -56,17 +56,17 @@ interface GraphStore {
   orbitNodes: OrbitNode[];
   orbitEdges: OrbitEdge[];
   centerNodeId: string | null;
-  /** Transient — set on hover. Drives the inline cite popover + node halo. */
+  /** Transient - set on hover. Drives the inline cite popover + node halo. */
   hoveredNodeId: string | null;
   /**
-   * Transient — set on edge hover. Drives the edge popover.
+   * Transient - set on edge hover. Drives the edge popover.
    * Encoded as `${sourceId}->${targetId}` for stability across re-renders.
    */
   hoveredEdgeKey: string | null;
-  /** Persistent — set on click. Drives the right-side Inspector panel. */
+  /** Persistent - set on click. Drives the right-side Inspector panel. */
   selectedNodeId: string | null;
   /**
-   * Persistent — set when an edge is clicked. Identified by
+   * Persistent - set when an edge is clicked. Identified by
    * `${sourceId}->${targetId}` for stability across re-renders.
    */
   selectedEdgeKey: string | null;
@@ -145,7 +145,7 @@ interface GraphStore {
   setLookups: (nodeIdToIndex: Record<string, number>, nodeKind: Record<string, NodeKind>) => void;
   reset: () => void;
   /** Restore the synthesis view from a cached history entry. Skips the
-   *  whole SSE flow — sets the orbit, debate, conflict pairs, and cost
+   *  whole SSE flow - sets the orbit, debate, conflict pairs, and cost
    *  directly into the store and flips phase to "done" so the answer
    *  card renders the cached state. */
   restoreFromCache: (snapshot: {

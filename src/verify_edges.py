@@ -1,4 +1,4 @@
-"""B2.9 — Edge-output quality checks (per spec §Quality checks).
+"""B2.9 - Edge-output quality checks (per spec §Quality checks).
 
 Reject the run if any of the following hold (each emits a violation and
 returns a non-zero exit code):
@@ -10,7 +10,7 @@ returns a non-zero exit code):
   Spec says these should resolve. In this corpus, Step 1 derived law_ids
   from filenames rather than year/number metadata, so anchors pointing to
   in-corpus consolidated laws cannot be resolved via the (year, number)
-  URL form — they fall through to `not_yet_parsed`. We track the ratio
+  URL form - they fall through to `not_yet_parsed`. We track the ratio
   and warn (not fail) when it's above 50% of anchor edges.
 - The number of parent_of edges does not equal (number of non-root nodes).
 - Resolution rate on regex-extracted edges to in-corpus targets is below 60%
@@ -101,7 +101,7 @@ def verify(out_dir: Path) -> int:
             print(
                 f"  WARN: {ratio:.0%} of dangling anchor edges have "
                 f"reason != out_of_corpus ({anchor_dangling_in_corpus:,} / "
-                f"{anchor_total:,}) — expected when Step 1 derived law_ids "
+                f"{anchor_total:,}) - expected when Step 1 derived law_ids "
                 f"from filenames rather than year/number metadata"
             )
 
@@ -124,14 +124,14 @@ def verify(out_dir: Path) -> int:
 
     print()
     if violations:
-        print(f"FAIL — {len(violations)} violation(s):")
+        print(f"FAIL - {len(violations)} violation(s):")
         for v in violations[:50]:
             print(f"  - {v}")
         if len(violations) > 50:
             print(f"  … +{len(violations) - 50} more")
         return 1
 
-    print("OK — all checks passed.")
+    print("OK - all checks passed.")
     return 0
 
 

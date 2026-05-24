@@ -1,4 +1,4 @@
-"""Planner agent — decomposes compound questions into ≤4 sub-questions
+"""Planner agent - decomposes compound questions into ≤4 sub-questions
 tagged with retrieval-strategy categories.
 
 Per Step 8 brief (B8.2):

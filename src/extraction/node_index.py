@@ -11,7 +11,7 @@ law_id, source_file, source_html_id, type, label) plus four reverse indexes:
     by_chunk_section      chunk_id -> section_id  (from chunks.jsonl)
 
 The indexes are derived from titles and filenames using regexes tuned to
-the actual on-disk shapes from Step 1. They are *best-effort* — when the
+the actual on-disk shapes from Step 1. They are *best-effort* - when the
 title doesn't carry a year/number, that law simply isn't reachable via
 numeric citation. NodeIndex still resolves anchors via the (year, number)
 URL form when the index has the entry.
@@ -49,7 +49,7 @@ class NodeRecord:
 #   finlex-laki-skk-rajavyohykelaki-html-<hash>
 #   finlex-laki-skk-rajavyohykelaki-<hash>
 #
-# Title-based, e.g. `Rajavyöhykelaki (403/1947)` — we extract (403, 1947).
+# Title-based, e.g. `Rajavyöhykelaki (403/1947)` - we extract (403, 1947).
 # Filenames don't always carry the number; titles sometimes do.
 # ---------------------------------------------------------------------------
 
@@ -58,15 +58,15 @@ _TITLE_NAKED_YEAR_NUM = re.compile(r"\b(\d{1,4})/(\d{4})\b")
 
 _KHO_TITLE = re.compile(r"KHO[:\s]+(\d{4})[:\s\-/]+(\d+)", re.IGNORECASE)
 
-# Folded version of slug() — matches src/pipeline/nodes.py
+# Folded version of slug() - matches src/pipeline/nodes.py
 _FINNISH_MAP = str.maketrans({"ä": "a", "ö": "o", "å": "a", "Ä": "a", "Ö": "o", "Å": "a"})
 
 
 def title_slug(text: str) -> str:
-    """Same shape as pipeline.nodes.slug() — used as a lookup key.
+    """Same shape as pipeline.nodes.slug() - used as a lookup key.
 
     Kept duplicated rather than importing from `pipeline` to avoid a hard
-    dependency from src/ → pipeline/ — Step 2 should be runnable with just
+    dependency from src/ → pipeline/ - Step 2 should be runnable with just
     the JSONL outputs.
     """
     if not text:
@@ -137,7 +137,7 @@ class NodeIndex:
 
     def _index_root(self, rec: NodeRecord) -> None:
         title = rec.title or ""
-        # Title-slug index — both full title and shortened "name only" form.
+        # Title-slug index - both full title and shortened "name only" form.
         slug_full = title_slug(title)
         if slug_full:
             self.by_law_title.setdefault(slug_full, rec.id)
@@ -173,7 +173,7 @@ class NodeIndex:
     def resolve(self, key: CitationKey, default_law_id: str | None = None) -> str | None:
         """Resolve a CitationKey to a node id, or None if not present.
 
-        `default_law_id` is the source node's own law — used when the
+        `default_law_id` is the source node's own law - used when the
         citation only carries a section marker (intra-law reference).
         """
         law_id = self._resolve_law(key, default_law_id)
@@ -204,7 +204,7 @@ class NodeIndex:
             return self.by_law_year_number.get((key.year, key.number))
         if key.law_hint:
             return self.by_law_title.get(title_slug(key.law_hint))
-        # Pure section-only — must be intra-law.
+        # Pure section-only - must be intra-law.
         if key.section and default_law_id:
             return default_law_id
         return None

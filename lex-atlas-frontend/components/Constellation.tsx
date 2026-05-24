@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Constellation Map — the GPU-rendered galaxy of the Finlex + Vero corpus.
+ * Constellation Map - the GPU-rendered galaxy of the Finlex + Vero corpus.
  * Uses @cosmos.gl/graph v2.6.x (regl + WebGL1, force simulation on GPU).
  *
  * v2.x is synchronous: `new Graph(div, config)` returns a usable instance
@@ -20,7 +20,7 @@ import { useGraphStore } from "@/lib/store";
 import { colorForKindFloat32 } from "@/lib/colors";
 import type { ConstellationNode, NodeKind } from "@/lib/types";
 
-// Loose typing for the cosmos.gl Graph — v2.x has subtle differences
+// Loose typing for the cosmos.gl Graph - v2.x has subtle differences
 // across patch releases for optional methods (setPointOpacities, setPointSizes).
 // We feature-detect at call time rather than relying on a stable type.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +33,7 @@ const HIGHLIGHT_POINT_SIZE = 4.5;
 interface ConstellationProps {
   nodes: ConstellationNode[];
   edges: Array<{ source: number; target: number }>;
-  /** Render quality knobs — lower for slower machines */
+  /** Render quality knobs - lower for slower machines */
   pointSize?: number;
   /** Show a faint connection mesh; true is more atmospheric but eats GPU */
   showLinks?: boolean;
@@ -56,7 +56,7 @@ export function Constellation({
   const focusedIndices = useGraphStore((s) => s.focusedIndices);
   const setLookups = useGraphStore((s) => s.setLookups);
 
-  // 1. One-time initialization — runs on mount, never re-runs.
+  // 1. One-time initialization - runs on mount, never re-runs.
   // cosmos.gl v2.x is synchronous: `new Graph(div, config)` returns a
   // usable instance immediately. No `graph.ready` promise.
   useEffect(() => {
@@ -65,14 +65,14 @@ export function Constellation({
     let graph: AnyGraph | null = null;
     try {
       // CosmosGraph is the v2.x default export from @cosmos.gl/graph.
-      // v2 is synchronous — no `await graph.ready` needed.
+      // v2 is synchronous - no `await graph.ready` needed.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const GraphCtor = CosmosGraph as any;
 
       graph = new GraphCtor(containerRef.current, {
         spaceSize: SPACE_SIZE,
         backgroundColor: "#0A0A0A",
-        // Physics — chill, not chaotic
+        // Physics - chill, not chaotic
         simulationFriction: 0.12,
         simulationGravity: 0.05,
         simulationRepulsion: 0.5,
@@ -90,7 +90,7 @@ export function Constellation({
         fitViewPadding: 0.18,
         enableDrag: false,
         enableZoom: true,
-        // Events — bridge cosmos.gl integer index back to our string ID
+        // Events - bridge cosmos.gl integer index back to our string ID
         onClick: (idx: number | undefined) => {
           if (idx === undefined || !onPointClick) return;
           const node = nodes[idx];
@@ -98,7 +98,7 @@ export function Constellation({
         },
       });
     } catch (err) {
-      // WebGL unavailable / package incompatible — fail gracefully (no galaxy,
+      // WebGL unavailable / package incompatible - fail gracefully (no galaxy,
       // page still works).
       console.warn("[Constellation] cosmos.gl init failed:", err);
       return;
@@ -137,7 +137,7 @@ export function Constellation({
       }
     }
 
-    // Apply data — try new API first (setPointPositions), fall back to v1 setData.
+    // Apply data - try new API first (setPointPositions), fall back to v1 setData.
     try {
       if (typeof graph.setPointPositions === "function") {
         graph.setPointPositions(positions);
@@ -151,7 +151,7 @@ export function Constellation({
           graph.setPointSizes(sizes);
         }
       } else if (typeof graph.setData === "function") {
-        // v1.x legacy fallback — object-shaped data
+        // v1.x legacy fallback - object-shaped data
         const objNodes = nodes.map((n, i) => ({
           id: n.id,
           x: positions[i * 2],
@@ -187,12 +187,12 @@ export function Constellation({
       } catch {}
       graphRef.current = null;
     };
-    // Intentionally mount-only — the corpus is static after ingest.
+    // Intentionally mount-only - the corpus is static after ingest.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 2. Apply dim opacity when orbital pull is active.
-  // setPointOpacities may not exist on all v2.x patch releases — feature-detect.
+  // setPointOpacities may not exist on all v2.x patch releases - feature-detect.
   useEffect(() => {
     if (!readyRef.current || !graphRef.current) return;
     const g = graphRef.current;

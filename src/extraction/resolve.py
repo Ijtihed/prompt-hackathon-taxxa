@@ -1,4 +1,4 @@
-"""B2.7 — Edge resolution.
+"""B2.7 - Edge resolution.
 
 Takes the raw `(source_id, CitationKey, raw_target_ref, type, confidence,
 extracted_by, context_snippet)` tuples that extractors emit and produces
@@ -68,7 +68,7 @@ def resolve_matches(
             )
             continue
 
-        # Lookup miss — classify why.
+        # Lookup miss - classify why.
         if m.key.is_out_of_corpus():
             reason: DanglingReason = "out_of_corpus"
         else:

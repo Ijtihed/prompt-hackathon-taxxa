@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from datetime import date
 
-# Partitive month names (… `päivänä <month>ta`). Keys are lowercased stems —
+# Partitive month names (… `päivänä <month>ta`). Keys are lowercased stems -
 # the regex strips the partitive suffix before lookup.
 _FI_MONTHS: dict[str, int] = {
     "tammikuu":  1,
@@ -68,7 +68,7 @@ def parse_any(s: str) -> date | None:
     return parse_spelled(s) or parse_numeric(s)
 
 
-# Last-resort year scrape — used when no structured date was found.
+# Last-resort year scrape - used when no structured date was found.
 # Matches "/YYYY" (law-number suffix), "vuonna YYYY", "verovuosi YYYY",
 # and bare four-digit years in a reasonable range. The caller picks the
 # *latest* year as a coarse publication proxy.

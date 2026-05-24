@@ -227,7 +227,7 @@ def main() -> int:
 
     print(f"[reingest] discovery in {time.time()-t0:.1f}s")
     if args.dry_run:
-        print("[reingest] DRY RUN — no writes.")
+        print("[reingest] DRY RUN - no writes.")
         for fp, cids in list(files_to_chunks.items())[:5]:
             print(f"  {fp} ({len(cids)} chunks)")
         return 0
@@ -265,7 +265,7 @@ def main() -> int:
     print(f"[reingest] DONE. files={total_files_processed:,}, "
           f"chunks updated in LanceDB={total_chunks_updated:,}, "
           f"nodes updated in graph.db={total_nodes_updated:,}")
-    print("[reingest] NEXT: rebuild FTS index — "
+    print("[reingest] NEXT: rebuild FTS index - "
           ".venv/bin/python -m scripts.build_fts_index --rebuild")
     conn.close()
     return 0

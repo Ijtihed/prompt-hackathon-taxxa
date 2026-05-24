@@ -1,11 +1,11 @@
-"""Track F — Graph expansion primitives (Step 7, B7.1 + B7.5 + B7.7).
+"""Track F - Graph expansion primitives (Step 7, B7.1 + B7.5 + B7.7).
 
 Wraps ``GraphStore`` with strategy-aware BFS:
 
 - Per-strategy edge-type allowlist (no broad "follow everything" mode).
 - Per-edge-type degree caps to skip hub nodes during expansion.
 - Per-edge-type frontier fairness so a single dominant edge type (notably
-  ``applies``-IN on TVL/AVL — see ``findings/07_pilot_results.md``) cannot
+  ``applies``-IN on TVL/AVL - see ``findings/07_pilot_results.md``) cannot
   exhaust the node budget before other edge types are explored.
 - Auto ``parent_of``-OUT descend when the seed type carries no typed edges
   (SECTION, CHAPTER, GUIDE root, CASE root).
@@ -47,7 +47,7 @@ class ExpansionStrategy:
     # Keys are ``"{edge_type}_{direction}"`` matching ``Node.metadata.degree``,
     # e.g. ``"interprets_in"``, ``"applies_in"``, ``"cites_out"``.
     degree_caps: dict[str, int] = field(default_factory=dict)
-    # ``(cross_encoder, cosine, metadata)`` — consumed by Track D's reranker.
+    # ``(cross_encoder, cosine, metadata)`` - consumed by Track D's reranker.
     rerank_weights: tuple[float, float, float] = (0.6, 0.3, 0.1)
 
 
@@ -69,7 +69,7 @@ def _needs_descend(seed_type: str, strategy: ExpansionStrategy) -> bool:
         return any(e != "parent_of" for e in strategy.edge_types)
     if seed_type == "LAW":
         # LAW receives inbound interprets/applies/cites. Only descend if the
-        # strategy is OUT-only — then the seed's outbound edges (which are
+        # strategy is OUT-only - then the seed's outbound edges (which are
         # all parent_of) won't expose typed neighbours, so drill down.
         return strategy.direction == "out" and any(
             e != "parent_of" for e in strategy.edge_types
@@ -114,7 +114,7 @@ def expand(
             continue
         if _needs_descend(node.type, strategy):
             # Pre-walk one parent_of-OUT hop. The descend consumes no hop
-            # budget — it's structural plumbing to reach the edge-bearing
+            # budget - it's structural plumbing to reach the edge-bearing
             # tier (SUBSECTION/ITEM). Children are entered into frontier
             # with hops=0 and descended=True so they don't get re-descended.
             _add_descended_children(sid, graph_store, results, frontier)
@@ -133,7 +133,7 @@ def expand(
 
         # Degree-cap gate: skip expansion through hub nodes (per-edge-type).
         # Seeds are always allowed (hops==0 means we are at a seed or a
-        # descended child) — only intermediates are gated.
+        # descended child) - only intermediates are gated.
         if hops > 0 and _exceeds_degree_cap(nid, strategy, graph_store):
             continue
 

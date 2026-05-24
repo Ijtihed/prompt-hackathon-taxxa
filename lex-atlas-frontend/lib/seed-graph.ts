@@ -1,5 +1,5 @@
 /**
- * Seed graph — synthetic but plausible Finnish-tax-law ecosystem of ~480 nodes.
+ * Seed graph - synthetic but plausible Finnish-tax-law ecosystem of ~480 nodes.
  *
  * Generated deterministically so the Constellation visual is reproducible across
  * refreshes. Used until the real ingest pipeline populates Neo4j (Saturday
@@ -35,16 +35,16 @@ interface SeedGraph {
 
 const SPACE_SIZE = 6500;
 
-/** Cluster centers per node kind — drives the visible galaxy regions. */
+/** Cluster centers per node kind - drives the visible galaxy regions. */
 const CLUSTER_CENTERS: Record<NodeKind, { x: number; y: number }> = {
-  work:         { x: -800, y:  -400 },   // statutes — top-left cluster
+  work:         { x: -800, y:  -400 },   // statutes - top-left cluster
   expression:   { x: -800, y:  -400 },
   component:    { x: -800, y:  -400 },
-  ctv:          { x:    0, y:  1200 },   // amendments — bottom (time axis)
+  ctv:          { x:    0, y:  1200 },   // amendments - bottom (time axis)
   action:       { x:    0, y:  1200 },
-  case:         { x:  1500, y: -200 },   // KHO/KKO — right cluster
-  guidance:     { x: -100, y: -1200 },   // Vero — top center
-  concept:      { x:  100, y:   100 },   // concepts — center, anchors
+  case:         { x:  1500, y: -200 },   // KHO/KKO - right cluster
+  guidance:     { x: -100, y: -1200 },   // Vero - top center
+  concept:      { x:  100, y:   100 },   // concepts - center, anchors
   authority:    { x:  100, y:   100 },
   jurisdiction: { x:  100, y:   100 },
   theme:        { x:  100, y:   100 },
@@ -58,7 +58,7 @@ const CLUSTER_RADIUS: Partial<Record<NodeKind, number>> = {
   concept: 380,
 };
 
-/** Mulberry32 — tiny deterministic PRNG. */
+/** Mulberry32 - tiny deterministic PRNG. */
 function makeRng(seed: number) {
   let t = seed;
   return () => {
@@ -96,7 +96,7 @@ export function buildSeedGraph(): SeedGraph {
   const nodes: ConstellationNode[] = [];
   const edges: SeedEdge[] = [];
 
-  // ── Q4 ecosystem — exact IDs matching the SSE fixture ─────────────────────
+  // ── Q4 ecosystem - exact IDs matching the SSE fixture ─────────────────────
   const q4Nodes: Array<[string, NodeKind, number, number]> = [
     ["concept:avainhenkilo",                          "concept",  0,     0],
     ["concept:lahdevero",                             "concept",  120,   80],
@@ -108,7 +108,7 @@ export function buildSeedGraph(): SeedGraph {
     ["work:vero-kannanotto:avainhenkilo-2020",        "guidance", -180,  -1180],
     ["work:vero-ohje:rajoitetusti-2026",              "guidance", -80,   -1240],
     ["work:vero-ohje:avainhenkiloiden-verotus",       "guidance", -160,  -1140],
-    // Q4 neighbors — TVL ecosystem
+    // Q4 neighbors - TVL ecosystem
     ["work:tuloverolaki",                             "work",     -900,  -310],
     ["work:lahdeverolaki",                            "work",     -780,  -480],
     // Q4 KHO neighbors
@@ -139,7 +139,7 @@ export function buildSeedGraph(): SeedGraph {
   edge("work:lahdeverolaki", "work:avainhenkilolaki");
   edge("case:kho-2023-55", "work:avainhenkilolaki");
 
-  // ── Ambient corpus — 480 plausible nodes around the Q4 ecosystem ──────────
+  // ── Ambient corpus - 480 plausible nodes around the Q4 ecosystem ──────────
   const counts: Array<[NodeKind, number]> = [
     ["work", 120],
     ["action", 140],
@@ -160,7 +160,7 @@ export function buildSeedGraph(): SeedGraph {
     }
   }
 
-  // ── Ambient edges — sparse, kind-biased (statutes-to-amendments dominant) ─
+  // ── Ambient edges - sparse, kind-biased (statutes-to-amendments dominant) ─
   // We anchor amendment nodes to a random Work in the work cluster.
   const workIndices: number[] = [];
   const actionIndices: number[] = [];

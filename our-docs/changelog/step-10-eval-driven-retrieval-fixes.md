@@ -1,8 +1,8 @@
-# Step 10 — Eval-driven retrieval fixes (filter, router, hybrid, encoding, edges)
+# Step 10 - Eval-driven retrieval fixes (filter, router, hybrid, encoding, edges)
 
-A single failing eval question — *"What is the maximum daily withholding
+A single failing eval question - *"What is the maximum daily withholding
 tax percentage (ennakonpidätys) that can be applied to a taxpayer's
-income under Finnish law?"* — surfaced five independent issues that had
+income under Finnish law?"* - surfaced five independent issues that had
 been silently degrading retrieval quality across the corpus. Step 10
 fixes each one, then re-runs the temporal-status layer built in
 [step-9](./step-9-temporal-awareness.md) so the resulting
@@ -17,10 +17,10 @@ law's **50 %** rule and produced a wrong answer.
 
 | Fix | Issue | File(s) |
 |-----|-------|---------|
-| **A** | Filter inference shipped `source=finlex` for any query containing the bare token `"law"` — catastrophically broad: "Finnish **law**" / "act of Parliament" silently excluded every Vero document. | `src/retrieval/filters.py` |
+| **A** | Filter inference shipped `source=finlex` for any query containing the bare token `"law"` - catastrophically broad: "Finnish **law**" / "act of Parliament" silently excluded every Vero document. | `src/retrieval/filters.py` |
 | **B.1** | Strategy router had no signal for Verohallinto-päätös queries; they routed to `default` (vector-only), never expanding through the `interprets` edges connecting päätökset to their statutory framework. | `src/retrieval/strategy.py` |
 | **B.2** | Pure cosine retrieval struggled on cross-lingual queries where the answer lives in dense Finnish administrative prose. No sparse / lexical fallback existed. | `src/indexing/vector_store.py`, `src/retrieval/vector_retriever.py`, `scripts/build_fts_index.py` |
-| **C** | The Step-2 regex extractor resolved only ~24 outbound `amends` edges from "Laki X muuttamisesta" instrument acts. Hundreds of amendment instruments sat as graph orphans, and their target consolidated laws (ennakkoperintälaki, sairausvakuutuslaki, …) reported 0 amendments — so the temporal-status layer rated them `ok` when they were heavily amended. | `scripts/backfill_muuttamisesta_edges.py`, `scripts/compute_temporal_status.py` |
+| **C** | The Step-2 regex extractor resolved only ~24 outbound `amends` edges from "Laki X muuttamisesta" instrument acts. Hundreds of amendment instruments sat as graph orphans, and their target consolidated laws (ennakkoperintälaki, sairausvakuutuslaki, …) reported 0 amendments - so the temporal-status layer rated them `ok` when they were heavily amended. | `scripts/backfill_muuttamisesta_edges.py`, `scripts/compute_temporal_status.py` |
 | **D** | BeautifulSoup's encoding sniffer mis-detected the encoding of Vero / amendment HTML files (no `<!DOCTYPE>` / `<meta charset>`) and produced double-encoded chunks (`päätös` → `pรครคtรถs`) in **~6,638 chunks (1.7 %)** including every chunk of the 2026 päätös. Both vector embedding and BM25 operated on mojibake. | `pipeline/html_utils.py`, `scripts/reingest_corrupted_chunks.py` |
 
 ## What was built
@@ -47,7 +47,7 @@ scripts/compute_temporal_status.py    # extended to fold in Fix C edges +
                                       # date when edge effective_date absent
 ```
 
-## Fix A — filter inference
+## Fix A - filter inference
 
 `src/retrieval/filters.py:60`. The pre-fix list was:
 
@@ -72,15 +72,15 @@ Verification cases now behave correctly:
 |-------|---------|---------|
 | "What is the maximum daily withholding tax percentage under **Finnish law**?" | `source=finlex` | `{}` (no filter) |
 | "Verohallinnon päätös ennakonpidätyksestä" | `{}` | `source=vero` |
-| "TVL 124 § soveltaminen" | `source=finlex` | `{}` (no filter — "TVL" not a trigger) |
+| "TVL 124 § soveltaminen" | `source=finlex` | `{}` (no filter - "TVL" not a trigger) |
 
-## Fix B.1 — router for päätös queries
+## Fix B.1 - router for päätös queries
 
 `src/retrieval/strategy.py`. Added `_PAATOS_PAT` covering both Finnish
 päätös vocabulary and English withholding-percentage framings, and
 extended `_is_cross_source()` to fire whenever this pattern alone
 matches (the previous rule required *both* a Finlex citation form *and*
-a guidance marker — too restrictive for päätös-only queries).
+a guidance marker - too restrictive for päätös-only queries).
 
 A Finnish-morphology subtlety landed mid-development: the bare stem
 `ennakonpidätys` (nominative) doesn't match `ennakonpidätyksen`
@@ -91,7 +91,7 @@ the genitive marker. The fix:
 r"ennakonpid[äa]ty(?:s|ks)"
 ```
 
-— matches both forms via the trailing `(?:s|ks)` alternation. Without
+- matches both forms via the trailing `(?:s|ks)` alternation. Without
 this the stem would have missed every inflected reference.
 
 Routing now picks `CROSS_SOURCE` for:
@@ -101,13 +101,13 @@ Routing now picks `CROSS_SOURCE` for:
 - "Mikä on ennakonpidätyksen enimmäismäärä?"
 - "AVL 102 § soveltaminen vero ohje" (unchanged from before)
 
-— and leaves these on `default`:
+- and leaves these on `default`:
 
 - "Mikä on pääomatulon verokanta?"
 - "TVL 124 § soveltaminen"
 - "Rikoslain virkamiehen lahjominen"
 
-## Fix B.2 — hybrid retrieval
+## Fix B.2 - hybrid retrieval
 
 LanceDB supports both vector and inverted (BM25-style) indices.
 Pre-fix we used only the former. Add a one-time FTS builder + a
@@ -118,7 +118,7 @@ the rankings with **Reciprocal Rank Fusion (Cormack et al. 2009)**:
 score(d) = sum over rankings of  1 / (rrf_k + rank(d))
 ```
 
-with `rrf_k = 60` (the standard constant — robust to score-scale
+with `rrf_k = 60` (the standard constant - robust to score-scale
 differences between vector and BM25). Each backend retrieves
 `k * oversample = 60` candidates; top-`k` from the fused ranking is
 returned.
@@ -132,7 +132,7 @@ Building the FTS index over 402,088 rows took ~1 hour on local
 hardware. Re-runnable via `scripts.build_fts_index --rebuild` after
 re-ingestion.
 
-## Fix C — backfill amends from `…lain-muuttamisesta` LAWs
+## Fix C - backfill amends from `…lain-muuttamisesta` LAWs
 
 The slug-inference logic from `src/retrieval/caveats._amends_target_for`
 already mapped amendment-instrument LAW ids to their consolidated
@@ -162,7 +162,7 @@ Counts:
    'backfill_muuttamisesta')` so Fix C edges count toward
    `amendment_count_in_law`.
 2. When an edge's `properties_json.effective_date` is null (the common
-   case for Fix C edges — the title carries no date), fall back to the
+   case for Fix C edges - the title carries no date), fall back to the
    source LAW's own `publication_date` / `effective_date` from its
    root metadata. This lets `ancestor_amended_after` populate even
    when the slug doesn't encode a date.
@@ -176,14 +176,14 @@ End-to-end impact on a representative LAW:
 | ennakkoperintälaki `ancestor_amended_after` | null | **2026-05-01** |
 | Whole graph `suspect` count | 62,467 | **97,340** (+56 %) |
 
-## Fix D — UTF-8 decoding
+## Fix D - UTF-8 decoding
 
 `pipeline/html_utils.parse_html` now decodes bytes to `str` with
 `utf-8 / errors="replace"` before handing off to BeautifulSoup. Pre-fix
 BS4's encoding sniffer fell back to Latin-1 / Windows-1252 for files
 without `<!DOCTYPE>` or `<meta charset>` declarations (most Vero
 päätös files and a long tail of finlex amendment instruments) and
-internally re-encoded the result as UTF-8 — producing the classic
+internally re-encoded the result as UTF-8 - producing the classic
 double-encoded artifact:
 
 ```
@@ -214,7 +214,7 @@ Breakdown by subcorpus:
 2. Map each affected chunk to its source file via `nodes.jsonl`.
 3. Re-parse with the fixed `parse_html`, re-pack with `pack_sections`.
 4. Re-embed via Voyage (input_type=`document`).
-5. `merge_insert("chunk_id")` upserts — chunk IDs are stable because
+5. `merge_insert("chunk_id")` upserts - chunk IDs are stable because
    the ID inputs (filename hash, sequential chapter/section indices)
    don't touch the text-encoding pathway.
 
@@ -237,19 +237,19 @@ The eval question after all five fixes:
    ja saattaa olla tuoreempi kuin tämä teksti.
 ```
 
-— two ancestor-aware caveats fire, naming the parent LAWs and the
+- two ancestor-aware caveats fire, naming the parent LAWs and the
 latest amendment effective dates. The temporal-awareness payoff from
 step-9 is now genuinely useful instead of silent.
 
 The **2026 päätös chunks themselves still don't surface in the top-15
-retrieved chunks** — even though they are now clean, indexed, and
+retrieved chunks** - even though they are now clean, indexed, and
 FTS-searchable, they rank ~138 in pure vector search for this English
 query. The semantic gap is documented in
 [step-11-semantic-translation-gap.md](./step-11-semantic-translation-gap.md).
 
 ## Decisions and tradeoffs
 
-### Filter triggers — keep `"statute"`, drop `"law"`/`"act"`
+### Filter triggers - keep `"statute"`, drop `"law"`/`"act"`
 
 `"statute"` is rare in casual English about Finnish tax and unambiguously
 references a Finlex source when used. `"law"` and `"act"` are too
@@ -264,7 +264,7 @@ score-scale skew across retrievers. Each backend retrieves
 `k * 3 = 60` candidates so the fusion has enough material; smaller
 oversamples drop documents that one backend ranked moderately and the
 other strongly. The total LanceDB work is two ~60-candidate queries
-— negligible.
+- negligible.
 
 ### Hybrid default-on, with graceful fallback
 
@@ -277,7 +277,7 @@ swallowed exception on cold starts.
 ### `_law_root_index` in-memory, not a SQL index
 
 Fix C's first version did one `LIKE %-stem-html-%` query per candidate
-× 18 k candidates × 1.97 M-row scan — predictably hung. Building a
+× 18 k candidates × 1.97 M-row scan - predictably hung. Building a
 Python dict of all 21 k LAW roots up front is 0.2 s and lets every
 candidate resolve in O(1). The dict fits comfortably in memory.
 
@@ -286,7 +286,7 @@ candidate resolve in O(1). The dict fits comfortably in memory.
 Fix C edges rarely carry a parseable `effective_date` (the slug
 contains the act number but not its voimaantulo). When the edge
 property is null, `compute_temporal_status` now falls back to the
-amending LAW's own `publication_date` — a lower-bound proxy for when
+amending LAW's own `publication_date` - a lower-bound proxy for when
 the amendment took effect. This isn't strictly correct (laws can
 specify a voimaantulo months or years after enactment) but it's
 strictly better than null for the freshness comparison.
@@ -300,7 +300,7 @@ on a Finnish tax question. The 2026 päätös was the one chunk that
 mattered for the live eval; the rest is documented and gated behind
 an explicit run of `scripts.reingest_corrupted_chunks`.
 
-### Mojibake marker — `รค` (U+0E23 + U+0E04 + U+0E27)
+### Mojibake marker - `รค` (U+0E23 + U+0E04 + U+0E27)
 
 The substring `รค` (Thai-script-looking-but-isn't) is the unique
 fingerprint of a double-encoded `ä`. Other Finnish letters double-encode
@@ -311,7 +311,7 @@ high probability. Cheap, deterministic, no false positives observed.
 ## How to run
 
 ```bash
-# Build the FTS index (first time only — ~1 hour for 402k rows)
+# Build the FTS index (first time only - ~1 hour for 402k rows)
 .venv/bin/python -m scripts.build_fts_index
 
 # Backfill the muuttamisesta edges
@@ -330,7 +330,7 @@ high probability. Cheap, deterministic, no false positives observed.
 
 - [ ] Broader re-ingest of the remaining 6,591 mojibake chunks
       (1,151 files outside the päätös). User-gated; script is ready.
-- [ ] **Semantic translation gap** — English questions about Finnish
+- [ ] **Semantic translation gap** - English questions about Finnish
       tax don't surface the most-authoritative Finnish administrative
       sources. Plan: see [step-11-semantic-translation-gap.md](./step-11-semantic-translation-gap.md).
 - [ ] FTS index rebuild after each broader re-ingest (~1 hour). Could

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HistoryList — two shapes for the same data set:
+ * HistoryList - two shapes for the same data set:
  *
  *   <HistoryList variant="inline">  →  full list, suitable for the /ask
  *                                       empty state below the demo prompts.
@@ -89,7 +89,7 @@ export function HistoryList({ entries, onRecall, onRemove, onClear, variant = "i
 }
 
 /* ─────────────────────────────────────────────────────────────────────
-   Row — one entry, hover + remove button. Used inside both inline + drawer.
+   Row - one entry, hover + remove button. Used inside both inline + drawer.
    ───────────────────────────────────────────────────────────────────── */
 
 interface RowProps {
@@ -157,7 +157,7 @@ function HistoryRow({ entry, variant, onRecall, onRemove }: RowProps) {
             {entry.costCents !== undefined && entry.costCents > 0 && (
               // Mirrors the synthesis-card pill (`AnswerStatusPill`). Both
               // call ``formatCents`` so a query's cost reads identically
-              // wherever it surfaces — the prior `€${cents/100}` notation
+              // wherever it surfaces - the prior `€${cents/100}` notation
               // looked like a different number even though it was the same
               // value in a different unit.
               <span> · {formatCents(entry.costCents)}</span>
@@ -196,7 +196,7 @@ function HistoryRow({ entry, variant, onRecall, onRemove }: RowProps) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────
-   HistoryButton — small button + dropdown for the active conversation.
+   HistoryButton - small button + dropdown for the active conversation.
    ───────────────────────────────────────────────────────────────────── */
 
 interface ButtonProps {
@@ -249,7 +249,7 @@ export function HistoryButton({ entries, onRecall, onRemove, onClear }: ButtonPr
         aria-expanded={open}
         title={
           disabled
-            ? "No history yet — complete a query and it'll be saved here"
+            ? "No history yet - complete a query and it'll be saved here"
             : `${entries.length} saved ${entries.length === 1 ? "query" : "queries"}`
         }
       >

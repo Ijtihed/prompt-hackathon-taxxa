@@ -1,4 +1,4 @@
-"""Verifier agent — surfaces conflicts between sources at different
+"""Verifier agent - surfaces conflicts between sources at different
 authority tiers (Finlex > Vero) for a draft answer.
 
 Per Step 8 brief (B8.4):
@@ -7,11 +7,11 @@ Per Step 8 brief (B8.4):
 
 The orchestrator (not this track) supplies ``authority_rank`` per source
 from chunk metadata produced by Step 3. The Verifier MUST treat the rank
-as an explicit input — it does not infer authority from text. This is
+as an explicit input - it does not infer authority from text. This is
 load-bearing for the L7 conflict-surfacing path described in
 ``00_overview.md``.
 
-Step 10 / Move 5d also exposes ``check_temporal_mismatches`` — a
+Step 10 / Move 5d also exposes ``check_temporal_mismatches`` - a
 deterministic check that compares the LLM's quoted text against the
 correct point-in-time version per cited SECTION. Surfaces structured
 ``TemporalMismatch`` records alongside the LLM-driven verification.
@@ -98,7 +98,7 @@ def verifier(answer: str, sources: list[dict[str, Any]]) -> VerifyResult:
             )
         )
 
-    # Recompute status from claims as a safety net — conflicts dominate unsupported.
+    # Recompute status from claims as a safety net - conflicts dominate unsupported.
     resolutions = {c.resolution for c in claims}
     if "conflict" in resolutions:
         status = "conflicts"
@@ -117,7 +117,7 @@ def verifier(answer: str, sources: list[dict[str, Any]]) -> VerifyResult:
 
 
 # --------------------------------------------------------------------------
-# Step 10 / Move 5d — TemporalMismatch detector
+# Step 10 / Move 5d - TemporalMismatch detector
 #
 # Deterministic, no LLM. Runs cheaply per cited SECTION whose version
 # chain has more than just the original step. The pipeline collects
@@ -128,13 +128,13 @@ def verifier(answer: str, sources: list[dict[str, Any]]) -> VerifyResult:
 #   1. For each cited SECTION with a non-trivial version chain, score
 #      the LLM's answer against each VersionStep.text using SequenceMatcher
 #      ratio. We use the answer's *full text* rather than slicing into
-#      quoted snippets — slicing requires reliable quote detection,
+#      quoted snippets - slicing requires reliable quote detection,
 #      which the v1 prompt doesn't enforce.
 #   2. Identify the "correct" step: the last applied step in the chain
 #      (what ``text_at(as_of_used)`` returns).
 #   3. Identify the "best matching" step: the highest-similarity step.
 #   4. If best != correct AND the gap is large enough, emit a
-#      TemporalMismatch. Threshold tuning is conservative — we'd rather
+#      TemporalMismatch. Threshold tuning is conservative - we'd rather
 #      miss than spuriously flag.
 #
 # The check is deliberately advisory: it doesn't gate generation, doesn't
@@ -145,13 +145,13 @@ def verifier(answer: str, sources: list[dict[str, Any]]) -> VerifyResult:
 
 # Minimum similarity gain (best vs correct) to flag a mismatch. Below
 # this the LLM's text isn't *meaningfully* closer to a historical
-# version — it's just generic Finnish legalese matching weakly to
+# version - it's just generic Finnish legalese matching weakly to
 # everything. Tuned by hand against a handful of v2+chain demo runs.
 _MISMATCH_GAIN_THRESHOLD = 0.08
 
 # Minimum similarity to *any* step for the check to fire at all. Below
 # this, the answer isn't quoting the section's text in any meaningful
-# way — likely the LLM paraphrased without quoting, and any
+# way - likely the LLM paraphrased without quoting, and any
 # "best-match" verdict would be noise.
 _MIN_BEST_SIMILARITY = 0.20
 
@@ -161,7 +161,7 @@ def _similarity(answer: str, text: str | None) -> float:
 
     Used pairwise (answer × one step). For long answers we slide a
     window the size of the step text across the answer and take the
-    max — that's a cheap proxy for "the answer contains a passage
+    max - that's a cheap proxy for "the answer contains a passage
     similar to this step" without doing full alignment.
     """
     if not text:
@@ -183,7 +183,7 @@ def _last_applied_step(chain: list[VersionStep]) -> VersionStep | None:
     """The step ``text_at(as_of_used)`` would return as ``current_text``.
 
     Walks from end backwards. A trailing ``kumotaan`` (text=None) is
-    treated as "no correct version" — we have to handle that explicitly.
+    treated as "no correct version" - we have to handle that explicitly.
     """
     for step in reversed(chain):
         if step.provenance == "kumotaan":
@@ -203,7 +203,7 @@ def check_temporal_mismatches(
     chain suggests the LLM quoted a non-current version.
 
     ``cited_sections`` is built by the pipeline from
-    ``AssembledContext.sources`` — one entry per cited chunk's
+    ``AssembledContext.sources`` - one entry per cited chunk's
     section, paired with that section's already-played version chain.
     Sections with empty/trivial chains are skipped by the caller
     rather than us (keeps this function loop-pure).

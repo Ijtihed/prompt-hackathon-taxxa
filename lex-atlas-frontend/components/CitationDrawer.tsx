@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CitationDrawer — restyled for the Stitch light theme. Slides up from the
+ * CitationDrawer - restyled for the Stitch light theme. Slides up from the
  * bottom on cite-anchor hover, shows the actual Finnish HTML excerpt.
  */
 

@@ -159,7 +159,7 @@ export function Inspector() {
                 target={orbitNodes.find((n) => n.id === selectedEdge.target) ?? null}
               />
             )}
-            {/* Selected edge that the store doesn't know about — happens for
+            {/* Selected edge that the store doesn't know about - happens for
                 synthetic "scaffolding" edges OrbitGraph adds to keep the
                 layout connected. Show a clear panel instead of a blank one
                 so the click doesn't feel broken. */}
@@ -542,7 +542,7 @@ function NodeExcerpt({ nodeId }: { nodeId: string }) {
  *
  *  Finlex and Vero don't always allow embedding (X-Frame-Options /
  *  Content-Security-Policy: frame-ancestors). We can't reliably detect
- *  that from cross-origin JS — ``onload`` still fires for blocked frames.
+ *  that from cross-origin JS - ``onload`` still fires for blocked frames.
  *  Strategy: open the iframe optimistically with sandbox attributes; if
  *  the load takes longer than 4 s we assume it was blocked and show a
  *  fallback link. Either way, the "open ↗" button above still works. */
@@ -598,7 +598,7 @@ function SourceFrame({ url }: { url: string }) {
             className="font-sans text-on-surface-variant"
             style={{ fontSize: 13, lineHeight: 1.55 }}
           >
-            This page didn't load inside the frame within 4 seconds — the
+            This page didn't load inside the frame within 4 seconds - the
             publisher likely blocks embedding via{" "}
             <code>X-Frame-Options</code>. Use the link below to open it in a
             new tab.

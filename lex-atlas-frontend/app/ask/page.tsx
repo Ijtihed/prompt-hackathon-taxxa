@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * /ask — curated-demo workspace (no free-form input).
+ * /ask - curated-demo workspace (no free-form input).
  *
  * Only the three deterministic demo prompts can drive a run. Clicking a
  * prompt auto-submits and streams the fixture replay end-to-end. There is
- * no composer / textarea — the live deploy has no Python sidecar attached,
+ * no composer / textarea - the live deploy has no Python sidecar attached,
  * so allowing arbitrary questions would produce mismatched answers. Pick
  * any prompt to start a new conversation; "New conversation" resets the
  * thread.
@@ -55,7 +55,7 @@ const PROMPTS = [
 
 function genQueryId(): string {
   // 12 hex chars in three groups (XXXX-XXXX-XXXX). 16^12 ≈ 281 trillion
-  // combos — collisions vanish in practice. Prefers ``crypto.randomUUID``
+  // combos - collisions vanish in practice. Prefers ``crypto.randomUUID``
   // (CSPRNG) when available; falls back to ``Math.random`` for older
   // browsers / non-secure contexts.
   let hex: string;
@@ -83,7 +83,7 @@ function stripCiteTokens(s: string): string {
 }
 
 /** Flatten completed turns into the OpenAI-format history the sidecar wants.
- *  In-flight (un-done) turns are skipped — they have no committed answer. */
+ *  In-flight (un-done) turns are skipped - they have no committed answer. */
 function buildHistory(turns: ChatTurn[]): ChatMessage[] {
   const out: ChatMessage[] = [];
   for (const t of turns) {
@@ -109,12 +109,12 @@ export default function AskPage() {
   const phase = useGraphStore((s) => s.phase);
   const walkedCount = useGraphStore((s) => s.walkedCount);
 
-  // Latest turn — the one currently streaming (or last completed).
+  // Latest turn - the one currently streaming (or last completed).
   const activeTurn = turns.length > 0 ? turns[turns.length - 1] : null;
   const isStreaming = activeTurn ? !activeTurn.done : false;
 
   /* Local query history (localStorage-backed; SSR-safe). Destructured so
-     the push/remove/clear callbacks are stable references — otherwise the
+     the push/remove/clear callbacks are stable references - otherwise the
      AnswerStream useEffect would see onComplete identity change every render
      of this page and re-fire the SSE fetch on every state update. */
   const {
@@ -130,7 +130,7 @@ export default function AskPage() {
       if (!q) return;
       // Reset the global orbit so the new turn's SSE stream populates fresh.
       // Previous turns lose their orbit visualization but keep their answer
-      // text in the thread — acceptable tradeoff for v1; a richer version
+      // text in the thread - acceptable tradeoff for v1; a richer version
       // would snapshot the orbit into each ChatTurn and swap on click.
       reset();
       if (opts?.asof) setAsof(opts.asof);
@@ -155,11 +155,11 @@ export default function AskPage() {
   /* Recall a saved query: starts a NEW conversation with the recalled
      question as turn 1. Carries asof forward.
      Two paths:
-       1. The entry has a cached snapshot — push a pre-completed turn so
+       1. The entry has a cached snapshot - push a pre-completed turn so
           `isActive=false` and the renderer uses <RenderedAnswer> instead
           of <AnswerStream>. Restore the orbit via `restoreFromCache`.
           No /api/ask call, no re-billing.
-       2. No snapshot (legacy entry) — fall back to a live submit. */
+       2. No snapshot (legacy entry) - fall back to a live submit. */
   const recall = useCallback(
     (entry: HistoryEntry) => {
       reset();
@@ -209,7 +209,7 @@ export default function AskPage() {
   /* On `done`, freeze the streamed answer into the turn and re-push the
      conversation's history entry. The entry is keyed on turn-1's id, so
      every completion (turn 1, turn 2, ...) updates the same row.
-     Cost is cumulative across all completed turns — a 2-turn chat that
+     Cost is cumulative across all completed turns - a 2-turn chat that
      billed 0.22 ¢ then 0.22 ¢ surfaces 0.44 ¢ in history, not 0.22 ¢. */
   const handleTurnComplete = useCallback(
     (turnId: string) => (answer: string) => {
@@ -271,7 +271,7 @@ export default function AskPage() {
 
   // URL-driven auto-submit: ?demo=q4|debate|n1, with ?instant=1 to flush
   // the SSE fixture without delays (used for screenshots/e2e). Free-form
-  // ?q= is intentionally not supported — only the three deterministic
+  // ?q= is intentionally not supported - only the three deterministic
   // fixtures may drive a run.
   const ranAutoSubmit = useRef(false);
   const [instant, setInstant] = useState(false);
@@ -355,8 +355,8 @@ export default function AskPage() {
                       maxWidth: "62ch",
                     }}
                   >
-                    Each one streams the full pipeline — entity pulse →
-                    plan → graph walk → orbit subgraph → cited answer —
+                    Each one streams the full pipeline - entity pulse →
+                    plan → graph walk → orbit subgraph → cited answer -
                     against a deterministic fixture. No free-form input
                     on the live demo; the real retrieval backend is not
                     attached here (see the methodology page for the full
@@ -439,7 +439,7 @@ export default function AskPage() {
           {/* ─── Chat thread ─── one card per turn. */}
           {!isEmpty && (
             <div className="flex flex-col" style={{ gap: "var(--space-8)" }}>
-              {/* Thread header — turn count + actions. */}
+              {/* Thread header - turn count + actions. */}
               <div className="flex items-center justify-between">
                 <span
                   className="font-mono uppercase tracking-wider text-on-surface-variant"
@@ -700,7 +700,7 @@ export default function AskPage() {
                 disabled={isStreaming}
                 disabledReason={
                   isStreaming
-                    ? "Streaming — wait for the current answer to finish"
+                    ? "Streaming - wait for the current answer to finish"
                     : undefined
                 }
               />
@@ -868,7 +868,7 @@ function TurnCard({
         </div>
       </div>
 
-      {/* Debate panel — only on the active turn (it consumes live SSE events). */}
+      {/* Debate panel - only on the active turn (it consumes live SSE events). */}
       {showDebatePanel && <DebatePanel />}
 
       {/* Synthesis card */}
@@ -900,7 +900,7 @@ function TurnCard({
             <TurnStatus turn={turn} isActive={isActive} phase={phase} />
           </div>
 
-          {/* Progressive loading indicator — only while the turn is active. */}
+          {/* Progressive loading indicator - only while the turn is active. */}
           {isActive && <AgentProgress />}
 
           <div
@@ -924,7 +924,7 @@ function TurnCard({
                 className="font-sans italic text-on-surface-variant"
                 style={{ fontSize: "var(--text-body-sm)" }}
               >
-                (no answer — stream was aborted)
+                (no answer - stream was aborted)
               </p>
             )}
           </div>
@@ -984,7 +984,7 @@ function TurnStatus({
             onClick={() => setModalOpen(true)}
             className="flex items-center gap-1 border border-error/60 px-2 py-1 font-mono uppercase tracking-wider text-error transition-colors hover:bg-error-container/40"
             style={{ fontSize: "var(--text-overline)" }}
-            title="The AI's confidence is low — escalate to a tax specialist"
+            title="The AI's confidence is low - escalate to a tax specialist"
           >
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
               support_agent
@@ -1004,14 +1004,14 @@ function TurnStatus({
 }
 
 /* ─────────────────────────────────────────────────────────────────────
- * Confidence pill — color-coded by level. The high/medium/low strings
+ * Confidence pill - color-coded by level. The high/medium/low strings
  * come straight from the LLM grader (see src/api/confidence.py).
  * ─────────────────────────────────────────────────────────────────── */
 
 function ConfidencePill({ level }: { level: "high" | "medium" | "low" }) {
   // Re-use existing CSS color tokens so the pill matches the rest of
   // the design without inventing new colors:
-  //   high   → secondary (terracotta) — same as the cost pill on done
+  //   high   → secondary (terracotta) - same as the cost pill on done
   //   medium → on-surface-variant (neutral)
   //   low    → error (red)
   const palette = {
@@ -1023,7 +1023,7 @@ function ConfidencePill({ level }: { level: "high" | "medium" | "low" }) {
   const tooltip = {
     high:   "The grader rated this answer well-supported and unambiguous.",
     medium: "Mostly supported, but with hedging or partial coverage.",
-    low:    "The grader flagged this as unreliable — consider asking a specialist.",
+    low:    "The grader flagged this as unreliable - consider asking a specialist.",
   }[level];
 
   return (
@@ -1038,7 +1038,7 @@ function ConfidencePill({ level }: { level: "high" | "medium" | "low" }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────
- * Ask-Specialist modal — surfaces a copyable prewritten email so the
+ * Ask-Specialist modal - surfaces a copyable prewritten email so the
  * user can escalate the question to a Taxxa tax specialist with one
  * paste. Composed entirely client-side; no mailto: handler (would lose
  * the answer body in many clients).
@@ -1088,7 +1088,7 @@ function AskSpecialistModal({
       navigator.clipboard.writeText(text).then(() => {
         setCopied(kind);
         setTimeout(() => setCopied("none"), 1500);
-      }).catch(() => {/* clipboard blocked — caller can still select manually */});
+      }).catch(() => {/* clipboard blocked - caller can still select manually */});
     }
   };
 

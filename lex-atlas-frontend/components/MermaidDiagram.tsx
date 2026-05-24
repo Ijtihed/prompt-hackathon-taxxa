@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * MermaidDiagram — renders a Mermaid flowchart from a source string.
+ * MermaidDiagram - renders a Mermaid flowchart from a source string.
  *
  * Implementation notes:
  *  - Dynamic-imports the ``mermaid`` package on mount, so the diagram code
- *    is excluded from the main bundle (it's heavy — ~500 KB minified).
+ *    is excluded from the main bundle (it's heavy - ~500 KB minified).
  *  - If the package isn't installed (``npm install mermaid`` was skipped),
  *    we fall back to a monospace block showing the diagram source. The
  *    diagram is still readable, just not laid out.
@@ -48,7 +48,7 @@ export function MermaidDiagram({ code, ariaLabel }: MermaidDiagramProps) {
           render: (id: string, code: string) => Promise<{ svg: string }>;
         };
         // ``default`` theme works on light backgrounds. ``securityLevel:
-        // strict`` blocks click handlers in the source — we're rendering
+        // strict`` blocks click handlers in the source - we're rendering
         // a static doc page, not interactive.
         api.initialize({
           startOnLoad: false,
@@ -82,7 +82,7 @@ export function MermaidDiagram({ code, ariaLabel }: MermaidDiagramProps) {
     );
   }
 
-  // Fallback path — package missing, or render error. The user can still
+  // Fallback path - package missing, or render error. The user can still
   // read the source and paste it into mermaid.live themselves.
   return (
     <div className="space-y-2">
@@ -101,8 +101,8 @@ export function MermaidDiagram({ code, ariaLabel }: MermaidDiagramProps) {
           style={{ fontSize: "var(--text-meta)" }}
         >
           {error
-            ? "Mermaid renderer reported an error — showing source. "
-            : "Mermaid package not installed — showing source. "}
+            ? "Mermaid renderer reported an error - showing source. "
+            : "Mermaid package not installed - showing source. "}
           Install with{" "}
           <code className="font-mono text-on-surface">npm install mermaid</code>{" "}
           to render the diagram, or paste the source into{" "}

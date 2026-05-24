@@ -1,4 +1,4 @@
-"""B2.5 — Edge type refinement.
+"""B2.5 - Edge type refinement.
 
 All extractors default to `cites`. This module promotes the generic edge
 type to the most specific one supported by `EdgeType` based on:
@@ -35,7 +35,7 @@ def refine_edge_type(
     src = source_node.source
     src_sub = source_node.source_subcorpus
 
-    # Statute chronology — keyword-driven, source/target need both be Finlex.
+    # Statute chronology - keyword-driven, source/target need both be Finlex.
     if any(m in snippet for m in _AMEND_MARKERS) and (
         src == "finlex" and (target_node is None or target_node.source == "finlex")
     ):
@@ -52,7 +52,7 @@ def refine_edge_type(
         if src_sub == "kho" and target_node.source == "finlex":
             return "applies"
 
-    # EU directive — kept as "transposes" even though the target dangles.
+    # EU directive - kept as "transposes" even though the target dangles.
     # The dangling target_ref pattern is `NNNN/NNN/EY` or `/EU`.
     target_ref = edge.target_ref or ""
     if target_ref.upper().endswith(("/EY", "/EU", "/ETY")):

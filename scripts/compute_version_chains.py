@@ -1,4 +1,4 @@
-"""Step 10 / Move 3 — Compute per-SECTION version chains.
+"""Step 10 / Move 3 - Compute per-SECTION version chains.
 
 Reads the ``amends_section`` edges written by Move 2 and, for every
 SECTION that has at least one inbound edge, builds a chronological
@@ -16,7 +16,7 @@ The chain is stored under ``Node.metadata.version_chain`` (in-place
 update of ``metadata_json``). ``GraphStore.text_at(section_id, as_of)``
 in Move 4 plays it back to a point in time.
 
-Affected nodes only — clean SECTIONs (no inbound amends_section edges)
+Affected nodes only - clean SECTIONs (no inbound amends_section edges)
 are not touched, so the script is cheap on incremental graphs. A full
 graph rebuild that wipes ``metadata_json`` requires a re-run.
 
@@ -67,7 +67,7 @@ def _iter_inbound_edges(
     """Yield (target_section_id, source_block_id, properties_dict) for
     every resolved ``amends_section`` edge.
 
-    Dangling edges (target_id is NULL — those came from ``lisätään``
+    Dangling edges (target_id is NULL - those came from ``lisätään``
     ops on sections not yet in the consolidated law) are skipped: by
     construction they have no SECTION to attach a chain to. They will
     pick up a chain on the next re-ingestion that materialises the new §.
@@ -140,7 +140,7 @@ def _build_chain(
 
     Order: original first (provenance="original"), then amendments
     sorted by effective_date ascending. Steps with no effective_date go
-    *after* dated steps in their declaration order — they're a small
+    *after* dated steps in their declaration order - they're a small
     minority and erring towards "treated as recent" is safer than
     silently dropping them.
     """
@@ -166,7 +166,7 @@ def _build_chain(
             "provenance": verb,
             "text": props.get("new_text"),
             "amendment_block_id": src_id,
-            # Optional carry — useful for the UI's drill-down.
+            # Optional carry - useful for the UI's drill-down.
             "target_subsection": props.get("target_subsection"),
             "chain_complex": props.get("chain_complex", False),
         }

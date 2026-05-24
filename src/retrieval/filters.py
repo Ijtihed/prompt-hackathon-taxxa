@@ -1,7 +1,7 @@
 """Query-time filter inference for v1 retrieval.
 
 Keyword-based, intentionally narrow. Only emits filters that can actually be
-pushed down into the LanceDB ``where`` clause — i.e. fields that exist on
+pushed down into the LanceDB ``where`` clause - i.e. fields that exist on
 ``VectorRecord``. Year-as-of style filters (``effective_date <= 2024``) are
 deferred to Step 8's Clarifier because ``effective_date`` only lives on
 ``NodeMetadata``, never on the vector row.
@@ -17,7 +17,7 @@ from typing import Any
 
 
 # --------------------------------------------------------------------------
-# Trigger sets — Finnish first, English as a courtesy for mixed prompts.
+# Trigger sets - Finnish first, English as a courtesy for mixed prompts.
 # --------------------------------------------------------------------------
 
 # Phrases that signal the user wants the *currently in force* rule, not
@@ -54,12 +54,12 @@ _HISTORICAL_TRIGGERS = (
 )
 
 # Source-publisher triggers. Note these gate on the *publisher* (finlex vs
-# vero), not the subcorpus — finer-grained intent (e.g. "give me a Vero ohje")
+# vero), not the subcorpus - finer-grained intent (e.g. "give me a Vero ohje")
 # is rare in user queries and best left to the agent layer.
 #
 # Bare ``"law"`` / ``"act"`` were previously here and proved catastrophically
-# ambiguous: "under Finnish **law**" or "an **act** of Parliament" — generic
-# English phrases that mention statutes only incidentally — flipped the
+# ambiguous: "under Finnish **law**" or "an **act** of Parliament" - generic
+# English phrases that mention statutes only incidentally - flipped the
 # filter to ``source=finlex`` and silently excluded every Vero document.
 # The actual Finlex-specific markers are the publisher name and the
 # Finnish vocabulary; English ``statute`` is kept because no one uses it
@@ -83,7 +83,7 @@ _VERO_TRIGGERS = (
 )
 
 # Language triggers. Default is None (no filter) because the corpus is
-# overwhelmingly Finnish and the embedding model is multilingual — filtering
+# overwhelmingly Finnish and the embedding model is multilingual - filtering
 # on language=fi by default would hide the rare authoritative sv/en chunk.
 _LANGUAGE_TRIGGERS: dict[str, tuple[str, ...]] = {
     "fi": ("in finnish", "suomeksi", "suomen kielellä"),
@@ -92,7 +92,7 @@ _LANGUAGE_TRIGGERS: dict[str, tuple[str, ...]] = {
 }
 
 
-# Finland mention is too broad to act on alone — most queries about Finnish
+# Finland mention is too broad to act on alone - most queries about Finnish
 # tax don't say "in Finland". We only fire a language filter when the user
 # explicitly asks for a language, not when they merely mention the country.
 
@@ -104,7 +104,7 @@ def infer_filters(query: str) -> dict[str, Any]:
     ``in_force``, ``source``, ``language``. The caller may merge in
     additional filters or drop these entirely.
 
-    Returns an empty dict when no trigger matches — meaning "no narrowing".
+    Returns an empty dict when no trigger matches - meaning "no narrowing".
     """
     q = query.lower()
     filters: dict[str, Any] = {}
@@ -113,14 +113,14 @@ def infer_filters(query: str) -> dict[str, Any]:
     asks_current = any(t in q for t in _USABLE_TRIGGERS)
 
     if asks_current and not asks_historical:
-        # ``usable`` is the strongest "current" signal — repealed law is
+        # ``usable`` is the strongest "current" signal - repealed law is
         # ``usable=false`` regardless of in_force semantics in mixed corpora.
         filters["usable"] = True
         filters["in_force"] = True
 
     asks_finlex = any(t in q for t in _FINLEX_TRIGGERS)
     asks_vero = any(t in q for t in _VERO_TRIGGERS)
-    # Only commit to a publisher when exactly one side fires — if both fire
+    # Only commit to a publisher when exactly one side fires - if both fire
     # the query is genuinely cross-source and we shouldn't narrow.
     if asks_finlex and not asks_vero:
         filters["source"] = "finlex"
@@ -136,7 +136,7 @@ def infer_filters(query: str) -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------
-# Year extraction — returned alongside filters for the reranker, not pushed
+# Year extraction - returned alongside filters for the reranker, not pushed
 # into LanceDB. The reranker uses it to bump rows whose publication_date is
 # at or before the asked-about year and to push down newer-than-question rows
 # slightly. This is the closest we can get to effective_date at v1.
@@ -149,7 +149,7 @@ def infer_as_of_year(query: str) -> int | None:
     """Extract an explicit four-digit year from the query, if any.
 
     Returns the most-recent year mentioned (handles "between 2019 and 2024"
-    by preferring 2024 — the answer is usually framed around the later
+    by preferring 2024 - the answer is usually framed around the later
     bound). Returns None when no year is present.
     """
     hits = _YEAR_RE.findall(query)
@@ -162,7 +162,7 @@ def infer_as_of_year(query: str) -> int | None:
 
 
 # --------------------------------------------------------------------------
-# Step 10 — point-in-time text resolution
+# Step 10 - point-in-time text resolution
 #
 # infer_as_of_date(query) returns the date the assembler should pass to
 # ``GraphStore.text_at()`` when fetching effective section text. The
@@ -178,7 +178,7 @@ def infer_as_of_year(query: str) -> int | None:
 
 
 # Triggers that force the as-of date to *today*. We map these explicitly
-# even though "today" is the default — the difference matters for the
+# even though "today" is the default - the difference matters for the
 # Verifier: an explicit "current" intent makes a TemporalMismatch a hard
 # error (the user asked for the current version); an implicit default
 # makes it a softer warning.
@@ -195,13 +195,13 @@ _AS_OF_TODAY_TRIGGERS = (
     "nyt voimassa",
 )
 
-# "vuonna YYYY" / "as of YYYY" / "YYYY tilanteessa" — explicit point-in-time.
+# "vuonna YYYY" / "as of YYYY" / "YYYY tilanteessa" - explicit point-in-time.
 _AS_OF_YEAR_RE = re.compile(
     r"\b(?:as\s+of|vuonna|year|tilanteessa|YYYY|in)\s*(\b(?:19|20)\d{2}\b)",
     re.IGNORECASE,
 )
 
-# "before YYYY" / "ennen YYYY" — produces YYYY-1-12-31.
+# "before YYYY" / "ennen YYYY" - produces YYYY-1-12-31.
 _BEFORE_YEAR_RE = re.compile(
     r"\b(?:before|prior\s+to|ennen)\s+(\b(?:19|20)\d{2}\b)",
     re.IGNORECASE,
@@ -212,7 +212,7 @@ def infer_as_of_date(query: str, *, today: "date_t | None" = None):  # noqa: F82
     """Map free-text query → a date for ``GraphStore.text_at(..., as_of=)``.
 
     Returns ``(as_of, explicit)`` where:
-      * ``as_of`` is a ``datetime.date`` — never None. When no temporal
+      * ``as_of`` is a ``datetime.date`` - never None. When no temporal
         marker fires we return today (the most useful default for
         "what does § N say" questions).
       * ``explicit`` is True when the date was derived from a query
@@ -227,7 +227,7 @@ def infer_as_of_date(query: str, *, today: "date_t | None" = None):  # noqa: F82
     base = today if today is not None else date_t.today()
     q = query.lower()
 
-    # "before YYYY" wins over a plain year — it carries a directional
+    # "before YYYY" wins over a plain year - it carries a directional
     # signal ("not later than YYYY-1").
     m = _BEFORE_YEAR_RE.search(q)
     if m:
@@ -242,7 +242,7 @@ def infer_as_of_date(query: str, *, today: "date_t | None" = None):  # noqa: F82
         try:
             yr = int(m.group(1))
             # End-of-year is the conservative point-in-time choice for
-            # "vuonna 2023" — pick the latest moment within the year so
+            # "vuonna 2023" - pick the latest moment within the year so
             # mid-year amendments get included.
             return date_t(yr, 12, 31), True
         except ValueError:

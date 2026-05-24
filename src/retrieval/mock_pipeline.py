@@ -1,4 +1,4 @@
-"""MockPipeline — returns canned AnswerResult objects with VARIED shapes.
+"""MockPipeline - returns canned AnswerResult objects with VARIED shapes.
 
 Used during the parallel-build phase. Swap for the real pipeline when ready.
 Returns different shapes per call to prevent downstream tracks from growing

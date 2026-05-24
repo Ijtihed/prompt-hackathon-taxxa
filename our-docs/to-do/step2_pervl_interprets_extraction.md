@@ -1,8 +1,8 @@
-# TO-DO — Step 2: Diagnose Zero `interprets`-IN Edges into PerVL
+# TO-DO - Step 2: Diagnose Zero `interprets`-IN Edges into PerVL
 
 **Owner:** Step 2 (edge extraction)
 **Discovered by:** Track F V7.2 pilot, 2026-05-23. See `findings/07_pilot_results.md`.
-**Priority:** Medium — affects all inheritance/gift-tax questions in the eval set (Q14, Q26, Q32, Q42, Q45). Doesn't block Track F.
+**Priority:** Medium - affects all inheritance/gift-tax questions in the eval set (Q14, Q26, Q32, Q42, Q45). Doesn't block Track F.
 
 ## Problem
 
@@ -27,7 +27,7 @@ Yet inheritance/gift-tax is one of the most-litigated parts of Finnish tax law, 
 
 ## Two possible causes (need to disambiguate)
 
-### Cause A — corpus gap (Vero PerVL guidance not in `data/raw/`)
+### Cause A - corpus gap (Vero PerVL guidance not in `data/raw/`)
 
 Check whether files like these exist in the Vero ingestion:
 - "Perusteoikaisu perintö- ja lahjaverotuksessa" kannanotto
@@ -36,7 +36,7 @@ Check whether files like these exist in the Vero ingestion:
 
 If none exist: this is an ingestion gap, not an extractor gap.
 
-### Cause B — extractor regex missed PerVL citation forms
+### Cause B - extractor regex missed PerVL citation forms
 
 The Finnish citation conventions for PerVL are:
 - `PerVL 18 §`
@@ -44,7 +44,7 @@ The Finnish citation conventions for PerVL are:
 - `perintö- ja lahjaverolain (378/1940) 38 §:n 3 momentti`
 - `PerVL 38 § 3 mom.`
 
-Compare with TVL forms (`TVL 85 §`, `Tuloverolain 34 a §`) which clearly work — what regex/anchor handling differs for PerVL?
+Compare with TVL forms (`TVL 85 §`, `Tuloverolain 34 a §`) which clearly work - what regex/anchor handling differs for PerVL?
 
 Likely suspects:
 - The abbreviation `PerVL` may not be in the extractor's law-abbreviation dictionary.
@@ -58,7 +58,7 @@ Likely suspects:
    WHERE source='vero' AND type='GUIDE'
      AND (title LIKE '%perint%' OR title LIKE '%lahja%');
    ```
-   Count and inspect — is the corpus carrying these docs?
+   Count and inspect - is the corpus carrying these docs?
 
 2. If yes: search the raw text of one of those Vero guides for PerVL citation strings. Did Step 2's extractor see them? Spot-check the LLM extraction prompt with one paragraph.
 

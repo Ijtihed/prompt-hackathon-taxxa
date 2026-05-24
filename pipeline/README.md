@@ -1,4 +1,4 @@
-# Step 1 pipeline — HTML → nodes → chunks
+# Step 1 pipeline - HTML → nodes → chunks
 
 Implements `our-docs/step-1-plan.md` for the Finnish legal corpus
 (Finlex + Vero) under `data/`.
@@ -23,7 +23,7 @@ python3 -m venv .venv && .venv/bin/pip install beautifulsoup4 lxml tiktoken
 
 ```
 pipeline/
-├── ingest.py                       # entry point — walks data/, dispatches, writes JSONL
+├── ingest.py                       # entry point - walks data/, dispatches, writes JSONL
 ├── nodes.py                        # Node dataclass + deterministic id helpers
 ├── chunks.py                       # SECTION-first packing + sentence-split fallback
 ├── tokens.py                       # tiktoken cl100k_base counter
@@ -31,8 +31,8 @@ pipeline/
 ├── html_utils.py                   # BS4 helpers (heading detection, § parsing)
 ├── verify.py                       # post-run quality checks (spec §9)
 └── parsers/
-    ├── finlex_konsolidoitu.py      # Laki/Asetus (säädöskokoelma) — clean h1/h2/h3
-    ├── finlex_amendments.py        # Laki/, Asetus/ — h1 + h4 amendment blocks
+    ├── finlex_konsolidoitu.py      # Laki/Asetus (säädöskokoelma) - clean h1/h2/h3
+    ├── finlex_amendments.py        # Laki/, Asetus/ - h1 + h4 amendment blocks
     ├── vero.py                     # Verohallinto guidance (Ohjeet/Päätökset/…)
     ├── kho.py                      # KHO case-law precedents
     └── treaty.py                   # Tuloverosopimukset (tax treaties)
@@ -44,7 +44,7 @@ pipeline/
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `nodes.jsonl`     | one Node per line: `{id, type, text, parent_id, order, label, title, source, source_subcorpus, source_file, source_html_id, law_id, metadata}`                                                  |
 | `chunks.jsonl`    | one Chunk per line: `{chunk_id, section_id, law_id, node_ids[], text, token_count, source, source_subcorpus, source_file, oversized}`                                                            |
-| `hierarchy.json`  | `{law_id: {title, source, chapters[], sections[], subsections[], items[], amendments[], definitions[]}}` — fast lookup for any root document                                                     |
+| `hierarchy.json`  | `{law_id: {title, source, chapters[], sections[], subsections[], items[], amendments[], definitions[]}}` - fast lookup for any root document                                                     |
 | `stats.json`      | run summary: timings, counts, per-subcorpus breakdown                                                                                                                                            |
 | `errors.log`      | parser exceptions (one block per failed file). Should be empty.                                                                                                                                  |
 

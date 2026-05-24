@@ -1,11 +1,11 @@
-# Step 4 — Embedding and indexing (4b done, 4a in progress)
+# Step 4 - Embedding and indexing (4b done, 4a in progress)
 
 Built Step 4 per `04_embedding_and_indexing.md`. Substep split was honoured:
 
 | Substep | Status | Notes |
 |---------|--------|-------|
-| **4a — Embeddings + LanceDB** | **in progress** | full embedder running in background; pilot already passed |
-| **4b — SQLite graph store**   | **done**        | load + verify both green |
+| **4a - Embeddings + LanceDB** | **in progress** | full embedder running in background; pilot already passed |
+| **4b - SQLite graph store**   | **done**        | load + verify both green |
 
 Intermittent changelog: 4b is fully wrapped and the 4a pilot/spot-check is
 done; only the 147M-token corpus pass and the 4a.7 sanity check remain.
@@ -23,7 +23,7 @@ src/indexing/
 
 scripts/
 ├── embed_pilot.py       # 4a.3 stratified 1000-chunk pilot
-├── embed_chunks.py      # 4a.4 full pass — streaming, batched, resumable, --dry-run
+├── embed_chunks.py      # 4a.4 full pass - streaming, batched, resumable, --dry-run
 ├── spot_check_pilot.py  # 4a.3 ten Finnish tax queries → findings/04a_pilot.md
 └── load_graph.py        # 4b.2 bulk loader: nodes → edges → degree backfill
 
@@ -32,10 +32,10 @@ pipeline/
 
 findings/
 ├── 04a_pilot.md         # 10-query spot-check + token math (9/10 plausibly-relevant)
-└── 04b_load_report.md   # row counts, edge-type breakdown, top hubs — PASS verdict
+└── 04b_load_report.md   # row counts, edge-type breakdown, top hubs - PASS verdict
 ```
 
-## 4a — Embeddings (in progress)
+## 4a - Embeddings (in progress)
 
 ### Pilot (`scripts/embed_pilot.py`)
 
@@ -47,7 +47,7 @@ to `output/lancedb_pilot/`. ~22 s wall, 540,616 tokens.
 `input_type="query"` (the asymmetry matters on voyage-3-large). Result:
 **9 of 10 queries had a plausibly-relevant chunk in top-3**, comfortably
 above the 7/10 gate in the doc. Only Q5 ("asianomistajan oikeus") was
-marginal — the model surfaced civil-procedure §s before criminal ones; a
+marginal - the model surfaced civil-procedure §s before criminal ones; a
 known Finnish near-synonym pitfall, not a corpus problem.
 
 ### Dry-run vs reality
@@ -78,7 +78,7 @@ Per subcorpus (the pilot oversampled long-text categories):
 | vero_paatos     |   1,744  | 290        | 86 |
 | vero_kannanotto |     338  | 592        | 73 |
 
-Tiktoken (cl100k_base) is a proxy for Voyage's tokenizer — calibrating
+Tiktoken (cl100k_base) is a proxy for Voyage's tokenizer - calibrating
 against the pilot's actual Voyage usage suggests Voyage counts ~4% higher,
 so realistic spend is ~182M tokens. Under the 200M free tier with ~10%
 headroom; below the 180M caution threshold the doc set is the proxy
@@ -106,7 +106,7 @@ ETA:                ~1.6 hours
 
 The script:
 
-- streams `chunks.jsonl` (no full load — file is 691 MB)
+- streams `chunks.jsonl` (no full load - file is 691 MB)
 - preloads `nodes_enriched.jsonl` into the compact `NodeIdxEntry` index
   for prefix composition (~11 s, ~1.5 GB peak)
 - batches 128 chunks → `client.embed(... input_type="document",
@@ -114,7 +114,7 @@ The script:
 - **resumable**: on restart it pulls existing `chunk_id`s out of LanceDB
   and skips them, so an interrupted run costs only one batch of redo work
 - progress prints every ~5,000 chunks (block-buffered through the `tee`
-  pipe — direct LanceDB row counts are the live signal, not stdout)
+  pipe - direct LanceDB row counts are the live signal, not stdout)
 
 ### Embedding text composition (`text_composition.py`)
 
@@ -130,21 +130,21 @@ Pure function over the chunk text + the section's `node_index` chain.
 Field collapse rules:
 
 - Source-status clause omitted if `in_force` is `None` (Step 3
-  hasn't populated yet — doesn't apply to us, full corpus is enriched).
+  hasn't populated yet - doesn't apply to us, full corpus is enriched).
 - Path line walks the leaf's `parent_id` chain, preferring `title` over
   `label` at each level; the list is silently truncated if the chain
   breaks (corrupt or partial index).
 - Title line uses leaf `title` or `label`; skipped if both are missing.
 
-## 4b — Graph store (done)
+## 4b - Graph store (done)
 
 ### Schema (`scripts/load_graph.py`)
 
 SQLite, exactly the schema in `04_embedding_and_indexing.md §4b.1`.
 Indices that matter for retrieval:
 
-- `idx_edges_source(source_id, type)` — outbound traversal
-- `idx_edges_target(target_id, type) WHERE target_id IS NOT NULL` —
+- `idx_edges_source(source_id, type)` - outbound traversal
+- `idx_edges_target(target_id, type) WHERE target_id IS NOT NULL` -
   inbound traversal (partial index excludes dangling automatically)
 - `idx_edges_type(type)`, `idx_nodes_type`, `idx_nodes_source`,
   `idx_nodes_parent`
@@ -165,7 +165,7 @@ third pass:
    `executemany` UPDATE in 20k-row batches.
 
 Result: 1,967,769 of 1,967,776 nodes have non-empty `degree` (7 orphan
-nodes have neither in- nor out-edges — plausible for isolated roots).
+nodes have neither in- nor out-edges - plausible for isolated roots).
 
 ### Final run on the full corpus
 
@@ -193,7 +193,7 @@ Edge-type breakdown:
 
 `output/graph.db` is **3.2 GB** with WAL on.
 
-### Quality checks (`pipeline/verify_graph.py`) — PASS
+### Quality checks (`pipeline/verify_graph.py`) - PASS
 
 All 4b.4 invariants hold:
 
@@ -247,7 +247,7 @@ dry-run output so future re-estimates are honest about the uncertainty.
 ### LanceDB schema mirrors `VectorRecord` Pydantic model
 
 Used an explicit `pyarrow.Schema` rather than letting LanceDB infer from
-the first batch — keeps the column types stable across resumed runs and
+the first batch - keeps the column types stable across resumed runs and
 lets us declare `vector` as a fixed-size 1024-element float32 list.
 `publication_date` stored as ISO string because LanceDB's date support is
 uneven across versions and we don't need date arithmetic at the store
@@ -256,7 +256,7 @@ layer.
 ### SQLite over Kùzu/Neo4j
 
 Per the doc. At 1.97M nodes + 2.2M edges with BFS limited to 1–2 hops
-and indices on both directions, SQLite is fast enough — `get_neighbors`
+and indices on both directions, SQLite is fast enough - `get_neighbors`
 returns in sub-ms for typical sections, and the whole load runs in ~65 s.
 Migration path to Kùzu later is a write-side concern only.
 
@@ -285,20 +285,20 @@ manual interrupts all recover with at most one duplicated batch.
 ## How to run
 
 ```bash
-# 4a — embeddings (compose-only smoke; no API)
+# 4a - embeddings (compose-only smoke; no API)
 .venv/bin/python -m scripts.embed_pilot --no-embed --n 200
 
-# 4a — pilot (1000 chunks, ~540k tokens, ~22 s)
+# 4a - pilot (1000 chunks, ~540k tokens, ~22 s)
 .venv/bin/python -m scripts.embed_pilot --n 1000
 .venv/bin/python -m scripts.spot_check_pilot
 
-# 4a — full pass token estimate (no API)
+# 4a - full pass token estimate (no API)
 .venv/bin/python -m scripts.embed_chunks --dry-run
 
-# 4a — full pass (resumable; expect ~1.6 hours)
+# 4a - full pass (resumable; expect ~1.6 hours)
 .venv/bin/python -m scripts.embed_chunks
 
-# 4b — graph load + verify
+# 4b - graph load + verify
 .venv/bin/python -m scripts.load_graph --rebuild
 .venv/bin/python -m pipeline.verify_graph
 ```
@@ -314,7 +314,7 @@ Quick liveness check during a long embed run:
 | file                          |     size | contents                                                                |
 |-------------------------------|---------:|-------------------------------------------------------------------------|
 | `lancedb_pilot/chunks.lance/` |    ~6 M  | 1000-row pilot table; safe to delete after full pass is verified        |
-| `lancedb/chunks.lance/`       | growing  | full vector index — 1024-dim float32 + filterable payload columns       |
+| `lancedb/chunks.lance/`       | growing  | full vector index - 1024-dim float32 + filterable payload columns       |
 | `graph.db`                    |    3.2 G | SQLite with `nodes` + `edges`; `metadata_json` includes cached `degree` |
 
 ## Sequencing notes
@@ -324,9 +324,9 @@ Quick liveness check during a long embed run:
   Recommend waiting for the full embed to land before benchmarking
   retrieval quality at scale.
 - **Step 7 (degree-capped expansion)** consumes `metadata.degree` from
-  the graph store — already populated and readable from
+  the graph store - already populated and readable from
   `GraphStore.get_degree()`.
-- **Step 8 (verifier)** uses `authority_rank` from the chunk payload —
+- **Step 8 (verifier)** uses `authority_rank` from the chunk payload -
   populated for every vector LanceDB row from `nodes_enriched.jsonl`.
 
 ## Open items (will close once 4a finishes)

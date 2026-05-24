@@ -1,4 +1,4 @@
-"""B3.1 — Vero metadata extractor.
+"""B3.1 - Vero metadata extractor.
 
 Vero HTML layouts vary by sub-source (ohje vs päätös vs KVL) but share a
 common shell:
@@ -15,17 +15,17 @@ common shell:
 
 What we extract:
 
-- ``publication_date`` — first parseable date in the body, preferring
+- ``publication_date`` - first parseable date in the body, preferring
   the start of a date range when present.
-- ``effective_date`` — same as publication for most Vero docs.
-- ``repeal_date`` — end of an explicit validity range (KVL
+- ``effective_date`` - same as publication for most Vero docs.
+- ``repeal_date`` - end of an explicit validity range (KVL
   "Ennakkoratkaisu ajalle … – …"), else null.
-- ``in_force`` — False if the body contains ``KUMOTTU`` / ``(kumottu)``
+- ``in_force`` - False if the body contains ``KUMOTTU`` / ``(kumottu)``
   / ``poistettu`` markers near the top, else True (Vero guidance is
   assumed current unless explicitly retired).
-- ``superseded_by`` — left null; the pipeline runner fills this from
+- ``superseded_by`` - left null; the pipeline runner fills this from
   ``tämä ohje korvaa`` markers when present (B3.1 Vero notes).
-- ``language`` — Vero HTML rarely carries a ``lang`` attribute; default
+- ``language`` - Vero HTML rarely carries a ``lang`` attribute; default
   to ``"fi"``, override if Swedish / English content is detected.
 """
 from __future__ import annotations
@@ -38,7 +38,7 @@ from .metadata_finlex import RootMetadata
 
 # Validity range: "ajalle 1.1.1995 - 31.12.1995" / "ajalle 8.4.2016–31.12.2017"
 _RANGE_RE = re.compile(
-    r"ajalle\s+(\d{1,2}\.\d{1,2}\.\d{4})\s*[-–—]\s*(\d{1,2}\.\d{1,2}\.\d{4})",
+    r"ajalle\s+(\d{1,2}\.\d{1,2}\.\d{4})\s*[-–-]\s*(\d{1,2}\.\d{1,2}\.\d{4})",
     re.IGNORECASE,
 )
 
@@ -48,7 +48,7 @@ _YEAR_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Body publication marker — Vero päätökset use the same Finnish form.
+# Body publication marker - Vero päätökset use the same Finnish form.
 _VOIMAAN_RE = re.compile(
     r"tulee\s+voimaan[^<.]{0,80}",
     re.IGNORECASE,
@@ -65,7 +65,7 @@ _KUMOTTU_RE = re.compile(
     re.IGNORECASE,
 )
 
-# "tämä ohje korvaa …" — supersession marker. We just flag presence; the
+# "tämä ohje korvaa …" - supersession marker. We just flag presence; the
 # actual target document is resolved in a later pass when Step 2 edges are
 # available. For now we don't try to parse the referenced ohje from prose.
 _KORVAA_RE = re.compile(r"tämä\s+ohje\s+korvaa", re.IGNORECASE)
@@ -88,7 +88,7 @@ def extract(html: str, *, title: str | None = None) -> RootMetadata:
 
 def _extract_language(html: str) -> str:
     # Vero HTML rarely has a lang attr. Could heuristically detect Swedish
-    # by looking for åäö clusters specific to Swedish vs Finnish — skip
+    # by looking for åäö clusters specific to Swedish vs Finnish - skip
     # for v1, treat all Vero docs as Finnish until a real Swedish doc
     # shows up in the corpus.
     return "fi"
@@ -160,6 +160,6 @@ def _extract_in_force(html: str, repeal: date | None) -> bool:
 
 
 def has_korvaa_marker(html: str) -> bool:
-    """True if the body contains 'tämä ohje korvaa' — used by the runner
+    """True if the body contains 'tämä ohje korvaa' - used by the runner
     to flag supersession candidates for follow-up resolution."""
     return bool(_KORVAA_RE.search(html))

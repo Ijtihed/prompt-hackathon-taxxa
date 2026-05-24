@@ -30,7 +30,7 @@ def parse_html(raw: str | bytes) -> BeautifulSoup:
     encoding sniffer would otherwise mis-detect them as Latin-1 and
     silently produce double-encoded Finnish characters
     (e.g. ``päätös`` → ``pรครคtรถs``) in every downstream chunk. The whole
-    corpus is verified UTF-8 — assume that and don't sniff.
+    corpus is verified UTF-8 - assume that and don't sniff.
     """
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8", errors="replace")

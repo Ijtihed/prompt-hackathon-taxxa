@@ -1,4 +1,4 @@
-"""Extractor agent — query-time citation extraction.
+"""Extractor agent - query-time citation extraction.
 
 Per Step 8 brief (B8.3):
     Triggers when a retrieved chunk contains citation-like phrasing that
@@ -88,7 +88,7 @@ def extractor(text: str, source_node_meta: dict[str, Any]) -> list[Edge]:
             )
         except Exception:
             # Pydantic validation failure (e.g. confidence out of range after
-            # coercion, or invalid literal). Drop this edge — don't poison
+            # coercion, or invalid literal). Drop this edge - don't poison
             # the batch.
             continue
         edges.append(edge)

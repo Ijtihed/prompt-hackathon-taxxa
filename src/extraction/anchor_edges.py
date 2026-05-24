@@ -1,10 +1,10 @@
-"""B2.2 — Anchor-based edge extraction.
+"""B2.2 - Anchor-based edge extraction.
 
 Walk one raw HTML file, find every `<a href>`, attribute the anchor to a
 source node from `NodeIndex`, normalize the href into a `CitationKey`, and
 yield `RawMatch` records for the downstream resolver.
 
-Each emitted match also carries a `(start_char, end_char)` span — used by
+Each emitted match also carries a `(start_char, end_char)` span - used by
 the regex pass to avoid double-extracting the same reference. For anchor
 edges we always return `(-1, -1)` (no span); the regex pass falls back to
 substring de-duplication using each match's `target_ref` instead. Tradeoff:
@@ -45,7 +45,7 @@ def extract_anchor_edges(
 
     Anchors with `href` pointing to fragments (`#…`), or that `parse_href`
     cannot interpret, are skipped. Anchors whose href is a known out-of-corpus
-    pattern (e.g. EU directives) are still emitted — the resolver will mark
+    pattern (e.g. EU directives) are still emitted - the resolver will mark
     them dangling with `out_of_corpus`.
     """
     try:

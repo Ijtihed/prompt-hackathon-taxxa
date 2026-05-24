@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 /**
- * `cn` — the standard shadcn/ui className merge helper.
+ * `cn` - the standard shadcn/ui className merge helper.
  * Combines clsx (conditional classes) + tailwind-merge (resolves conflicting utilities).
  *
  * @example

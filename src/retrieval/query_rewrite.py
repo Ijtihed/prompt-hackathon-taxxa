@@ -1,16 +1,16 @@
-"""LLM-driven query expansion — Plan A from step-10's open items.
+"""LLM-driven query expansion - Plan A from step-10's open items.
 
 The Finnish tax corpus has authoritative answers buried in dense Finnish
 administrative prose (Verohallinto päätökset, Vero ohjeet). When a user
-asks in English — "What is the maximum daily withholding tax percentage?"
-— Voyage's multilingual embedding closes some of the lexical distance
+asks in English - "What is the maximum daily withholding tax percentage?"
+- Voyage's multilingual embedding closes some of the lexical distance
 but not enough: the relevant päätös chunks rank ~138 in pure vector
 search because the English question shares almost no surface tokens
 with the Finnish administrative vocabulary
 ("ennakonpidätysprosentti", "enimmäismäärä", "Verohallinnon päätös").
 
 This module performs one short LLM call before retrieval to rewrite the
-question into a multilingual keyword bag — original English/Finnish
+question into a multilingual keyword bag - original English/Finnish
 terms plus Finnish equivalents plus likely document-type signals. The
 expanded string flows into both the embedder and the BM25 (FTS) backend
 of the hybrid retriever (step-10 Fix B.2). The dual hit widens the
@@ -30,7 +30,7 @@ Key design choices:
   log a warning. Retrieval keeps working at pre-Plan-A quality; no
   pipeline failure escalates to the user.
 - **Featherless / DeepSeek-V4-Pro.** Same OpenAI-compatible client
-  used by ``src/retrieval/generate.py`` — reuses its singleton +
+  used by ``src/retrieval/generate.py`` - reuses its singleton +
   ``.env`` API-key loading so this module works without extra
   environment setup. Round-trip is ~150–300 ms after warmup.
 """
@@ -49,7 +49,7 @@ from src.retrieval.generate import get_client
 logger = logging.getLogger(__name__)
 
 
-# DeepSeek-V4-Pro via Featherless — same model used everywhere in the
+# DeepSeek-V4-Pro via Featherless - same model used everywhere in the
 # pipeline. Query expansion is on the hot path; round-trip ~150-300ms.
 MODEL = "deepseek-ai/DeepSeek-V4-Pro"
 
@@ -58,7 +58,7 @@ MODEL = "deepseek-ai/DeepSeek-V4-Pro"
 TEMPERATURE = 0.0
 
 # Hard cap on the LLM output. Bumped from 300 → 450 when the prompt grew
-# the document-type taxonomy — the expanded string now routinely includes
+# the document-type taxonomy - the expanded string now routinely includes
 # 8-15 Finnish terms plus the doc-type signal, so the model needs the
 # extra room to emit clean JSON without truncating.
 MAX_TOKENS = 450
@@ -77,7 +77,7 @@ both dense (semantic) and sparse (BM25) retrieval.
 
 Output a JSON object with three fields: ``expanded``,
 ``finnish_keywords``, ``year``. No markdown, no preamble, no
-explanation — just the JSON.
+explanation - just the JSON.
 
 ``expanded`` (string, ≤350 chars): the original question PLUS Finnish
 equivalents PLUS the controlling document type (see below) PLUS at
@@ -86,17 +86,17 @@ doubling: ennakonpidätys → ennakonpidätyksen,
 ennakonpidätysprosentti).
 
 ``finnish_keywords`` (list of 3-8 strings): the highest-value Finnish
-terms — specific statute names with §, document-type words, named
+terms - specific statute names with §, document-type words, named
 legal concepts. Prefer actual Finnish legal terminology over generic
 translations.
 
 ``year`` (integer or null): an explicit year mentioned in the
 question. Do NOT infer the current year.
 
-DOCUMENT TYPES — include the Finnish term for whichever fits the
+DOCUMENT TYPES - include the Finnish term for whichever fits the
 question. When in doubt, include more than one.
 
-- Statute (``laki``): binding framework. Major Finnish tax laws —
+- Statute (``laki``): binding framework. Major Finnish tax laws -
   Tuloverolaki (TVL), Arvonlisäverolaki (AVL), Elinkeinotulon
   verottamisesta annettu laki (EVL), Ennakkoperintälaki (EPL),
   Verotusmenettelylaki (VML), Perintö- ja lahjaverolaki (PerVL),
@@ -106,7 +106,7 @@ question. When in doubt, include more than one.
   (OVML). Include the law's full Finnish name AND its abbreviation
   whenever the question concerns a specific tax framework.
 
-- Decree (``asetus``): implementing rules —
+- Decree (``asetus``): implementing rules -
   ``ennakkoperintäasetus``, ``valtioneuvoston asetus …``. Often the
   controlling source for specific calculations and procedural
   mechanics. Include ``asetus`` when the question is about how-to /
@@ -127,7 +127,7 @@ question. When in doubt, include more than one.
   question is about an unusual edge case.
 
 - Court ruling (``KHO ratkaisu``, ``KHO ennakkopäätös``, ``korkein
-  hallinto-oikeus``): Supreme Administrative Court precedents — top
+  hallinto-oikeus``): Supreme Administrative Court precedents - top
   case-law authority.
 
 - Advance ruling (``KVL ennakkoratkaisu`` /
@@ -187,7 +187,7 @@ Output the JSON object now."""
 
 
 # Cheap year extractor (1900–2099). Used when the LLM returns no ``year``
-# but the original question contains an explicit one — defence in depth.
+# but the original question contains an explicit one - defence in depth.
 _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 
@@ -210,9 +210,9 @@ class ExpandedQuery:
 
 
 # Process-singleton cache. Keyed by (question, model, prompt_hash) so
-# model switches AND prompt edits both invalidate stale entries — without
+# model switches AND prompt edits both invalidate stale entries - without
 # the prompt hash, editing SYSTEM_PROMPT mid-session would silently
-# return rewrites generated by the old prompt. Unbounded by design —
+# return rewrites generated by the old prompt. Unbounded by design -
 # eval runs typically touch <100 distinct questions per process.
 _PROMPT_HASH = hashlib.sha1(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:10]
 _cache: dict[tuple[str, str, str], ExpandedQuery] = {}
@@ -227,7 +227,7 @@ def expand_query(
     """Rewrite ``question`` into a multilingual keyword bag.
 
     Soft-fails to ``ExpandedQuery(expanded=question, error=...)`` if the
-    LLM call fails — retrieval keeps working at pre-Plan-A quality.
+    LLM call fails - retrieval keeps working at pre-Plan-A quality.
     """
     q = question.strip()
     if not q:
@@ -262,8 +262,8 @@ def expand_query(
         )
         text = (resp.choices[0].message.content or "").strip()
         parsed = _parse_with_brace_repair(text)
-    except (LLMError, Exception) as e:  # noqa: BLE001 — soft-fail by design
-        logger.warning("query_rewrite: LLM call failed (%s) — using original", e)
+    except (LLMError, Exception) as e:  # noqa: BLE001 - soft-fail by design
+        logger.warning("query_rewrite: LLM call failed (%s) - using original", e)
         out = ExpandedQuery(
             original=q,
             expanded=q,
@@ -277,7 +277,7 @@ def expand_query(
 
     expanded = parsed.get("expanded")
     if not isinstance(expanded, str) or not expanded.strip():
-        # Provider returned a malformed object — fall back rather than
+        # Provider returned a malformed object - fall back rather than
         # propagate. The caller's retrieval still works on the original.
         expanded = q
 
@@ -308,7 +308,7 @@ def _parse_with_brace_repair(text: str):
     """JSON parser tolerant of DeepSeek's "missing opening brace" quirks.
 
     DeepSeek-V4-Pro in JSON mode occasionally returns output like
-    ``expanded": "..."}` — both the opening ``{`` and the opening quote
+    ``expanded": "..."}` - both the opening ``{`` and the opening quote
     of the first key are dropped. Less commonly, only ``{`` is missing.
     Try the canonical parsers first; if everything fails, attempt
     several repair prefixes in order.
@@ -326,7 +326,7 @@ def _parse_with_brace_repair(text: str):
     if not candidate.startswith("{"):
         # Case 1: missing opening ``{`` only.
         repairs.append("{" + candidate)
-        # Case 2: missing both ``{`` and the leading key-quote — text
+        # Case 2: missing both ``{`` and the leading key-quote - text
         # looks like ``expanded": "..."``. Detect a bare-identifier
         # followed by ``":`` and prepend ``{"``.
         if _BARE_KEY_PREFIX_RE.match(candidate):
@@ -352,7 +352,7 @@ def _parse_with_brace_repair(text: str):
 
 def _year_fallback(question: str) -> int | None:
     """Extract a four-digit year from ``question`` directly. Used when the
-    LLM returns no year — defence in depth in case the model misses an
+    LLM returns no year - defence in depth in case the model misses an
     explicit numeric year.
     """
     hits = _YEAR_RE.findall(question)

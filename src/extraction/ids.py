@@ -5,7 +5,7 @@ Two jobs:
 1. Parse the citation strings we see in text (e.g. "§ 117", "AVL 102 §",
    "KHO 2023:55", "2006/112/EY", an `<a href>` URL) into a structured
    `CitationKey`. The key carries either a (year, number) pair, a KHO
-   reference, an EU directive ref, or just a section marker — whatever
+   reference, an EU directive ref, or just a section marker - whatever
    the raw form provided.
 
 2. Map a CitationKey to one of:
@@ -19,7 +19,7 @@ Two jobs:
 
 Finnish statutes are addressed in a few ways and we collapse them into one
 key shape. The truth source is the `https://www.finlex.fi/akn/fi/act/statute/YYYY/NNN`
-URL form — anchors give us that exactly. Plain-text citations like
+URL form - anchors give us that exactly. Plain-text citations like
 "AVL 102 §" or "tuloverolain 4 §" map to a (law-abbreviation/name, section)
 pair that NodeIndex must resolve via its title index.
 """
@@ -33,7 +33,7 @@ from typing import Optional
 # ---------------------------------------------------------------------------
 # Common Finnish-legal abbreviations → canonical full names.
 # Used by the regex extractors when they see something like "AVL 102 §".
-# Keep small and high-precision — this is *recall* via the abbreviation
+# Keep small and high-precision - this is *recall* via the abbreviation
 # index; precision via NodeIndex's title lookup.
 # ---------------------------------------------------------------------------
 LAW_ABBREVIATIONS: dict[str, str] = {
@@ -81,7 +81,7 @@ class CitationKey:
     subsection: Optional[int] = None  # momentti
     item: Optional[str] = None        # kohta marker
 
-    # Plain-name hint, e.g. "tuloverolaki" — looked up via title index
+    # Plain-name hint, e.g. "tuloverolaki" - looked up via title index
     law_hint: Optional[str] = None
 
     # KHO precedent

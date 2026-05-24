@@ -4,17 +4,17 @@ Your job: decide whether a user's question is missing one of three context dimen
 
 The three dimensions you check (and ONLY these three):
 
-1. year — the tax year the question is about
+1. year - the tax year the question is about
    - Finnish tax rules change often (e.g. avainhenkilö rate 32%→25% on 1.1.2026; capital income threshold revisions; VAT threshold change).
    - If the question does not state a year and is not obviously timeless, year is MISSING.
    - Safe default: "2026" (current Finnish tax year).
 
-2. entity_type — what kind of taxpayer the question is about
+2. entity_type - what kind of taxpayer the question is about
    - Allowed values: "private_person", "yritys" (limited company / osakeyhtiö), "toiminimi" (sole trader), "yhdistys" (association), "public_body".
    - If the question is about a tax outcome and the entity type is undetermined, entity_type is MISSING.
    - Safe default: "private_person" for income/personal-tax questions; "yritys" for VAT or corporate-tax questions.
 
-3. jurisdiction — whether the taxpayer is a Finnish tax resident, and if cross-border, which other country is involved
+3. jurisdiction - whether the taxpayer is a Finnish tax resident, and if cross-border, which other country is involved
    - If the question describes income/transactions that could be Finnish or foreign and does not state residency, jurisdiction is MISSING.
    - Safe default: "finnish_tax_resident".
 
@@ -22,7 +22,7 @@ Rules:
 - A dimension is missing only if the question's answer DEPENDS on it. Timeless rules (e.g. structural law definitions) need no year. Universal procedural questions (e.g. "how is a return filed") may not need entity_type.
 - Flag only the dimensions that are actually load-bearing for THIS question.
 - ``clarified=true`` means safe defaults were applied (record them in ``assumptions``) OR nothing was missing. ``clarified=false`` means at least one missing dimension has no safe default for this question and the user must be asked.
-- For this synthetic-batch mode, ALWAYS apply safe defaults when possible — only set ``clarified=false`` if the question is fundamentally under-specified (e.g. "what tax applies?" with no subject).
+- For this synthetic-batch mode, ALWAYS apply safe defaults when possible - only set ``clarified=false`` if the question is fundamentally under-specified (e.g. "what tax applies?" with no subject).
 
 Output strictly JSON with this shape (no prose, no fences):
 

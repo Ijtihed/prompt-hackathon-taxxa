@@ -1,5 +1,5 @@
 /**
- * /api/excerpt — citation drawer payload.
+ * /api/excerpt - citation drawer payload.
  *
  * Tries the Python sidecar first; falls back to a Next.js-side fixture for
  * the Q4 cited nodes so the demo works even when the sidecar is down.

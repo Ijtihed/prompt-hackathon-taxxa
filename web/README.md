@@ -1,7 +1,7 @@
-# Track G — Demo UI
+# Track G - Demo UI
 
 Streamlit-based demo frontend for the Taxxa GraphRAG hackathon project.
-Mirrors `our-docs/hybrid_cinematic_concept.md` — chat shell + inline memo
+Mirrors `our-docs/hybrid_cinematic_concept.md` - chat shell + inline memo
 on the left, cinematic reasoning panel (graph traversal + agent timeline) on
 the right.
 
@@ -11,10 +11,10 @@ Streamlit is installed inside the project venv (`.venv/`), not globally.
 From the repo root, either:
 
 ```bash
-# Option A — full path (no activation needed)
+# Option A - full path (no activation needed)
 .venv/bin/streamlit run web/app.py
 
-# Option B — activate the venv first, then run normally
+# Option B - activate the venv first, then run normally
 source .venv/bin/activate
 streamlit run web/app.py
 ```
@@ -22,7 +22,7 @@ streamlit run web/app.py
 Streamlit will print a `http://localhost:8501` URL. Open it.
 
 > First-time setup (if the venv is empty): `.venv/bin/python -m pip install streamlit playwright pydantic`
-> — Playwright is only needed if you want to re-run the screenshot tests.
+> - Playwright is only needed if you want to re-run the screenshot tests.
 
 ## Files
 
@@ -59,7 +59,7 @@ Comment the first line, uncomment the second pair. Nothing else changes.
 
 - **The 3 preloaded questions** dispatch to deterministic, hand-crafted
   `AnswerResult` objects in `web/data/demo_overrides.py`. Stage demo never
-  re-rolls — same animation every time. See `DEMO_QUESTIONS.md`.
+  re-rolls - same animation every time. See `DEMO_QUESTIONS.md`.
 - **Free-text input** falls through to `ANSWER_FN(question)` (MockPipeline
   for now). The dispatch seeds `random` by the question hash, so a given
   typed question produces the same `MockPipeline` variant on every Replay
@@ -86,25 +86,25 @@ this cache.
 
 - Show **Q1** first (single citation, short cinematic). Calibrates the
   audience on what the baseline does.
-- Show **Q12** next. Narrate: "Watch the graph — the vector hit lands on the
+- Show **Q12** next. Narrate: "Watch the graph - the vector hit lands on the
   KHO precedent, then the BFS walks the citation edges to pull in the
   KVL ruling and the Vero guidance." Edges-added counter ticks 0 → 1.
 - Close with **Q41**. Narrate: "The Extractor just wrote a new edge back
-  to the graph — it'll be there next time someone asks about avainhenkilö."
-  Then: "The Verifier surfaced a conflict — the Vero kannanotto from 2020
+  to the graph - it'll be there next time someone asks about avainhenkilö."
+  Then: "The Verifier surfaced a conflict - the Vero kannanotto from 2020
   still references the old 48-month cap, the statute from 2025 says 84.
   The system picks the higher authority rank and tells you that's what
   it did." Edges-added 0 → 1, conflicts 0 → 1.
 - Skip/Replay are wired. Use Replay on the third question to give the
   judges a second look at the graph walk.
 - The "V3.2 provisional" pill in the header is hover-targeted at any
-  Finnish tax expert in the audience — it advertises that the rank values
+  Finnish tax expert in the audience - it advertises that the rank values
   are unsigned and invites feedback.
 
 ## Known limitations
 
 - The cinematic animation timeline is **narratively ordered**, not
-  algorithmically faithful — agents activate sequentially even though a
+  algorithmically faithful - agents activate sequentially even though a
   real pipeline would interleave them. Documented in
   `hybrid_cinematic_concept.md` under "Honest caveats."
 - The `3.4 s` displayed total time is a simulated placeholder. The real

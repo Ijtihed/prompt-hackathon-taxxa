@@ -11,7 +11,7 @@ Wires:
 Returns the schema-locked ``AnswerResult`` from src.models so v2 and the
 agentic pipeline can be swapped in without UI/eval changes.
 
-The pipeline is stateful at the boundaries — it holds a ``VectorRetriever``
+The pipeline is stateful at the boundaries - it holds a ``VectorRetriever``
 and a ``GraphStore`` for the lifetime of the process so each ``answer()``
 call doesn't reopen LanceDB and SQLite. Construct once per process; call
 ``answer()`` many times.
@@ -74,7 +74,7 @@ class Pipeline:
         t_total = time.perf_counter()
 
         # 1. Filters --------------------------------------------------------
-        # Filter inference runs on the ORIGINAL question — the user's
+        # Filter inference runs on the ORIGINAL question - the user's
         # actual intent shouldn't be diluted by the LLM rewrite.
         t = time.perf_counter()
         filters = infer_filters(question)
@@ -91,7 +91,7 @@ class Pipeline:
         as_of, as_of_explicit = infer_as_of_date(question)
 
         # 1b. Query rewrite -------------------------------------------------
-        # Plan A — one short LLM call to add Finnish equivalents and
+        # Plan A - one short LLM call to add Finnish equivalents and
         # likely document-type signals before retrieval. Soft-fails to
         # the original question on any LLM error. See
         # ``src/retrieval/query_rewrite.py`` for the design notes.
@@ -223,7 +223,7 @@ def answer(
 
 
 # ----------------------------------------------------------------------
-# Internal — convert intermediate state into AnswerResult.
+# Internal - convert intermediate state into AnswerResult.
 # ----------------------------------------------------------------------
 
 
@@ -264,7 +264,7 @@ def _build_answer_result(
     timings: dict[str, int],
     amendment_caveats: list[AmendmentCaveat] | None = None,
     expanded: ExpandedQuery | None = None,
-    as_of_used: "date_t | None" = None,  # noqa: F821 — local import below
+    as_of_used: "date_t | None" = None,  # noqa: F821 - local import below
     as_of_explicit: bool = False,
     temporal_mismatches: list | None = None,
 ) -> AnswerResult:
@@ -308,12 +308,12 @@ def _build_answer_result(
             f"Query expanded with Finnish keywords: {kw}."
         )
 
-    # Step 10 — effective_text_provenance: for each retrieved chunk
+    # Step 10 - effective_text_provenance: for each retrieved chunk
     # whose section has a non-trivial chain, dump the applied steps as
     # plain dicts (model_dump) so the UI can render them without
     # importing the Pydantic models. ``effective_text`` lives inside
     # the chain (the last step's text) but we also expose it on the
-    # source rendering — so this dict is purely the *provenance*.
+    # source rendering - so this dict is purely the *provenance*.
     effective_text_provenance: dict[str, list[dict[str, Any]]] = {}
     for s in context.sources:
         if s.version_chain:

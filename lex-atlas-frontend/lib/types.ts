@@ -2,13 +2,13 @@
  * Shared types across the Next.js frontend and Python agent sidecar.
  * Mirrored from `lex_atlas/observability/events.py` on the Python side.
  *
- * Note: kept deliberately stable — every event type maps 1:1 to a UI affordance.
+ * Note: kept deliberately stable - every event type maps 1:1 to a UI affordance.
  */
 
 /** Node kinds in our LRMoo-aligned schema. Colors map 1:1 in `lib/colors.ts`. */
 export type NodeKind =
   | "work"        // F1 Work (statute, decree, treaty as abstract concept)
-  | "expression"  // F2 Expression — versioned text at a point in time
+  | "expression"  // F2 Expression - versioned text at a point in time
   | "component"   // Component-Work (§ as a concept)
   | "ctv"         // Component Temporal Version (SAT-Graph RAG §3.2)
   | "action"      // F28 Expression Creation (amendment, repeal, enactment)
@@ -19,7 +19,7 @@ export type NodeKind =
   | "jurisdiction" // FI, EU, Åland
   | "theme";      // SAT-Graph §3.6 curated structural community
 
-/** Edge relations — all carry bitemporal (t_valid, t_invalid) on the wire.
+/** Edge relations - all carry bitemporal (t_valid, t_invalid) on the wire.
  *  The list mixes two vocabularies on purpose:
  *    - LRMoo-style names (has_part / realized_in / creates / …) for the
  *      ontology layer the demo speaks publicly,
@@ -57,17 +57,17 @@ export type EdgeRelation =
   | "repeals"        // amendment Action that nullifies a section
   | "applies";       // KHO/KVL case applies a statutory provision
 
-/** Authority priority lattice — higher rank wins on conflict resolution. */
+/** Authority priority lattice - higher rank wins on conflict resolution. */
 export type AuthorityRank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /** Minimal node payload for the Constellation Map (63k nodes). Float32-packed on the wire. */
 export interface ConstellationNode {
   id: string;
   kind: NodeKind;
-  /** Initial position (optional — cosmos.gl will run force layout if absent). */
+  /** Initial position (optional - cosmos.gl will run force layout if absent). */
   x?: number;
   y?: number;
-  /** In-degree of incoming `references` / `interprets` edges — drives node size. */
+  /** In-degree of incoming `references` / `interprets` edges - drives node size. */
   weight?: number;
 }
 
@@ -96,7 +96,7 @@ export interface OrbitEdge {
   isConflict?: boolean;
 }
 
-/** One prior conversation turn — OpenAI-format role/content pair.
+/** One prior conversation turn - OpenAI-format role/content pair.
  *  Sent in the /api/ask request body on every follow-up. Mirror of
  *  ``ChatMessage`` in src/api/server.py. */
 export interface ChatMessage {
@@ -115,7 +115,7 @@ export interface ChatTurn {
   mode: "ask" | "draft_email" | "debate_only";
   /** HH:MM at submit-time, for the meta line. */
   timestamp: string;
-  /** Snapshot of `history` sent to /api/ask for this turn — all prior turns
+  /** Snapshot of `history` sent to /api/ask for this turn - all prior turns
    *  flattened to user/assistant pairs. Stored so a re-run could replay the
    *  exact context the model saw. */
   history: ChatMessage[];
@@ -163,7 +163,7 @@ export interface ClaimVerification {
   overlapScore: number;
 }
 
-/** The complete final answer payload — also the source for the PDF receipt. */
+/** The complete final answer payload - also the source for the PDF receipt. */
 export interface GroundedAnswer {
   question: string;
   asof: string;        // ISO date
@@ -189,7 +189,7 @@ export interface DebateTrace {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   SSE event types — every event from /api/ask maps to a UI affordance.
+   SSE event types - every event from /api/ask maps to a UI affordance.
    Mirrored exactly from lex_atlas/observability/events.py.
    ─────────────────────────────────────────────────────────────────────────── */
 

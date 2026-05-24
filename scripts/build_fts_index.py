@@ -4,7 +4,7 @@ Required for Fix B.2 (hybrid retrieval). With this index in place,
 ``VectorStore.search_hybrid`` can do a sparse BM25 search alongside the
 dense vector search and merge the results with Reciprocal Rank Fusion.
 
-The index is persistent — once built it lives in
+The index is persistent - once built it lives in
 ``output/lancedb/chunks.lance/_indices/``. Re-run after a full
 re-embedding or after adding many new chunks.
 
@@ -48,7 +48,7 @@ def main() -> int:
 
     existing = [i for i in tbl.list_indices() if COLUMN in (i.columns or [])]
     if existing and not args.rebuild:
-        print(f"[fts] index on '{COLUMN}' already exists — skipping. "
+        print(f"[fts] index on '{COLUMN}' already exists - skipping. "
               f"Pass --rebuild to drop and rebuild.")
         for idx in existing:
             print(f"  {idx}")
@@ -67,7 +67,7 @@ def main() -> int:
         COLUMN,
         replace=True,
         with_position=True,
-        # Default tokenizer is ``simple`` (Unicode aware) — fine for Finnish
+        # Default tokenizer is ``simple`` (Unicode aware) - fine for Finnish
         # since LanceDB doesn't ship a Finnish-specific stemmer. Calling
         # this out so future maintainers know it's intentional.
     )

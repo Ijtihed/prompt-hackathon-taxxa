@@ -37,7 +37,7 @@ DEFINITION
 RULE
 OBLIGATION
 EXCEPTION
-(Only created if clearly structurally indicated in text — NOT inferred)
+(Only created if clearly structurally indicated in text - NOT inferred)
 
 3.3 Metadata nodes
 TITLE

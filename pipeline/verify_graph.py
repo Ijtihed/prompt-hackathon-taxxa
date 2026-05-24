@@ -1,4 +1,4 @@
-"""Step 4b.4 — Quality checks for ``output/graph.db``.
+"""Step 4b.4 - Quality checks for ``output/graph.db``.
 
 Rejects the load if any of the following invariants fail:
 
@@ -56,7 +56,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not GRAPH_DB.exists():
-        print(f"[verify] {GRAPH_DB} missing — run scripts/load_graph.py first")
+        print(f"[verify] {GRAPH_DB} missing - run scripts/load_graph.py first")
         return 2
 
     nodes_path = NODES_IN if NODES_IN.exists() else NODES_FALLBACK
@@ -205,11 +205,11 @@ def main() -> int:
 
     report.append("\n## Verdict\n")
     if violations:
-        report.append("**FAIL** — violations:\n")
+        report.append("**FAIL** - violations:\n")
         for v in violations:
             report.append(f"- {v}")
     else:
-        report.append("**PASS** — all invariants hold.")
+        report.append("**PASS** - all invariants hold.")
 
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text("\n".join(report), encoding="utf-8")

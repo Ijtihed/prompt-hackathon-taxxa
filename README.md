@@ -1,6 +1,6 @@
-# Taxxa — Finnish legal RAG / GraphRAG
+# Taxxa - Finnish legal RAG / GraphRAG
 
-> Fork of [`behramulukir/prompt-hackathon-taxxa`](https://github.com/behramulukir/prompt-hackathon-taxxa) — Aalto · Prompt Finance Hackathon 2026 entry by team **Lex Atlas / RAGTAG**.
+> Fork of [`behramulukir/prompt-hackathon-taxxa`](https://github.com/behramulukir/prompt-hackathon-taxxa) - Aalto · Prompt Finance Hackathon 2026 entry by team **Lex Atlas / RAGTAG**.
 
 ## Live demo
 
@@ -9,18 +9,29 @@
 | **Cinematic Next.js UI** *(deployed)* | **<https://taxxa-graphrag-demo.vercel.app>**                                                   |
 | Methodology write-up                  | <https://taxxa-graphrag-demo.vercel.app/methodology>                                           |
 | Ask page (interactive)                | <https://taxxa-graphrag-demo.vercel.app/ask>                                                   |
-| Streamlit demo *(self-hosted, free)*  | see [`web/`](web/) — one-click deploy on [Streamlit Community Cloud](https://streamlit.io/cloud) |
+| 90s walkthrough video                 | <https://taxxa-graphrag-demo.vercel.app/demo.mp4>                                              |
+| Streamlit demo *(self-hosted, free)*  | see [`web/`](web/) - one-click deploy on [Streamlit Community Cloud](https://streamlit.io/cloud) |
+
+### Watch the graph build itself
+
+[![RAGTAG demo poster: landing page hero with the cinematic graph build](https://taxxa-graphrag-demo.vercel.app/demo-poster.jpg)](https://taxxa-graphrag-demo.vercel.app/demo.mp4)
+
+[Play the recording](https://taxxa-graphrag-demo.vercel.app/demo.mp4) (1.6 MB,
+no audio). Captured against the live Vercel deploy with Playwright: the N1
+prompt walks vector seeds into a typed triangular-VAT subgraph (AVL S63h,
+EU VAT Directive Art. 141, KHO 2018:117, Vero ohje), streams a cited
+answer, then fires the KHO-vs-Vero debate path for the multi-agent panel.
 
 The Vercel demo runs the real `app/api/ask` SSE route. When no Python sidecar
 is reachable (the default for the free deploy), it falls back to an in-route
 fixture replay so the graph traversal, multi-agent debate, and citation
-streaming all animate end-to-end — **no API keys required**. The Streamlit
+streaming all animate end-to-end - **no API keys required**. The Streamlit
 demo uses `MockPipeline` + three hand-crafted `DEMO_OVERRIDES` for the same
 reason (see `web/DEMO_QUESTIONS.md`).
 
 If you want the real retrieval stack (Voyage embeddings → LanceDB → graph
 expansion → DeepSeek generation), follow [`### Run locally`](#run-locally)
-below — that needs `VOYAGE_API_KEY` + `FEATHERLESS_API_KEY` and the
+below - that needs `VOYAGE_API_KEY` + `FEATHERLESS_API_KEY` and the
 402k-chunk corpus.
 
 ## Repo audit (this fork)
@@ -39,7 +50,7 @@ below — that needs `VOYAGE_API_KEY` + `FEATHERLESS_API_KEY` and the
 ## Deploy your own copy (free)
 
 ```bash
-# 1. Cinematic Next.js UI to Vercel (no env vars needed — uses fixture replay)
+# 1. Cinematic Next.js UI to Vercel (no env vars needed - uses fixture replay)
 cd lex-atlas-frontend
 npm install
 vercel link --yes
@@ -49,7 +60,7 @@ vercel deploy --prod --yes
 #    a. Push this fork to your GitHub
 #    b. Go to https://share.streamlit.io → "New app"
 #    c. Repo: your-fork  ·  Branch: main  ·  Main file: web/app.py
-#    d. Click Deploy. No secrets required — uses MockPipeline + DEMO_OVERRIDES.
+#    d. Click Deploy. No secrets required - uses MockPipeline + DEMO_OVERRIDES.
 ```
 
 Both deployments boot in <2 min on the free tier with zero API keys.
@@ -87,7 +98,7 @@ revert can't quietly silence it.
 ## One template per variation
 
 ```bash
-# v1 (vector-only) — current default of scripts.ask
+# v1 (vector-only) - current default of scripts.ask
 .venv/bin/python -m scripts.ask "Mikä on arvonlisäveron vähennysoikeus?"
 
 # v2 / GraphRAG with cross-encoder rerank (the v2 default)
@@ -96,16 +107,16 @@ revert can't quietly silence it.
 # v2 / GraphRAG with vector-similarity rerank (skip the cross-encoder)
 .venv/bin/python -m scripts.ask --v2 --rerank vector "Mikä on arvonlisäveron vähennysoikeus?"
 
-# v1 standalone — same as scripts.ask but with the full store hard-coded
+# v1 standalone - same as scripts.ask but with the full store hard-coded
 .venv/bin/python -m scripts.ask_v1 "Mikä on arvonlisäveron vähennysoikeus?"
 ```
 
 Swap the question, add `--verbose` for diagnostics, or `--json` to feed
-the UI/eval — every variation accepts the same flags.
+the UI/eval - every variation accepts the same flags.
 
 ## Side-by-side: `scripts.ask` vs `scripts.ask_v1`
 
-Both run the same v1 pipeline. The difference is config behavior — `scripts.ask`
+Both run the same v1 pipeline. The difference is config behavior - `scripts.ask`
 reads `VECTOR_DB_PATH` from `src/retrieval/__init__.py` (can be flipped
 project-wide); `scripts.ask_v1` hard-codes the full store and is immune to
 config drift. Use `scripts.ask_v1` when you want a known-good baseline.
@@ -117,7 +128,7 @@ config drift. Use `scripts.ask_v1` when you want a known-good baseline.
 .venv/bin/python -m scripts.ask_v1 "Mikä on pääomatulon verokanta?"
 ```
 
-### Verbose — filters, top-10 reranked, full context, citations
+### Verbose - filters, top-10 reranked, full context, citations
 
 ```bash
 .venv/bin/python -m scripts.ask    --verbose "Onko ALV vähennyskelpoinen edustuskuluista?"
@@ -186,7 +197,7 @@ done
 
 ## v2 / GraphRAG examples (only `scripts.ask` supports `--v2`)
 
-`scripts.ask_v1` is v1-only by design — to use the graph-expansion
+`scripts.ask_v1` is v1-only by design - to use the graph-expansion
 pipeline, run `scripts.ask --v2`.
 
 ### 1. Basic Finnish tax question (v1, vector-only)
@@ -219,7 +230,7 @@ Same graph expansion, but skips the cross-encoder. Every candidate
 (cosine + authority + recency + term bonus − repealed penalty). Useful
 to isolate whether the cross-encoder is helping or hurting.
 
-### 4. Verbose mode — see filters, reranked top-10, assembled context
+### 4. Verbose mode - see filters, reranked top-10, assembled context
 
 ```bash
 .venv/bin/python -m scripts.ask --verbose "..."
@@ -237,11 +248,11 @@ For v2, verbose also shows the picked strategy and graph expansion stats
 .venv/bin/python -m scripts.ask --v2 --json "..." > result_v2.json
 ```
 
-Emits the full `AnswerResult` schema — `answer`, `cited_source_ids`,
+Emits the full `AnswerResult` schema - `answer`, `cited_source_ids`,
 `retrieved_chunks`, `retrieval_paths`, `assumptions`, `timing_ms`,
 `conflicts`.
 
-### 6. Side-by-side compare — v1 vs v2 modes on one question
+### 6. Side-by-side compare - v1 vs v2 modes on one question
 
 ```bash
 Q="KHO ratkaisu arvonlisäveron vähennysoikeudesta"
@@ -261,29 +272,29 @@ Diff the `cited_source_ids` (with `--json | jq`) to spot regressions.
 ### 7. Each routing strategy in v2 (so you can see different graph behaviors)
 
 ```bash
-# case_law — triggers on KHO / KVL / "tapaus" / "ennakkoratkaisu"
+# case_law - triggers on KHO / KVL / "tapaus" / "ennakkoratkaisu"
 .venv/bin/python -m scripts.ask --v2 --verbose "KHO ratkaisu osakeyhtiön sukupolvenvaihdoksesta"
 
-# definition — triggers on "määritelmä" / "tarkoittaa"
+# definition - triggers on "määritelmä" / "tarkoittaa"
 .venv/bin/python -m scripts.ask --v2 --verbose "Mitä tarkoittaa kiinteä toimipaikka verotuksessa?"
 
-# multi_hop — triggers on "poikkeus" / "kuitenkin" / "however"
+# multi_hop - triggers on "poikkeus" / "kuitenkin" / "however"
 .venv/bin/python -m scripts.ask --v2 --verbose "Arvonlisäveron vähennysoikeuden poikkeukset"
 
-# recency — triggers on "voimassa" / "kumottu" / "current"
+# recency - triggers on "voimassa" / "kumottu" / "current"
 .venv/bin/python -m scripts.ask --v2 --verbose "Onko tämä laki yhä voimassa?"
 
-# cross_source — triggers on Finlex citation + guidance marker co-occurrence
+# cross_source - triggers on Finlex citation + guidance marker co-occurrence
 .venv/bin/python -m scripts.ask --v2 --verbose "Vero-ohje tuloverolain 28 § soveltamisesta"
 
-# default (no trigger) — v2 still runs cross-encoder over vector seeds, no graph walk
+# default (no trigger) - v2 still runs cross-encoder over vector seeds, no graph walk
 .venv/bin/python -m scripts.ask --v2 --verbose "Pääomatulon verokanta yli 30000 euron tuloista"
 ```
 
 ### 8. Override the vector store (e.g. quick smoke test against the pilot)
 
 ```bash
-# Pilot (1000 chunks, ~0.25 % of corpus — quick but limited)
+# Pilot (1000 chunks, ~0.25 % of corpus - quick but limited)
 .venv/bin/python -m scripts.ask --db output/lancedb_pilot "..."
 
 # Explicit full store
@@ -303,7 +314,7 @@ Diff the `cited_source_ids` (with `--json | jq`) to spot regressions.
 `-k` is the vector retrieval depth (default 20). `-n` is how many
 deduped-by-section sources end up in the LLM context (default 8).
 
-In v2 `-k` is ignored — the strategy's `seed_k` controls vector depth
+In v2 `-k` is ignored - the strategy's `seed_k` controls vector depth
 instead (10 by default per strategy in `src/retrieval/strategy.py`).
 
 ### 10. Force a specific v2 strategy from Python (ablation)
@@ -331,7 +342,7 @@ PY
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `question` (positional) | — | The question (Finnish or English) |
+| `question` (positional) | - | The question (Finnish or English) |
 | `--v2` | off | Use the v2 GraphRAG pipeline |
 | `--rerank {cross_encoder,vector}` | `cross_encoder` | v2 reranker mode (ignored for v1) |
 | `--db PATH` | from `src/retrieval/__init__.py` | LanceDB directory |
@@ -345,7 +356,7 @@ PY
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `question` (positional) | — | The question (Finnish or English) |
+| `question` (positional) | - | The question (Finnish or English) |
 | `--db PATH` | `output/lancedb` (hard-coded) | LanceDB directory |
 | `--graph-db PATH` | `output/graph.db` | SQLite graph store |
 | `-k N` | 20 | Vector retrieval depth |
@@ -366,8 +377,8 @@ export HF_HUB_OFFLINE=1
 
 ## Where to go deeper
 
-- `our-docs/changelog/` — per-step build journals
-- `our-docs/05_retrieval_v1_vector_only.md` — v1 spec
-- `our-docs/07_retrieval_v2_graph_traversal.md` — v2 / GraphRAG spec
-- `src/retrieval/` — pipeline implementation
-- `findings/` — pilot results, baseline failures, sanity reports
+- `our-docs/changelog/` - per-step build journals
+- `our-docs/05_retrieval_v1_vector_only.md` - v1 spec
+- `our-docs/07_retrieval_v2_graph_traversal.md` - v2 / GraphRAG spec
+- `src/retrieval/` - pipeline implementation
+- `findings/` - pilot results, baseline failures, sanity reports

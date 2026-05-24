@@ -1,4 +1,4 @@
-"""End-to-end v2 retrieval pipeline — GraphRAG.
+"""End-to-end v2 retrieval pipeline - GraphRAG.
 
 Wires:
 
@@ -7,7 +7,7 @@ Wires:
       → vector_retriever.retrieve (k=strategy.seed_k)
       → graph_expand.expand (BFS along strategy.edge_types)
       → fetch_chunks_for_sections (vector store)
-      → [rerank — see RerankMode below]
+      → [rerank - see RerankMode below]
       → assemble.assemble (n)
       → generate.generate
       → AnswerResult
@@ -18,14 +18,14 @@ cross-encoder helps or hurts on this corpus.
 
 ``RerankMode``:
 
-- ``"cross_encoder"`` — BAAI/bge-reranker-v2-m3 + weighted combine with
+- ``"cross_encoder"`` - BAAI/bge-reranker-v2-m3 + weighted combine with
   cosine and a light metadata signal. The Step-7 brief recommends this
-  as load-bearing — graph expansion without it tends to add noise.
-- ``"vector"`` — skip the cross-encoder; re-query LanceDB so every
+  as load-bearing - graph expansion without it tends to add noise.
+- ``"vector"`` - skip the cross-encoder; re-query LanceDB so every
   candidate (seeds + graph-expanded) carries a real cosine, then apply
   v1's full metadata reranker (cosine + authority + recency + term bonus
   + repealed penalty). Use this when v2 with cross-encoder regresses on
-  basic factual queries — it isolates "did the graph add useful nodes?"
+  basic factual queries - it isolates "did the graph add useful nodes?"
   from "is the cross-encoder picking badly on Finnish legal text?".
 """
 from __future__ import annotations
@@ -87,7 +87,7 @@ class PipelineV2:
         self.vector_db_path = str(vector_db_path)
         self.graph_db_path = str(graph_db_path)
         self.rerank_mode: RerankMode = rerank_mode
-        # Plan A — LLM query expansion before retrieval. Default on; the
+        # Plan A - LLM query expansion before retrieval. Default on; the
         # eval / A-B harness can disable via constructor or via the
         # ``--no-rewrite`` CLI flag (passed through scripts.ask).
         self.query_rewrite = query_rewrite
@@ -120,7 +120,7 @@ class PipelineV2:
         t_total = time.perf_counter()
 
         # 1. Strategy router -------------------------------------------------
-        # Router reads the ORIGINAL question — the LLM rewrite may
+        # Router reads the ORIGINAL question - the LLM rewrite may
         # mention domain terms the user didn't and would noise up the
         # strategy decision.
         t = time.perf_counter()
@@ -128,7 +128,7 @@ class PipelineV2:
         timings["strategy_pick"] = _ms_since(t)
 
         # 2. Filters ---------------------------------------------------------
-        # Same rationale — filters reflect user intent, not the rewrite.
+        # Same rationale - filters reflect user intent, not the rewrite.
         t = time.perf_counter()
         filters = infer_filters(question)
         if extra_filters:
@@ -139,7 +139,7 @@ class PipelineV2:
         as_of, as_of_explicit = infer_as_of_date(question)
 
         # 2b. Query rewrite --------------------------------------------------
-        # Plan A — see ``src/retrieval/query_rewrite.py``. Adds Finnish
+        # Plan A - see ``src/retrieval/query_rewrite.py``. Adds Finnish
         # equivalents + likely document-type signals to the retrieval
         # query so the dense + sparse backends both see a richer match
         # surface. Soft-fails to the original question on any LLM error.
@@ -165,7 +165,7 @@ class PipelineV2:
         # 4. Graph expand ----------------------------------------------------
         t = time.perf_counter()
         seed_section_ids = [h.section_id for h in seeds]
-        # Dedupe while preserving order — multiple chunks can anchor on the
+        # Dedupe while preserving order - multiple chunks can anchor on the
         # same section_id, and we want one BFS per section, not per chunk.
         seen_seeds: set[str] = set()
         unique_seeds: list[str] = []
@@ -179,7 +179,7 @@ class PipelineV2:
         # 5. Materialise expanded nodes as chunk candidates ------------------
         # Seed chunks come directly from the vector retrieve. Graph-expanded
         # nodes (paths.keys() minus seeds) need a chunk lookup from the vector
-        # store — they don't have cosine scores, so cross-encoder discrimination
+        # store - they don't have cosine scores, so cross-encoder discrimination
         # is the only signal until combine_scores runs.
         t = time.perf_counter()
         candidate_pool: dict[str, _Candidate] = {}
@@ -190,7 +190,7 @@ class PipelineV2:
                 from_seed=True,
                 retrieval_path=RetrievalPath(via="vector", score=h.cosine_sim, hops=0),
             )
-        # Expanded nodes — fetch one chunk per section_id from LanceDB.
+        # Expanded nodes - fetch one chunk per section_id from LanceDB.
         expanded_only = [nid for nid in paths if nid not in seen_seeds]
         if expanded_only:
             expanded_hits = _fetch_chunks_for_sections(self.vector_store, expanded_only)
@@ -208,7 +208,7 @@ class PipelineV2:
                 )
         timings["materialise"] = _ms_since(t)
 
-        # 6. Rerank — branched by mode --------------------------------------
+        # 6. Rerank - branched by mode --------------------------------------
         t = time.perf_counter()
         candidates = list(candidate_pool.values())
         # Common to both rerank modes: bulk-fetch temporal_status for the
@@ -256,7 +256,7 @@ class PipelineV2:
             graph=self.graph,
         )
 
-        # Step 10 / Move 5d — temporal-mismatch check.
+        # Step 10 / Move 5d - temporal-mismatch check.
         cited_sections_with_chain: list[tuple[str, list[VersionStep]]] = []
         seen_sections: set[str] = set()
         chunk_to_source = {s.chunk_id: s for s in context.sources}
@@ -309,7 +309,7 @@ def get_pipeline_v2(
     query_rewrite: bool = True,
 ) -> PipelineV2:
     """Process-singleton v2 pipeline. Path + rerank_mode + query_rewrite
-    honored only on first call — switching mid-process requires
+    honored only on first call - switching mid-process requires
     resetting ``_pipeline_v2``.
     """
     global _pipeline_v2
@@ -372,7 +372,7 @@ def _fetch_chunks_for_sections(
 
     LanceDB's ``IN`` clause works fine for up to a few hundred ids. We keep
     one chunk per section (the first one, ordered by chunk_id) because the
-    cross-encoder later picks the best — fetching all chunks per section
+    cross-encoder later picks the best - fetching all chunks per section
     would inflate the candidate pool 3-5x without quality benefit.
     """
     if store.table is None or not section_ids:
@@ -380,7 +380,7 @@ def _fetch_chunks_for_sections(
     # Single-quote each id, escape embedded quotes (rare but defensible).
     quoted = ",".join("'" + sid.replace("'", "''") + "'" for sid in section_ids)
     where = f"section_id IN ({quoted})"
-    # search() requires a vector — we want a metadata-only scan. LanceDB's
+    # search() requires a vector - we want a metadata-only scan. LanceDB's
     # to_arrow with a where filter on the table directly does this.
     # Slightly indirect: use a search with a dummy vector at low limit to
     # exploit the prefilter index. We then re-fetch via search() with a high
@@ -421,7 +421,7 @@ def _rerank_cross_encoder(
     of several semantically-similar passages actually answers the question.
 
     ``temporal_status_map`` is consulted by ``_metadata_signal`` so the
-    metadata score is ancestor-aware (Move 3) — a chunk whose LAW root has
+    metadata score is ancestor-aware (Move 3) - a chunk whose LAW root has
     been amended after its publication_date is dampened relative to one
     whose ancestor chain is clean.
     """
@@ -470,7 +470,7 @@ def _rerank_vector(
     """Pure vector-similarity rerank.
 
     Re-queries LanceDB with ``chunk_id IN [all candidates]`` so every
-    candidate — seeds and graph-expanded alike — gets a real cosine against
+    candidate - seeds and graph-expanded alike - gets a real cosine against
     the user's question. Then applies v1's full metadata reranker
     (cosine + authority + recency + term bonus − repealed penalty).
 
@@ -546,14 +546,14 @@ def _metadata_signal(
     if grade == "ok":
         score += 0.15
     elif grade == "suspect":
-        # Small dampen — consolidated text usually reflects the amendment.
+        # Small dampen - consolidated text usually reflects the amendment.
         score += 0.05
     elif grade == "stale":
         score -= 0.2
     elif grade == "repealed":
         score -= 0.4
     elif grade is None:
-        # No graph status — fall back to the binary flag, same as before.
+        # No graph status - fall back to the binary flag, same as before.
         if hit.usable is True:
             score += 0.15
         elif hit.usable is False:
@@ -562,7 +562,7 @@ def _metadata_signal(
     if hit.in_force is True:
         score += 0.15
 
-    # Absolute freshness — newer publication_date wins ties. ~0.15 max
+    # Absolute freshness - newer publication_date wins ties. ~0.15 max
     # bump for today, linearly decaying to 0 across 10 years. Calibrated
     # so a 2026 Verohallinto päätös meaningfully beats a 1990 amendment
     # law even when they're cosine-equal for an English question. The
@@ -579,7 +579,7 @@ def _publication_freshness(publication_date_iso: str | None) -> float:
 
     Local to v2 to avoid coupling with ``rerank._absolute_freshness``
     (which returns a [0, 1] signal weighted externally by W_FRESHNESS).
-    Same shape, different scaling — kept separate so each rerank path
+    Same shape, different scaling - kept separate so each rerank path
     can tune its freshness bump independently without cross-talk.
     """
     if not publication_date_iso:
@@ -627,7 +627,7 @@ def _build_answer_result_v2(
         if c is not None:
             retrieval_paths[s.chunk_id] = c.retrieval_path
         else:
-            # Fallback — should not happen, but keep schema-correct.
+            # Fallback - should not happen, but keep schema-correct.
             retrieval_paths[s.chunk_id] = RetrievalPath(via="vector", score=s.rerank_score)
 
     assumptions: list[str] = [
@@ -652,7 +652,7 @@ def _build_answer_result_v2(
             f"Query expanded with Finnish keywords: {kw}."
         )
 
-    # Step 10 provenance dict — same shape as v1's pipeline produces.
+    # Step 10 provenance dict - same shape as v1's pipeline produces.
     effective_text_provenance: dict[str, list[dict[str, Any]]] = {}
     for s in context.sources:
         if s.version_chain:

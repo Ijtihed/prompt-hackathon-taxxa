@@ -7,15 +7,15 @@ opt in:
     FEATHERLESS_API_KEY=... pytest tests/test_agent_prompts.py -v
 
 Without the API key, every test is skipped (no fake LLM, no recorded
-fixtures — Track H is explicitly a calibration track, not a regression
+fixtures - Track H is explicitly a calibration track, not a regression
 suite).
 
 Coverage:
-    Clarifier — 10 medium-tier questions, each with one dimension dropped.
-    Planner   — 10 hard-tier compound questions.
-    Verifier  — 5 hand-built (claim, supporting, contradicting) triples
+    Clarifier - 10 medium-tier questions, each with one dimension dropped.
+    Planner   - 10 hard-tier compound questions.
+    Verifier  - 5 hand-built (claim, supporting, contradicting) triples
                 plus 2 negative cases.
-    Extractor — 20 real sentences sampled from output/chunks.jsonl
+    Extractor - 20 real sentences sampled from output/chunks.jsonl
                 covering cites / interprets / amends / defines / negatives.
 """
 
@@ -38,7 +38,7 @@ from src.agents.verifier import verifier
 
 
 # ==========================================================================
-# Clarifier — 10 questions, one dimension intentionally dropped in each.
+# Clarifier - 10 questions, one dimension intentionally dropped in each.
 # ==========================================================================
 #
 # Bank source: eval/questions.json, "medium" tier. Each entry below records
@@ -136,7 +136,7 @@ def test_clarifier_flags_dropped_dimension(case_id: str, question: str, dropped:
         f"assumptions={result.assumptions}"
     )
     # In batch mode the prompt instructs the Clarifier to fill safe defaults
-    # whenever possible. We expect ``clarified=True`` for all 10 of these —
+    # whenever possible. We expect ``clarified=True`` for all 10 of these -
     # they're under-specified but not fundamentally ambiguous.
     assert result.clarified, f"{case_id}: expected clarified=True, got False"
     # And the assumption for the dropped dimension should be populated.
@@ -147,7 +147,7 @@ def test_clarifier_flags_dropped_dimension(case_id: str, question: str, dropped:
 
 
 # ==========================================================================
-# Planner — 10 hard-tier compound questions from eval/questions.json.
+# Planner - 10 hard-tier compound questions from eval/questions.json.
 # ==========================================================================
 #
 # (id, question, expected_min_subs, expected_max_subs). The Planner passes
@@ -303,7 +303,7 @@ def test_planner_atomic_question_passthrough() -> None:
 
 
 # ==========================================================================
-# Verifier — 5 hand-built conflicts + 2 negative cases.
+# Verifier - 5 hand-built conflicts + 2 negative cases.
 # ==========================================================================
 #
 # Authority ranks per Step 3 plan: Finlex=100, Vero=60.
@@ -513,7 +513,7 @@ def test_verifier_resolves_against_authority_rank(
 
 
 # ==========================================================================
-# Extractor — 20 sentences sampled from output/chunks.jsonl.
+# Extractor - 20 sentences sampled from output/chunks.jsonl.
 # ==========================================================================
 #
 # Sampled at planning time; inlined here so the test does not depend on the
@@ -526,7 +526,7 @@ def test_verifier_resolves_against_authority_rank(
 #     dangling_reason == "not_yet_parsed", extracted_by == "llm")
 #   - source_id matches metadata['node_id']
 
-# Negative controls have expected_min_edges=0 and allowed_types=() — i.e.
+# Negative controls have expected_min_edges=0 and allowed_types=() - i.e.
 # the prompt should NOT invent edges. We require the count be exactly 0 by
 # expressing it as expected_max_edges=0 in a separate field.
 
@@ -536,7 +536,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
         "E1-cites-cybersec",
         {"node_id": "n-cites-1", "source": "finlex", "source_subcorpus": "laki"},
         "Laki vaarallisten kemikaalien ja räjähteiden käsittelyn turvallisuudesta "
-        "annetun lain muuttamisesta — 5 § Suhde muuhun lainsäädäntöön. "
+        "annetun lain muuttamisesta - 5 § Suhde muuhun lainsäädäntöön. "
         "Kyberturvallisuuden riskienhallinta- ja raportointivelvoitteista sekä "
         "viranomaisten yhteistyöstä kyberturvallisuuspoikkeamien ja -riskien "
         "osalta säädetään erikseen.",
@@ -547,7 +547,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E2-cites-kumotaan",
         {"node_id": "n-cites-2", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki koiraverosta annetun lain kumoamisesta — 1 §. Tällä lailla kumotaan "
+        "Laki koiraverosta annetun lain kumoamisesta - 1 §. Tällä lailla kumotaan "
         "koiraverosta annettu laki (590/1979).",
         1,
         3,
@@ -572,7 +572,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E5-cites-erityishuolto",
         {"node_id": "n-cites-5", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki kehitysvammaisten erityishuollosta annetun lain muuttamisesta — 28 §. "
+        "Laki kehitysvammaisten erityishuollosta annetun lain muuttamisesta - 28 §. "
         "Jos lapsen kehitys tai henkinen toiminta on siinä määrin estynyt tai "
         "häiriintynyt, ettei lapsi voi saada opetusta peruskoululain (476/83) "
         "mukaisesti, hänellä on oikeus saada 2 §:n 3 kohdassa tarkoitettua opetusta.",
@@ -624,7 +624,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E10-interprets-minverotus",
         {"node_id": "n-interp-2", "source": "vero", "source_subcorpus": "vero_ohje"},
-        "Suurten konsernien vähimmäisverotus — Vähimmäisverolain 6 luvussa "
+        "Suurten konsernien vähimmäisverotus - Vähimmäisverolain 6 luvussa "
         "säännellään muun muassa eräistä konsernirakenteiden muutostilanteista. "
         "Vähimmäisverolain yritysten uudelleenjärjestelyjä koskevat säännökset "
         "eivät rajaudu esimerkiksi sulautumisiin.",
@@ -635,7 +635,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E11-interprets-vml-22a",
         {"node_id": "n-interp-3", "source": "vero", "source_subcorpus": "vero_ohje"},
-        "Sivullisilmoittajan laiminlyöntimaksu — VML 22 a § sääntelee "
+        "Sivullisilmoittajan laiminlyöntimaksu - VML 22 a § sääntelee "
         "laiminlyöntimaksun määräämistä erityisesti finanssitilitietoihin "
         "liittyvien huolellisuusvelvoitteiden laiminlyönnistä.",
         1,
@@ -645,7 +645,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E12-interprets-treaty-art4",
         {"node_id": "n-interp-4", "source": "vero", "source_subcorpus": "vero_ohje"},
-        "Verosopimusten artiklat — Artikla 4, Verosopimuksen mukainen kotipaikka. "
+        "Verosopimusten artiklat - Artikla 4, Verosopimuksen mukainen kotipaikka. "
         "Edellä mainitun esimerkin kaksoisasuja voi antaa Ruotsissa oleskelun "
         "ajaksi asuntonsa Suomesta vuokralle. Kun hänellä tällöin on asunto "
         "käytettävänään vain Ruotsissa, Ruotsi on hänen asuinvaltionsa.",
@@ -658,7 +658,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
         "E13-amends-rikos",
         {"node_id": "n-amend-1", "source": "finlex", "source_subcorpus": "laki"},
         "Laki oikeudenkäynnistä rikosasioissa annetun lain 1 luvun 14 §:n "
-        "muuttamisesta — 14 §.",
+        "muuttamisesta - 14 §.",
         1,
         3,
         ("cites", "amends"),
@@ -666,7 +666,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E14-amends-potilas",
         {"node_id": "n-amend-2", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki potilasvahinkolain 11 a §:n muuttamisesta — 11 a § "
+        "Laki potilasvahinkolain 11 a §:n muuttamisesta - 11 a § "
         "Potilasvahinkolautakunnan tehtävät.",
         1,
         3,
@@ -675,7 +675,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E15-amends-kalastus",
         {"node_id": "n-amend-3", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki kalastuslain muuttamisesta — 14 b §. Edellä 14 a §:ssä "
+        "Laki kalastuslain muuttamisesta - 14 b §. Edellä 14 a §:ssä "
         "tarkoitetussa neuvottelukunnassa on viisi jäsentä sekä kullakin "
         "henkilökohtainen varajäsen.",
         2,
@@ -685,7 +685,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E16-amends-mata",
         {"node_id": "n-amend-4", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki maatalousyrittäjien tapaturmavakuutuslain muuttamisesta — 22 §. "
+        "Laki maatalousyrittäjien tapaturmavakuutuslain muuttamisesta - 22 §. "
         "Jollei tästä laista muuta seuraa, on soveltuvin osin lisäksi voimassa, "
         "mitä työntekijäin eläkelain 16 ja 19 §:ssä, maatalousyrittäjien "
         "eläkelain 16 ja 17 §:ssä ja tapaturmavakuutuslain 30 a ja 30 b §:ssä "
@@ -699,7 +699,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
         "E17-defines-uusiutuva",
         {"node_id": "n-def-1", "source": "finlex", "source_subcorpus": "laki"},
         "Laki uusiutuvilla energialähteillä tuotetun sähkön tuotantotuesta "
-        "annetun lain muuttamisesta — 5 § Määritelmät. Tässä laissa "
+        "annetun lain muuttamisesta - 5 § Määritelmät. Tässä laissa "
         "tarkoitetaan: 1) verkonhaltijalla sähkömarkkinalaissa (588/2013) "
         "tarkoitettua verkonhaltijaa; 11) päästöoikeudella päästökauppalaissa "
         "tarkoitettua oikeutta.",
@@ -710,7 +710,7 @@ EXTRACTOR_CASES: list[tuple[str, dict, str, int, int, tuple[str, ...]]] = [
     (
         "E18-defines-pelastus",
         {"node_id": "n-def-2", "source": "finlex", "source_subcorpus": "laki"},
-        "Laki pelastuslain muuttamisesta — 2 a § Määritelmät. Tässä laissa "
+        "Laki pelastuslain muuttamisesta - 2 a § Määritelmät. Tässä laissa "
         "tarkoitetaan: 1) pelastustoimella tehtäväalaa, joka koostuu "
         "tulipalojen ja muiden onnettomuuksien ehkäisystä sekä "
         "pelastustoiminnasta; 2) pelastustoiminnalla kiireellisiä tehtäviä.",

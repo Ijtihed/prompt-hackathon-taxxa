@@ -1,9 +1,9 @@
-"""Vector retriever — thin wrapper over ``VectorStore.search_by_text``.
+"""Vector retriever - thin wrapper over ``VectorStore.search_by_text``.
 
 Owns three concerns the underlying adapter intentionally doesn't:
 
 1. Holds onto a single ``VectorStore`` instance per process (the adapter's
-   constructor opens a LanceDB connection — we don't want to reopen it on
+   constructor opens a LanceDB connection - we don't want to reopen it on
    every call).
 2. Returns a plain list of ``RetrievedHit`` records with cosine *similarity*
    (1 - distance), so downstream rerank can sum it with bonuses without
@@ -11,7 +11,7 @@ Owns three concerns the underlying adapter intentionally doesn't:
 3. Defaults to v1's over-retrieval depth (k=20) so the reranker has enough
    candidates to do useful work; callers can override.
 
-Voyage's voyage-3-large is asymmetric — ``search_by_text`` calls
+Voyage's voyage-3-large is asymmetric - ``search_by_text`` calls
 ``embed_batch(input_type="query")`` already; we never need to embed at this
 layer.
 """
@@ -24,7 +24,7 @@ from typing import Any
 from src.indexing.vector_store import VectorStore
 
 
-# Default k for v1 — over-retrieve, then cull in rerank.
+# Default k for v1 - over-retrieve, then cull in rerank.
 DEFAULT_K = 20
 
 
@@ -102,7 +102,7 @@ class VectorRetriever:
         ``filters.infer_filters``).
 
         When ``self.hybrid`` is True, retrieval combines dense (cosine)
-        and sparse (BM25) rankings with Reciprocal Rank Fusion — literal
+        and sparse (BM25) rankings with Reciprocal Rank Fusion - literal
         Finnish tokens like "ennakonpidätysprosentti" lift documents the
         embedding alone may not score highly when the question is in
         English.

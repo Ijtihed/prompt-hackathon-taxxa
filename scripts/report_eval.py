@@ -1,4 +1,4 @@
-"""Eval harness reporter — aggregates grade JSONL files into a dashboard.
+"""Eval harness reporter - aggregates grade JSONL files into a dashboard.
 
 Reads ``eval/runs/<config_id>.jsonl`` and ``eval/grades/<config_id>.jsonl``,
 joins on ``question_id``, and writes under ``findings/06_eval_harness/``:
@@ -156,7 +156,7 @@ def _aggregate(rows: list[dict[str, Any]], tier_group: str, *, include_judge: bo
             if isinstance(v, (int, float)):
                 stages[k].append(float(v))
     # elapsed_ms is wall-clock from the driver; timing_ms.total is the pipeline's
-    # own sum-of-stages — they should agree to within a few ms but aren't identical.
+    # own sum-of-stages - they should agree to within a few ms but aren't identical.
     return {
         "tier_group": tier_group, "n_questions": n, "n_errors": n_errors, "n_refusals": refusals,
         "key_fact_recall_mean": _mean(series["key_fact_recall"]),
@@ -416,7 +416,7 @@ def main() -> int:
     commit = _git_commit()
     n_qids_seen = len({r["question_id"] for cid in configs for r in data[cid]})
     md = [
-        "# Eval harness — dashboard\n",
+        "# Eval harness - dashboard\n",
         f"_Generated: {now} · commit `{commit}` · configs: {len(configs)} · questions seen: {n_qids_seen}_\n",
         "## Overall scoreboard\n",
         _scoreboard_table([overall_by_config[c] for c in configs if c in overall_by_config],
@@ -426,7 +426,7 @@ def main() -> int:
     for tg in [t for t in TIER_GROUPS if t != "all" and per_tier.get(t)]:
         md += [f"### {tg}\n", _scoreboard_table(per_tier[tg], include_judge=include_judge), ""]
     md += ["\n## Stage-latency profile (mean ms)\n", _stage_latency_table(overall_by_config),
-           "\n## Per-question pivot — wins/losses vs v1-current\n",
+           "\n## Per-question pivot - wins/losses vs v1-current\n",
            "Legend: `+` better, `-` worse, `=` within ±0.02, `e` errored, `?` missing/unscored.\n"]
     md.append(_winloss_pivot_table(per_q, [c for c in configs if c != "v1-current"], include_judge, data)
               if "v1-current" in configs else "_v1-current not present; pivot skipped._\n")

@@ -1,7 +1,7 @@
 """LanceDB-backed vector store adapter (Step 4a.6).
 
 Thin wrapper that hides LanceDB specifics from callers and keeps the
-input_type='query' vs 'document' distinction explicit — Voyage's
+input_type='query' vs 'document' distinction explicit - Voyage's
 voyage-3-large is asymmetric and mixing the two degrades retrieval quality.
 """
 from __future__ import annotations
@@ -131,7 +131,7 @@ class VectorStore:
         """Vector search with optional metadata filters.
 
         Returns (row_dict, score) pairs. Score is cosine distance for the
-        default index — lower is closer. We expose the raw LanceDB row dict
+        default index - lower is closer. We expose the raw LanceDB row dict
         rather than VectorRecord so callers can read the embedded_text field
         without re-validating Pydantic on the hot path.
         """
@@ -217,10 +217,10 @@ class VectorStore:
             raise RuntimeError("vector table not created yet")
         oversample_k = max(k, k * oversample)
 
-        # Vector ranking — already returns sorted ascending by distance.
+        # Vector ranking - already returns sorted ascending by distance.
         vec_rows = self.search(query_vector, k=oversample_k, filters=filters)
 
-        # BM25 ranking — may fail if no FTS index exists; degrade gracefully.
+        # BM25 ranking - may fail if no FTS index exists; degrade gracefully.
         try:
             fts_rows = self.search_fts(query_text, k=oversample_k, filters=filters)
         except Exception:
@@ -241,7 +241,7 @@ class VectorStore:
         # Sort by fused score desc, take top-k. We re-emit ``_distance``-like
         # values (1 - fused_score) so downstream cosine-similarity math keeps
         # working: distance ∈ [0, ~2], smaller = better. The exact value
-        # carries no calibrated meaning beyond ordering — the reranker is
+        # carries no calibrated meaning beyond ordering - the reranker is
         # the source of truth for the final score.
         ranked = sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:k]
         out: list[tuple[dict, float]] = []

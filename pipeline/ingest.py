@@ -156,13 +156,13 @@ def main() -> int:
     errors_path = out_dir / "errors.log"
     stats_path = out_dir / "stats.json"
 
-    # Streaming writers — keep memory bounded on the 60k-file corpus.
+    # Streaming writers - keep memory bounded on the 60k-file corpus.
     nf = open(nodes_path, "w", encoding="utf-8")
     cf = open(chunks_path, "w", encoding="utf-8")
     ef = open(errors_path, "w", encoding="utf-8")
 
     # We need an in-memory list of (law_id, node-type, type) for the hierarchy
-    # index — but only the small set of fields the index cares about.
+    # index - but only the small set of fields the index cares about.
     hier_slim: list[dict] = []
 
     total_nodes = 0
@@ -232,7 +232,7 @@ def main() -> int:
     if not args.quiet:
         print()
 
-    # Hierarchy index — rebuild from the slim records (avoids re-reading nodes.jsonl).
+    # Hierarchy index - rebuild from the slim records (avoids re-reading nodes.jsonl).
     print("building hierarchy index...")
     from .nodes import Node
     proxy_nodes: list[Node] = [

@@ -1,4 +1,4 @@
-"""Track F — unit tests for ``src.retrieval.graph_expand``.
+"""Track F - unit tests for ``src.retrieval.graph_expand``.
 
 Tests run against a hand-built in-memory SQLite graph rather than
 ``output/graph.db``. The fixture graph encodes every property we need to
@@ -98,14 +98,14 @@ def _build_fixture_graph(tmp_path: Path) -> GraphStore:
     # LAW2: target of an interprets edge from a SUBSECTION in LAW1.
     add_node("LAW2", "LAW", None, "Test Law 2")
 
-    # Independent SECTION nodes — targets of cites/applies.
+    # Independent SECTION nodes - targets of cites/applies.
     add_node("LAW1/s2", "SECTION", "LAW1", "2 §")
     add_node("LAW1/s3", "SECTION", "LAW1", "3 §")
 
     # Definition node
     add_node("DEF1", "DEFINITION", "LAW1/s1", "def 1")
 
-    # Hub node — contrived high in-degree on `cites_in` so the cap gates it.
+    # Hub node - contrived high in-degree on `cites_in` so the cap gates it.
     add_node("HUB", "SECTION", "LAW1", "Hub §", degree={"cites_in": 999, "interprets_in": 999})
 
     # parent_of edges
@@ -126,7 +126,7 @@ def _build_fixture_graph(tmp_path: Path) -> GraphStore:
     # Definition edges
     add_edge("DEF1", "LAW1/s1/m1", "defines", 0.95)
 
-    # Applies flood — 50 synthetic subsection nodes that all `applies`-IN to LAW1.
+    # Applies flood - 50 synthetic subsection nodes that all `applies`-IN to LAW1.
     # Exercises the applies_in cap path in case_law strategy.
     for i in range(50):
         cid = f"CASE/c{i}/m1"
@@ -144,7 +144,7 @@ def graph(tmp_path: Path) -> GraphStore:
 
 
 # ---------------------------------------------------------------------------
-# Tests — expand()
+# Tests - expand()
 # ---------------------------------------------------------------------------
 
 
@@ -208,8 +208,8 @@ def test_edge_type_allowlist_filters_other_edges(graph: GraphStore):
         max_nodes=20,
     )
     result = expand(["LAW1/s1/m1"], strategy, graph)
-    assert "LAW1/s2" in result   # cites target — included
-    assert "LAW2" not in result  # interprets target — excluded
+    assert "LAW1/s2" in result   # cites target - included
+    assert "LAW2" not in result  # interprets target - excluded
 
 
 def test_max_hops_zero_with_edges_still_returns_just_seeds(graph: GraphStore):
@@ -248,7 +248,7 @@ def test_degree_cap_skips_expansion_through_hub(graph: GraphStore):
     result = expand(["LAW1/s1/m2"], strategy, graph)
     assert "HUB" in result  # HUB still reachable
     # No second-hop expansion via HUB (HUB has no outgoing cites in fixture,
-    # so this is a degenerate guard — the assertion proves the cap path
+    # so this is a degenerate guard - the assertion proves the cap path
     # didn't break BFS).
 
 
@@ -306,7 +306,7 @@ def test_max_nodes_hard_ceiling(graph: GraphStore):
 
 
 # ---------------------------------------------------------------------------
-# Tests — strategy.py router
+# Tests - strategy.py router
 # ---------------------------------------------------------------------------
 
 
@@ -317,7 +317,7 @@ def test_router_returns_default_for_plain_question():
 
 def test_router_picks_multi_hop_on_exception_marker():
     s = pick_strategy("Mikä on AVL 102 § pääsääntö ja sen poikkeus?")
-    # AVL marker + "poikkeus" — could match cross_source (cite + something)
+    # AVL marker + "poikkeus" - could match cross_source (cite + something)
     # or multi_hop. The priority order means case_law/recency/definition
     # don't fire, cross_source needs guidance marker (none here), so
     # multi_hop wins.
@@ -370,7 +370,7 @@ def test_strategies_have_pilot_derived_caps():
 
 
 # ---------------------------------------------------------------------------
-# Tests — cross_encoder_rerank weight combination (no ML deps)
+# Tests - cross_encoder_rerank weight combination (no ML deps)
 # ---------------------------------------------------------------------------
 
 

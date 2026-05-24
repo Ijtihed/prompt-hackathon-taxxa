@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * NavigationProgress — top-of-page progress bar that fires on every
+ * NavigationProgress - top-of-page progress bar that fires on every
  * client-side link click and stays animated until the new route is
  * interactive. Without it, in dev mode every Next.js route compiles on
- * first visit (3–30s) and the user sees NO feedback at all — clicking the
+ * first visit (3–30s) and the user sees NO feedback at all - clicking the
  * "Methodology" link feels like nothing happens.
  *
  * Strategy:
@@ -61,7 +61,7 @@ export function NavigationProgress() {
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       // Only primary-button, no modifier, left-button-only clicks count as
-      // "navigate" — let modifier-clicks open in new tabs normally.
+      // "navigate" - let modifier-clicks open in new tabs normally.
       if (e.defaultPrevented) return;
       if (e.button !== 0) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;

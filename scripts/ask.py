@@ -53,7 +53,7 @@ def main() -> int:
         default=GRAPH_DB_PATH,
         help=f"SQLite graph path. Default: {GRAPH_DB_PATH}",
     )
-    p.add_argument("-k", type=int, default=20, help="v1 vector retrieval depth (ignored in v2 — strategy.seed_k controls).")
+    p.add_argument("-k", type=int, default=20, help="v1 vector retrieval depth (ignored in v2 - strategy.seed_k controls).")
     p.add_argument("-n", type=int, default=8, help="Sources in assembled context.")
     p.add_argument(
         "--no-rewrite",
@@ -182,7 +182,7 @@ def _run_v2(args) -> int:
 
 
 def _run_v2_verbose(args, pipe) -> int:
-    """v2 with full intermediate state — strategy, expansion stats, top-10 reranked."""
+    """v2 with full intermediate state - strategy, expansion stats, top-10 reranked."""
     from src.retrieval.assemble import assemble
     from src.retrieval.cross_encoder_rerank import combine_scores, get_reranker
     from src.retrieval.filters import infer_filters

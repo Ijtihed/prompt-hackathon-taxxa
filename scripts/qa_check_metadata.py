@@ -3,7 +3,7 @@
 Reject the run if any of the following hold (per Step 3 §"Quality checks"):
 
 - > 5% of nodes per source are missing ``publication_date``
-- > 5% are missing ``authority`` (fixed mapping — should be ~0%)
+- > 5% are missing ``authority`` (fixed mapping - should be ~0%)
 - An ``amends``/``repeals`` edge exists but ``superseded_by`` was not
   propagated to the source root
 - ``usable=true`` for a node with ``repeal_date < today``
@@ -35,7 +35,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not NODES.exists():
-        print(f"ERROR: {NODES} not found — run scripts/enrich_metadata.py first.", file=sys.stderr)
+        print(f"ERROR: {NODES} not found - run scripts/enrich_metadata.py first.", file=sys.stderr)
         return 1
 
     today = date.fromisoformat(args.today) if args.today else date.today()
@@ -122,12 +122,12 @@ def main() -> int:
                   nodes_with_repeal_in_past, bad_usable_repeal_in_past, violations, today)
 
     if violations:
-        print("\nFAIL — violations:", file=sys.stderr)
+        print("\nFAIL - violations:", file=sys.stderr)
         for v in violations:
             print(f"  - {v}", file=sys.stderr)
         return 1
 
-    print("OK — all checks passed", flush=True)
+    print("OK - all checks passed", flush=True)
     return 0
 
 

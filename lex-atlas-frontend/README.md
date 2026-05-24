@@ -13,18 +13,18 @@ Hosted cost (Sonnet): ~€0.045 / query. Both fit comfortably under the brief's
 ## 30 seconds in
 
 1. **63,660 docs** parsed via Vero's pre-baked `<taxfi-table-of-contents-mobile>` JSON
-   TOCs and Finlex's Akoma Ntoso `akn/fi/…` cross-references — 95% of edges from
+   TOCs and Finlex's Akoma Ntoso `akn/fi/…` cross-references - 95% of edges from
    regex over real data, €0 ingest cost.
 2. **LRMoo / SAT-Graph RAG ontology** (Work / Expression / Component / CTV /
    Action) mirrored from `data.finlex.fi/sparql`'s ELI schema.
-3. **Hybrid retrieval** — BGE-M3 (dense + sparse + ColBERT) → RRF k=60 →
+3. **Hybrid retrieval** - BGE-M3 (dense + sparse + ColBERT) → RRF k=60 →
    bge-reranker-v2-m3 → CRAG evaluator with Semantic Finlex SPARQL fallback.
-4. **DSPy ReAct loop** — Planner / Drafter / Verifier / Clarifier with Self-RAG
+4. **DSPy ReAct loop** - Planner / Drafter / Verifier / Clarifier with Self-RAG
    reflection tokens. Refuses uncited sentences at draft time.
-5. **The Debate** — when sources disagree, two Drafter agents present opposing
+5. **The Debate** - when sources disagree, two Drafter agents present opposing
    interpretations side-by-side; a Judge agent resolves via the priority lattice.
    Modeled on AgenticSimLaw (arXiv:2601.21936, Jan 2026).
-6. **GPU-accelerated viz** — 63,660-node Constellation Map via `@cosmos.gl/graph`
+6. **GPU-accelerated viz** - 63,660-node Constellation Map via `@cosmos.gl/graph`
    (MIT). Provenance Orbit styled after Anthropic's open-source circuit-tracer.
    Drag a date slider and the answer rewrites itself live via Cypher temporal
    queries.
@@ -55,7 +55,8 @@ Hosted cost (Sonnet): ~€0.045 / query. Both fit comfortably under the brief's
 - **Live demo:** <https://taxxa-graphrag-demo.vercel.app>
 - **Methodology:** <https://taxxa-graphrag-demo.vercel.app/methodology>
 - **Ask page:** <https://taxxa-graphrag-demo.vercel.app/ask>
-- 90-sec demo: `docs/demo.mp4`
+- **90s walkthrough video:** <https://taxxa-graphrag-demo.vercel.app/demo.mp4>
+  (also embedded inline on the landing page, sourced from `public/demo.mp4`)
 
 The live deploy has no Python sidecar attached, so `/api/ask` falls back to
 the built-in SSE fixture replay (`app/api/ask/route.ts`). The cinematic
@@ -114,7 +115,7 @@ python -m scripts.serve_api --reload              # sidecar: localhost:8000
 | Courtroom-style debate | *AgenticSimLaw* (Jan 2026). arXiv:2601.21936 |
 | Hybrid embeddings | Chen et al. (2024). *BGE-M3* (BAAI) |
 | Visualization metaphor | Anthropic (2025). *Circuit Tracing: Attribution Graphs*. `github.com/anthropics/attribution-graphs-frontend` (MIT) |
-| GPU graph engine | `@cosmos.gl/graph` v3 (MIT) — luma.gl WebGL2 |
+| GPU graph engine | `@cosmos.gl/graph` v3 (MIT) - luma.gl WebGL2 |
 | Finnish NER | Kansallisarkisto/finbert-ner + TurkuNLP turku-ner |
 | Finnish morphology | Voikko v0.4.0 (Rust + WASM, FOSS) |
 

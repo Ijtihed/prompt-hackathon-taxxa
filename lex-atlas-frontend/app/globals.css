@@ -282,7 +282,7 @@
   .btn-secondary:hover {
     background: var(--color-surface-variant);
   }
-  /* Ghost button — outlined, transparent fill, fills on hover. Visually
+  /* Ghost button - outlined, transparent fill, fills on hover. Visually
      a secondary action that shouldn't compete with btn-primary. Used by
      "New conversation" next to <HistoryButton>; both read as siblings. */
   .btn-ghost {

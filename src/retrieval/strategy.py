@@ -1,12 +1,12 @@
-"""Track F — Expansion-strategy router (Step 7, B7.2).
+"""Track F - Expansion-strategy router (Step 7, B7.2).
 
 Maps a Finnish/English query to one of the strategies in
 ``findings/07_expansion_strategies.md``. Deterministic keyword/regex
-routing — LLM-based planning is deferred to Step 8 (Planner agent) so
+routing - LLM-based planning is deferred to Step 8 (Planner agent) so
 v2's improvements are attributable to the graph, not to the planner.
 
 Routing is intentionally conservative. ``default`` (vector-only) is the
-fallback whenever no category fires strongly — the pilot showed graph
+fallback whenever no category fires strongly - the pilot showed graph
 expansion adds noise more often than signal on the current corpus, so
 the burden of proof is on the classifier to commit to expansion.
 """
@@ -18,12 +18,12 @@ from src.retrieval.graph_expand import ExpansionStrategy, vector_only_strategy
 
 
 # ---------------------------------------------------------------------------
-# Strategy presets — one per row in findings/07_expansion_strategies.md
+# Strategy presets - one per row in findings/07_expansion_strategies.md
 # ---------------------------------------------------------------------------
 
 
 # Step-11 Plan B: deeper candidate pools.
-# Pre-Plan-B every strategy used ``seed_k=10`` — fast, but too tight to
+# Pre-Plan-B every strategy used ``seed_k=10`` - fast, but too tight to
 # survive cross-lingual queries. The user's eval question
 # ("maximum daily withholding tax percentage / ennakonpidätys") put the
 # correct 2026 Verohallinto päätös chunk at *hybrid rank ~16* after
@@ -33,10 +33,10 @@ from src.retrieval.graph_expand import ExpansionStrategy, vector_only_strategy
 #
 # CROSS_SOURCE (the päätös / Vero-ohje route) gets the biggest bump
 # because that's the strategy that most often spans the multilingual
-# divide — administrative Finnish answering an English question.
+# divide - administrative Finnish answering an English question.
 # DEFAULT (the cross_source/case_law/etc. catch-all) gets a smaller
 # bump so generic Finnish questions retain their speed budget.
-# Other strategies are deliberately untouched — they have stronger
+# Other strategies are deliberately untouched - they have stronger
 # graph priors (CASE_LAW expands inbound from KHO, RECENCY follows
 # amendment edges, etc.) so 10 seeds already feed reasonable BFS.
 #
@@ -69,8 +69,8 @@ CROSS_SOURCE = ExpansionStrategy(
     # Bump metadata weight 0.10 → 0.20 (taking from cross-encoder
     # 0.60 → 0.50). The cross-encoder under-rates current Verohallinto
     # päätökset against older statute amendments when both look
-    # semantically similar; the metadata signal — now carrying an
-    # absolute-freshness term keyed on publication_date — needs more
+    # semantically similar; the metadata signal - now carrying an
+    # absolute-freshness term keyed on publication_date - needs more
     # sway to break those ties in favour of currency.
     rerank_weights=(0.5, 0.3, 0.2),
 )
@@ -128,7 +128,7 @@ _MULTI_HOP_PAT = re.compile(
 )
 
 # A Finlex citation marker. Triggers cross_source only when paired with a
-# guidance marker — see _is_cross_source.
+# guidance marker - see _is_cross_source.
 _FINLEX_CITE_PAT = re.compile(
     r"\b(TVL|AVL|EVL|PerVL|MVL|EPL|OVML|VML|§|momentt|momentit|kohta\s*[a-z]|"
     r"tuloverolaki|arvonlisäverolaki|verotusmenettely)\b",
@@ -143,14 +143,14 @@ _GUIDANCE_PAT = re.compile(
 )
 
 # Verohallinto / annual-decision marker. Fires on user questions about
-# tax-administration päätökset — those are the cross-source pivot
+# tax-administration päätökset - those are the cross-source pivot
 # between Finlex framework (ennakkoperintälaki) and the concrete
 # percentages (Verohallinto päätös for a given year). When this pattern
 # alone fires (without an explicit Finlex citation), expand via
 # ``interprets`` so the statutory neighborhood surfaces alongside the
 # päätös chunks.
 #
-# Patterns are tuned to surface päätös documents — both Finnish
+# Patterns are tuned to surface päätös documents - both Finnish
 # administrative vocabulary and English "withholding tax" /
 # "tax rate" framings users may ask in English even when the answer is
 # Finnish.
@@ -205,7 +205,7 @@ def _is_cross_source(query: str) -> bool:
     """
     if _FINLEX_CITE_PAT.search(query) and _GUIDANCE_PAT.search(query):
         return True
-    # Päätös-only queries also benefit from CROSS_SOURCE expansion —
+    # Päätös-only queries also benefit from CROSS_SOURCE expansion -
     # the päätös chunks alone don't cite back to the controlling
     # ennakkoperintälaki sections, but they're connected by inbound
     # interprets edges.
@@ -222,15 +222,15 @@ def pick_strategy(query: str) -> ExpansionStrategy:
 
     Routing priority (first match wins):
 
-    1. ``case_law`` — explicit case-law markers (KHO / KVL / "tapaus").
-    2. ``recency`` — explicit recency markers ("voimassa", "kumottu", "current").
-    3. ``definition`` — explicit definition markers ("määritelmä", "tarkoittaa").
-    4. ``cross_source`` — Finlex citation + guidance marker co-occur.
-    5. ``multi_hop`` — exception / condition-chain markers.
-    6. ``default`` — vector-only.
+    1. ``case_law`` - explicit case-law markers (KHO / KVL / "tapaus").
+    2. ``recency`` - explicit recency markers ("voimassa", "kumottu", "current").
+    3. ``definition`` - explicit definition markers ("määritelmä", "tarkoittaa").
+    4. ``cross_source`` - Finlex citation + guidance marker co-occur.
+    5. ``multi_hop`` - exception / condition-chain markers.
+    6. ``default`` - vector-only.
 
     The priority order favors precision (specific markers) over recall.
-    When in doubt, the default strategy means v2 degrades to v1 — no
+    When in doubt, the default strategy means v2 degrades to v1 - no
     regression risk.
     """
     if _CASE_LAW_PAT.search(query):

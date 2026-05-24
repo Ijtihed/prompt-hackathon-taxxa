@@ -1,8 +1,8 @@
-# TO-DO — Step 1: Re-parse Consolidated Laws to Recover SECTION Coverage
+# TO-DO - Step 1: Re-parse Consolidated Laws to Recover SECTION Coverage
 
 **Owner:** Step 1 (ingestion / HTML parsing)
 **Discovered by:** Track F V7.2 pilot, 2026-05-23. See `findings/07_pilot_results.md`.
-**Priority:** High — blocks SECTION-level retrieval for major statutes.
+**Priority:** High - blocks SECTION-level retrieval for major statutes.
 
 ## Problem
 
@@ -14,11 +14,11 @@ Several of the most important Finnish tax statutes appear in `output/graph.db` a
 | **AVL** (`arvonlisaverolaki`, VAT) | LAW exists, **0 SECTIONs** in main. `laki_skk` consolidated copy has **only §222–237** (chapter 23). |
 | **PerVL** (`perintö- ja lahjaverolaki`, inheritance & gift) | Main `laki/`: only AMENDMENT_BLOCKs. `laki_skk`: has §38+ (this one is OK). |
 
-Because typed edges (`cites`, `interprets`, `applies`) that name a section (e.g. "TVL §85", "AVL §117") cannot resolve to a SECTION node that doesn't exist, they fall back to the LAW root. This collapses all section-level cross-references into law-level edges — coarse and undifferentiated.
+Because typed edges (`cites`, `interprets`, `applies`) that name a section (e.g. "TVL §85", "AVL §117") cannot resolve to a SECTION node that doesn't exist, they fall back to the LAW root. This collapses all section-level cross-references into law-level edges - coarse and undifferentiated.
 
 ## Hypothesis on cause
 
-The Step 1 parser likely processed *amendment instruments* (HTML files whose URLs match `…/laki/laki-…-muuttamisesta-…`) but didn't process or didn't structurally expand the *consolidated current-version* HTML for TVL and AVL. The PerVL skk version did parse correctly, so the parser CAN handle consolidated HTML — it just may not have been pointed at the right files for TVL/AVL.
+The Step 1 parser likely processed *amendment instruments* (HTML files whose URLs match `…/laki/laki-…-muuttamisesta-…`) but didn't process or didn't structurally expand the *consolidated current-version* HTML for TVL and AVL. The PerVL skk version did parse correctly, so the parser CAN handle consolidated HTML - it just may not have been pointed at the right files for TVL/AVL.
 
 ## Verification tasks (cheap)
 
@@ -30,13 +30,13 @@ The Step 1 parser likely processed *amendment instruments* (HTML files whose URL
 
 1. Add the consolidated TVL/AVL HTML files to the Step 1 input list (if not already there).
 2. If the parser breaks on them (different DOM than amendment instruments), extend the parser.
-3. Re-run Step 1 for those laws only — incremental, not a full corpus re-parse.
+3. Re-run Step 1 for those laws only - incremental, not a full corpus re-parse.
 4. Append the new nodes to `output/nodes.jsonl` / `output/chunks.jsonl`. Step 3 needs to enrich the new nodes; Step 2 needs to re-run citation extraction so the new SECTION ids become resolvable targets; Step 4b re-loads.
 
 ## Cascade impact
 
 - Step 2 re-extract (or at minimum re-resolve): hours.
-- Step 4a re-embed of new SECTION chunks: minutes (it's incremental — chunks are deduped by chunk_id).
+- Step 4a re-embed of new SECTION chunks: minutes (it's incremental - chunks are deduped by chunk_id).
 - Step 4b graph re-load: minutes.
 
 This is feasible but not trivial. Don't start mid-hackathon unless the consolidated HTML is already in `data/raw/`.

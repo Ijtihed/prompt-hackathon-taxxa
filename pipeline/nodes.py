@@ -23,14 +23,14 @@ SECTION = "SECTION"
 SUBSECTION = "SUBSECTION"
 ITEM = "ITEM"
 
-# Semantic (only if structurally indicated — see DEFINITION_PATTERNS below)
+# Semantic (only if structurally indicated - see DEFINITION_PATTERNS below)
 DEFINITION = "DEFINITION"
 
 # Metadata
 TITLE = "TITLE"
 AMENDMENT_BLOCK = "AMENDMENT_BLOCK"
 
-# Vero / KHO have weaker hierarchy — we still use these types but interpret:
+# Vero / KHO have weaker hierarchy - we still use these types but interpret:
 #   GUIDE  ~ LAW
 #   H1/H2  ~ CHAPTER
 #   H3     ~ SECTION
@@ -68,7 +68,7 @@ class Node:
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
-        # drop falsy/None metadata? keep — they help downstream consumers.
+        # drop falsy/None metadata? keep - they help downstream consumers.
         return d
 
 

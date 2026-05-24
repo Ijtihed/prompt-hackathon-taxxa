@@ -2,7 +2,7 @@
 
 Why this exists: MockPipeline.answer() ignores the question and returns one of
 three random canned variants. Live stage demos need deterministic, well-
-choreographed answers — so we shortcut the pipeline for the 3 questions a
+choreographed answers - so we shortcut the pipeline for the 3 questions a
 viewer can pick from the dropdown.
 
 Each override:
@@ -17,7 +17,7 @@ If the question text in eval changes, update DEMO_OVERRIDES here. The mapping
 from short ID (Q1/Q12/Q41) to question text is exposed via DEMO_PICKS for the
 dropdown.
 
-When Track D ships, this file stays in place — it remains the source of truth
+When Track D ships, this file stays in place - it remains the source of truth
 for stage demos regardless of pipeline version. To disable overrides for a
 particular demo run, set USE_OVERRIDES=False in web/app.py.
 """
@@ -28,7 +28,7 @@ from src.models import AnswerResult, RetrievalPath
 
 
 # --------------------------------------------------------------------------
-# Q1 — Basic — Capital income tax rate
+# Q1 - Basic - Capital income tax rate
 # Single-source, no conflict, no assumption. Demonstrates the baseline:
 # vector hit, clean answer, one citation.
 # --------------------------------------------------------------------------
@@ -64,9 +64,9 @@ Q1_RESULT = AnswerResult(
 
 
 # --------------------------------------------------------------------------
-# Q12 — Medium — Meal voucher VAT deduction
+# Q12 - Medium - Meal voucher VAT deduction
 # Cross-source: KHO precedent + Vero kannanotto + Vero guidance. Surfaces an
-# assumption (tax year 2026) but no rank conflict — KHO is binding and Vero
+# assumption (tax year 2026) but no rank conflict - KHO is binding and Vero
 # guidance is consistent with it post-2025.
 # --------------------------------------------------------------------------
 
@@ -80,15 +80,15 @@ _Q12_QUESTION = (
 )
 
 _Q12_ANSWER = (
-    "**Electronic meal voucher via third-party platform — no VAT deduction.** "
+    "**Electronic meal voucher via third-party platform - no VAT deduction.** "
     "Per KHO:2025:46 [Source 1] (incorporated into the Vero guidance "
     "*Henkilöstöruokailun arvonlisäverotuksesta* [Source 3]), an app-based "
     "meal benefit administered by an external platform constitutes a voucher "
-    "in the VAT sense — no taxable supply occurs at invoicing, so the "
+    "in the VAT sense - no taxable supply occurs at invoicing, so the "
     "employer has no input VAT to deduct. The Keskusverolautakunta ruling "
     "KVL:004/2024 [Source 2] reached the same conclusion before being "
     "confirmed by KHO.\n\n"
-    "**Direct catering contract — deduction allowed.** When the employer "
+    "**Direct catering contract - deduction allowed.** When the employer "
     "contracts directly with a restaurant for henkilöstöruokailupalvelua, "
     "input VAT on the goods and services used to provide the canteen meals "
     "*is* deductible under § 5 of the Vero guidance [Source 3], because the "
@@ -97,11 +97,11 @@ _Q12_ANSWER = (
 )
 
 _Q12_CHUNKS = [
-    # [Source 1] — KHO 2025:46 (binding, rank 85)
+    # [Source 1] - KHO 2025:46 (binding, rank 85)
     "finlex/kho/finlex-korkein-hallinto-oikeus-ennakkopaatokset-kho-2025-46-html-048ea0e9#0",
-    # [Source 2] — KVL 004/2024 (interpretive, rank 50)
+    # [Source 2] - KVL 004/2024 (interpretive, rank 50)
     "vero/vero_kvl/vero-syventavat-vero-ohjeet-keskusverolautakunnan-ennakkoratkaisut-kvl-004-2024-773dbff8#0",
-    # [Source 3] — Vero henkilöstöruokailu ALV guidance (interpretive, rank 60)
+    # [Source 3] - Vero henkilöstöruokailu ALV guidance (interpretive, rank 60)
     "vero/vero_ohje/vero-syventavat-vero-ohjeet-ohjeet-henkilostoruokailun-arvonlisaverotuksesta-hen-eb9e4b68/c5#0",
 ]
 
@@ -137,7 +137,7 @@ Q12_RESULT = AnswerResult(
 
 
 # --------------------------------------------------------------------------
-# Q41 — Hard — Avainhenkilö expired tax card → wrong withholding
+# Q41 - Hard - Avainhenkilö expired tax card → wrong withholding
 # Multi-hop across statute + Vero kannanotto + Vero ohje. Includes an
 # authority-rank CONFLICT: the Vero 2020 kannanotto codifies the 32% rate
 # in force pre-2026, but the statute (§ 2 of the avainhenkilölaki, amended
@@ -172,7 +172,7 @@ _Q41_ANSWER = (
     "remits the shortfall plus interest.\n\n"
     "**(c) New key personnel card after residency.** Under the avainhenkilölaki "
     "(1551/1995) § 2 as amended [Source 1], the maximum validity has been "
-    "extended from 48 to **84 months** from the start of employment — "
+    "extended from 48 to **84 months** from the start of employment - "
     "Dr. Chen may request an extension within 30 days of the previous "
     "card's expiry. The Vero kannanotto of 2020 [Source 2] still references "
     "the older 48-month cap; the statute prevails. The Vero deepening "
@@ -181,11 +181,11 @@ _Q41_ANSWER = (
 )
 
 _Q41_CHUNKS = [
-    # [Source 1] — Avainhenkilölaki § 2 amendment (binding, rank 100)
+    # [Source 1] - Avainhenkilölaki § 2 amendment (binding, rank 100)
     "finlex/laki/finlex-laki-laki-ulkomailta-tulevan-palkansaajan-lahdeverosta-annetun-lain-2-ja-4852b24c/s2#0",
-    # [Source 2] — Vero kannanotto background (interpretive, rank 55)
+    # [Source 2] - Vero kannanotto background (interpretive, rank 55)
     "vero/vero_kannanotto/vero-syventavat-vero-ohjeet-kannanotot-avainhenkilolta-perittava-lahdevero-vuode-df57db44/ctaustaa#0",
-    # [Source 3] — Vero avainhenkilöiden verotus guidance (interpretive, rank 60)
+    # [Source 3] - Vero avainhenkilöiden verotus guidance (interpretive, rank 60)
     "vero/vero_ohje/vero-syventavat-vero-ohjeet-ohjeet-avainhenkiloiden-verotus-avainhenkiloiden-ver-87e04865/c2/s2-1#0",
     # Retrieved-only (not directly cited but surfaced by graph walk)
     "vero/vero_kannanotto/vero-syventavat-vero-ohjeet-kannanotot-avainhenkilolta-perittava-lahdevero-vuode-df57db44/ckannanotto#0",
@@ -239,26 +239,26 @@ Q41_RESULT = AnswerResult(
 
 
 # --------------------------------------------------------------------------
-# Dispatch table — keyed by exact question text
+# Dispatch table - keyed by exact question text
 # --------------------------------------------------------------------------
 
 DEMO_PICKS: list[dict] = [
     {
         "id": "Q1",
         "tier": "basic",
-        "label": "Q1 · Basic — Capital income tax rate above €30k",
+        "label": "Q1 · Basic - Capital income tax rate above €30k",
         "question": _Q1_QUESTION,
     },
     {
         "id": "Q12",
         "tier": "medium",
-        "label": "Q12 · Medium — Meal voucher VAT (cross-source)",
+        "label": "Q12 · Medium - Meal voucher VAT (cross-source)",
         "question": _Q12_QUESTION,
     },
     {
         "id": "Q41",
         "tier": "hard",
-        "label": "Q41 · Hard — Avainhenkilö expired tax card (conflict)",
+        "label": "Q41 · Hard - Avainhenkilö expired tax card (conflict)",
         "question": _Q41_QUESTION,
     },
 ]

@@ -1,4 +1,4 @@
-"""Track F — Cross-encoder reranker (Step 7, B7.4).
+"""Track F - Cross-encoder reranker (Step 7, B7.4).
 
 Wraps ``BAAI/bge-reranker-v2-m3`` (multilingual, handles Finnish) for the
 post-graph-expansion rerank step. Pilot finding (``findings/07_pilot_results.md``)
@@ -37,7 +37,7 @@ from typing import Iterable, Sequence
 # The project's .env file is not auto-loaded by anything global; voyage_client
 # hand-parses one specific key (VOYAGE_API_KEY). We do the same here, narrowly
 # scoped to HF_* / TRANSFORMERS_OFFLINE so we don't shadow other keys. Must
-# run *before* ``sentence_transformers`` imports below — those imports read
+# run *before* ``sentence_transformers`` imports below - those imports read
 # the env vars on their first call.
 # ---------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ def _load_hf_offline_env() -> None:
 
 _load_hf_offline_env()
 
-# Default model picked per the Step 7 brief — multilingual cross-encoder,
+# Default model picked per the Step 7 brief - multilingual cross-encoder,
 # 568M parameters, supports Finnish well alongside the other 100+ languages
 # in its training mix.
 DEFAULT_MODEL = "BAAI/bge-reranker-v2-m3"
@@ -100,7 +100,7 @@ class CrossEncoderReranker:
     def __init__(self, model_name: str = DEFAULT_MODEL, max_length: int = 512) -> None:
         try:
             from sentence_transformers import CrossEncoder  # type: ignore
-        except ImportError as exc:  # pragma: no cover — import-guard test below
+        except ImportError as exc:  # pragma: no cover - import-guard test below
             raise RuntimeError(_INSTALL_HINT) from exc
         self.model_name = model_name
         self.max_length = max_length
@@ -122,7 +122,7 @@ class CrossEncoderReranker:
         query
             The user's question. Finnish or English (or mixed).
         candidates
-            ``[(chunk_id, text), ...]`` — chunk_id is opaque; text is what
+            ``[(chunk_id, text), ...]`` - chunk_id is opaque; text is what
             the cross-encoder reads.
         batch_size
             Forwarded to the cross-encoder. 32 fits in CPU RAM comfortably;
@@ -146,7 +146,7 @@ class CrossEncoderReranker:
 
 
 # ---------------------------------------------------------------------------
-# Weight combination — pure-Python, no ML deps required
+# Weight combination - pure-Python, no ML deps required
 # ---------------------------------------------------------------------------
 
 
@@ -199,7 +199,7 @@ _cached_reranker: CrossEncoderReranker | None = None
 def get_reranker(model_name: str = DEFAULT_MODEL) -> CrossEncoderReranker:
     """Lazily construct and cache a single reranker for the process.
 
-    Re-uses the loaded model across queries — the first call pays the
+    Re-uses the loaded model across queries - the first call pays the
     ~5-10s load cost; subsequent calls are free.
     """
     global _cached_reranker

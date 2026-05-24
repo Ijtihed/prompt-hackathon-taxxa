@@ -1,4 +1,4 @@
-"""Inline memo renderer — the document-style answer surface (LEFT column).
+"""Inline memo renderer - the document-style answer surface (LEFT column).
 
 The memo is rendered as a self-contained HTML component (not Streamlit
 markdown) so the citation pills can have proper :hover tooltips and the
@@ -70,7 +70,7 @@ def _insert_inline_pills(answer: str, cited_ids: list[str]) -> str:
     def sub(m):
         idx = int(m.group(1))
         if idx < 1 or idx > len(cited_ids):
-            # Out-of-range token — keep as plain text so the issue is visible.
+            # Out-of-range token - keep as plain text so the issue is visible.
             return m.group(0)
         return render_pill_inline(idx, cited_ids[idx - 1])
     # Light Markdown: bold (**...**) and paragraph breaks via blank lines.
@@ -139,7 +139,7 @@ def _esc(s: str) -> str:
 
 
 # --------------------------------------------------------------------------
-# HTML template — self-contained, served via st.components.v1.html
+# HTML template - self-contained, served via st.components.v1.html
 # --------------------------------------------------------------------------
 
 _TEMPLATE = """<!doctype html>

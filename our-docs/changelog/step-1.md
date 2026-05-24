@@ -1,4 +1,4 @@
-# Step 1 — HTML → nodes → chunks (done)
+# Step 1 - HTML → nodes → chunks (done)
 
 Built the deterministic ingestion pipeline specified in `step-1-plan.md`.
 HTML in `data/` is now parsed into a legal-structure node graph and packed
@@ -8,7 +8,7 @@ into token-bounded chunks. No LLMs in this stage.
 
 ```
 pipeline/
-├── ingest.py                       # entry point — walks data/, dispatches, writes JSONL
+├── ingest.py                       # entry point - walks data/, dispatches, writes JSONL
 ├── nodes.py                        # Node dataclass + deterministic id helpers
 ├── chunks.py                       # SECTION-first packing + sentence-split fallback
 ├── tokens.py                       # tiktoken cl100k_base counter
@@ -16,8 +16,8 @@ pipeline/
 ├── html_utils.py                   # BeautifulSoup helpers (heading detection, § parsing)
 ├── verify.py                       # post-run quality checks (spec §9)
 └── parsers/
-    ├── finlex_konsolidoitu.py      # Laki/Asetus (säädöskokoelma) — clean h1/h2/h3
-    ├── finlex_amendments.py        # Laki/, Asetus/ — h1 + h4 amendment blocks
+    ├── finlex_konsolidoitu.py      # Laki/Asetus (säädöskokoelma) - clean h1/h2/h3
+    ├── finlex_amendments.py        # Laki/, Asetus/ - h1 + h4 amendment blocks
     ├── vero.py                     # Verohallinto guidance (Ohjeet/Päätökset/…)
     ├── kho.py                      # KHO case-law precedents
     └── treaty.py                   # Tuloverosopimukset (tax treaties)
@@ -26,7 +26,7 @@ pipeline/
 ## Node taxonomy (as implemented)
 
 - Hierarchical: `LAW`, `CHAPTER`, `SECTION` (§), `SUBSECTION` (momentti), `ITEM` (kohta)
-- Semantic: `DEFINITION` — only when `tarkoitetaan` / `määritellään` / `defined as` is
+- Semantic: `DEFINITION` - only when `tarkoitetaan` / `määritellään` / `defined as` is
   explicit in the text (never inferred)
 - Metadata: `TITLE`, `AMENDMENT_BLOCK`
 - Per-corpus roots: `GUIDE` (vero), `CASE` (KHO), `TREATY`
@@ -42,7 +42,7 @@ Every id is deterministic, ASCII-safe, and collision-free:
 
 A `disambiguate()` counter handles cases where legal markers repeat under
 the same parent (e.g. amendment files that restate `1 §` across multiple
-luvut without a fresh `<h2>` — second one becomes `s1-2`).
+luvut without a fresh `<h2>` - second one becomes `s1-2`).
 
 ## Chunking strategy
 
@@ -63,7 +63,7 @@ luvut without a fresh `<h2>` — second one becomes `s1-2`).
 | `chunks.jsonl`    | 691 M | one Chunk per line                                                                                         |
 | `hierarchy.json`  | 159 M | `{law_id: {title, source, chapters[], sections[], subsections[], items[], amendments[], definitions[]}}` |
 | `stats.json`      | <1 K  | run summary                                                                                                |
-| `errors.log`      | 0 B   | parser exceptions — empty                                                                                  |
+| `errors.log`      | 0 B   | parser exceptions - empty                                                                                  |
 
 ## Final run on the full corpus
 
@@ -97,22 +97,22 @@ Per-subcorpus breakdown:
 
 ## Bugs found and fixed during integration
 
-1. **Doc-slug truncation collisions** — many Finnish asetus filenames share
+1. **Doc-slug truncation collisions** - many Finnish asetus filenames share
    80-char prefixes; the same slug ended up referring to 100+ different
    documents. Fixed by appending a 4-byte BLAKE2b hash of the full relative
    path.
-2. **Vero preamble paragraphs colliding on `m1`** — paragraphs before the
+2. **Vero preamble paragraphs colliding on `m1`** - paragraphs before the
    first heading were not added to `current_members`, so the momentti
    counter reset to 1 on every preamble paragraph. Fixed with a per-parent
    counter dict.
-3. **ITEM-marker reuse across multiple lists** — `looks_like_item_prefix()`
+3. **ITEM-marker reuse across multiple lists** - `looks_like_item_prefix()`
    returned the same `"1"` / `"a"` marker for every list under a section,
    colliding when sections had multiple lists. Fixed by using position-based
    IDs and keeping the natural marker on `label`.
 4. **Repeated `§ N` markers under the same chapter** in amendment files
-   (where chapter switches aren't always wrapped in `<h2>`) — fixed with
+   (where chapter switches aren't always wrapped in `<h2>`) - fixed with
    the same `disambiguate()` counter applied at all heading levels.
-5. **Treaty preambles producing 10k-token single-paragraph chunks** —
+5. **Treaty preambles producing 10k-token single-paragraph chunks** -
    added sentence-level packing fallback inside `pack_section`.
 
 ## How to run

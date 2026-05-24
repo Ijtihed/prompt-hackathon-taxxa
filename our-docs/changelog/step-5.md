@@ -1,4 +1,4 @@
-# Step 5 — Retrieval v1 (vector-only baseline) (done)
+# Step 5 - Retrieval v1 (vector-only baseline) (done)
 
 Built Step 5 per `05_retrieval_v1_vector_only.md` and the Track D brief in
 `parallel_execution_after_step4.md`. The end-to-end loop now works:
@@ -10,18 +10,18 @@ a Finnish (or English) question goes in, an annotated `AnswerResult` with
 ```
 src/retrieval/
 ├── __init__.py                  # re-exports + VECTOR_DB_PATH config
-├── filters.py                   # B5.1 — keyword filter inference
-├── vector_retriever.py          # B5.2 — wraps VectorStore.search_by_text
-├── rerank.py                    # B5.3 — metadata reranker
-├── assemble.py                  # B5.4 — annotated context (Layer 5)
-├── generate.py                  # B5.5 — DeepSeek via Featherless + citation parsing
-└── pipeline.py                  # B5.6 — glue → AnswerResult
+├── filters.py                   # B5.1 - keyword filter inference
+├── vector_retriever.py          # B5.2 - wraps VectorStore.search_by_text
+├── rerank.py                    # B5.3 - metadata reranker
+├── assemble.py                  # B5.4 - annotated context (Layer 5)
+├── generate.py                  # B5.5 - DeepSeek via Featherless + citation parsing
+└── pipeline.py                  # B5.6 - glue → AnswerResult
 
 scripts/
-└── ask.py                       # B5.7 — CLI front-end
+└── ask.py                       # B5.7 - CLI front-end
 
 findings/
-└── 05_baseline_failures.md      # V5.1 — 10-question diagnosis
+└── 05_baseline_failures.md      # V5.1 - 10-question diagnosis
 ```
 
 ## Pipeline (single runner)
@@ -52,7 +52,7 @@ diagnosis in `findings/05_baseline_failures.md` confirms:
 - Rerank correctly demotes treaty chunks of equal rank by recency and
   promotes higher-authority Finlex over equal-cosine Vero. Repealed
   chunks (`usable=False`) get the prescribed −0.50 penalty and sink.
-- Layer-5 edge rendering runs end-to-end against `graph.db` —
+- Layer-5 edge rendering runs end-to-end against `graph.db` -
   `Cites: → [Source N]`, `Amended by: ← [Source M]`, etc., between
   sections that landed together in the retrieved set. Confirmed against
   a real AVL § 114 amendment pair pulled from `graph.db`.
@@ -62,7 +62,7 @@ diagnosis in `findings/05_baseline_failures.md` confirms:
   `retrieval_paths` (keyed by chunk_id), `timing_ms` per stage, and
   `assumptions` derived from the applied filters. UI-ready.
 
-## V5.1 — 10-question baseline run
+## V5.1 - 10-question baseline run
 
 10 questions from `eval/questions.json` (5 basic + 3 medium + 2 hard) run
 through the full pipeline against the **1000-chunk pilot store** and the
@@ -70,7 +70,7 @@ full `graph.db`:
 
 | ID  | Tier   | Right answer? | Right chunk in top-3? | Primary failure mode |
 |-----|--------|---|---|---|
-| Q1  | basic  | yes | yes (#2 KHO) | — |
+| Q1  | basic  | yes | yes (#2 KHO) | - |
 | Q3  | basic  | refusal | no  | pilot miss |
 | Q4  | basic  | refusal | no  | pilot miss |
 | Q6  | basic  | **hallucinated** | no | pilot miss + LLM prior |
@@ -79,11 +79,11 @@ full `graph.db`:
 | Q15 | medium | refusal | no  | pilot miss |
 | Q17 | medium | refusal | no  | pilot miss + LLM citation inflation |
 | Q34 | hard   | partly  | yes (#6 Ireland, demoted) | rerank ties on authority_rank |
-| Q35 | hard   | yes  | yes (#1) | — |
+| Q35 | hard   | yes  | yes (#1) | - |
 
 The dominant failure mode is **"the right chunk is not in the 1000-chunk
 pilot at all"** (cos=0.000 on the top hits for 6/10 questions). This is
-expected — the pilot is 0.02% of the corpus. Re-run against
+expected - the pilot is 0.02% of the corpus. Re-run against
 `output/lancedb/` when the full embed finishes; the only code change
 needed is flipping `VECTOR_DB_PATH` in `src/retrieval/__init__.py`.
 
@@ -107,7 +107,7 @@ of `.env`. User corrected. The loader (mirrors
 Defaults to `output/lancedb_pilot/`. One-line flip in
 `src/retrieval/__init__.py` switches to `output/lancedb/` once Step 4a
 finishes. The pipeline, CLI, and `AnswerResult` shape are corpus-size
-agnostic — only the *eval numbers* will change.
+agnostic - only the *eval numbers* will change.
 
 ### Path and Title parsed out of `embedded_text`, not loaded from node index
 
@@ -124,7 +124,7 @@ match.
 
 The brief's example "as of 2024 → effective_date <= 2024 AND
 (repeal_date is null OR repeal_date > 2024)" can't be filtered at the
-LanceDB layer — `effective_date` lives only on `NodeMetadata`, not on
+LanceDB layer - `effective_date` lives only on `NodeMetadata`, not on
 `VectorRecord`. v1 infers only filters present in `VectorRecord`:
 `usable`, `in_force`, `source`, `language`. Year-as-of inference is
 returned alongside (`infer_as_of_year`) but unused by the LanceDB
@@ -138,7 +138,7 @@ this).
 which conflated chunk IDs and node IDs. v1 uses **`chunk_id`
 consistently** for `retrieved_chunks`, `cited_source_ids`, and
 `retrieval_paths` keys (i.e. with `#0` suffix). At v2, graph-expanded
-nodes will land in `retrieval_paths` keyed by `node_id` — mixed keying
+nodes will land in `retrieval_paths` keyed by `node_id` - mixed keying
 is allowed by the schema docstring.
 
 ### Dedup by `section_id` at assembly, not in rerank
@@ -152,14 +152,14 @@ distinct sections", not "8 chunks".
 ### v1 renders edges only between retrieved sections
 
 Per B5.4: "For v1, only edges where both endpoints are in the retrieved
-set get rendered." No one-hop "referenced but not retrieved" hints — that
+set get rendered." No one-hop "referenced but not retrieved" hints - that
 is a v2 affordance once graph expansion is on. The four edge types
 rendered are `cites`, `interprets`, `amends`, `defines`. `parent_of` is
 suppressed (structural noise; every node has one).
 
 ### Exact-term bonus computed against `embedded_text`
 
-Same logic as the Path/Title parsing — the title prefix is already in
+Same logic as the Path/Title parsing - the title prefix is already in
 the row. The rerank term bonus tests for any non-stopword query token in
 the prefix line (i.e. the `[Source ...]`, `[Path ...]`, `[Title ...]`
 block), not in the body. Restricting to the prefix avoids rewarding
@@ -220,7 +220,7 @@ the obvious "wait for the full embed":
 # Single question (uses lancedb_pilot until full embed lands)
 .venv/bin/python -m scripts.ask "Mikä on pääomatulon verokanta yli 30 000 euron osalta?"
 
-# Verbose — show filters, reranked top-10, assembled context, citations
+# Verbose - show filters, reranked top-10, assembled context, citations
 .venv/bin/python -m scripts.ask --verbose "..."
 
 # JSON output for the UI
@@ -239,7 +239,7 @@ the obvious "wait for the full embed":
 |---------------------------------------|-----:|----------|
 | `findings/05_baseline_failures.md`    |  ~9 K | 10-question diagnosis |
 
-No new persistent corpus artifacts — v1 is read-only over Step 1–4's
+No new persistent corpus artifacts - v1 is read-only over Step 1–4's
 outputs.
 
 ## Sequencing notes
@@ -248,7 +248,7 @@ outputs.
   directly. `scripts/ask.py --json` produces it; the
   `retrieval_paths`, `assumptions`, and `timing_ms` fields are
   populated.
-- **Track F (Graph expansion, Step 7)** consumes `GraphStore.bfs` —
+- **Track F (Graph expansion, Step 7)** consumes `GraphStore.bfs` -
   unchanged. v2's `pipeline_v2.py` will mirror this file's shape,
   inserting an expansion step between rerank and assemble.
 - **Track H (Agents, Step 8)** consumes `AnswerResult` and may extend

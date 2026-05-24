@@ -1,4 +1,4 @@
-"""Step 4b — Load nodes + edges into a SQLite graph store.
+"""Step 4b - Load nodes + edges into a SQLite graph store.
 
 Schema is defined in 04_embedding_and_indexing.md §4b.1. Uses bulk
 ``executemany`` inside a single transaction; on a laptop the entire
@@ -89,7 +89,7 @@ def _open_db(rebuild: bool) -> sqlite3.Connection:
         GRAPH_DB.unlink()
         print(f"[graph] Removed existing {GRAPH_DB}")
     conn = sqlite3.connect(GRAPH_DB)
-    # Speed knobs — fine because the load is a one-shot, the DB is local-only,
+    # Speed knobs - fine because the load is a one-shot, the DB is local-only,
     # and we'd just re-run on corruption rather than recover.
     conn.execute("PRAGMA journal_mode=OFF")
     conn.execute("PRAGMA synchronous=OFF")

@@ -30,15 +30,63 @@ const ebGaramond = EB_Garamond({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://taxxa-graphrag-demo.vercel.app";
+const TITLE = "RAGTAG - Retrieval Augmented Graph Tax Answer Generator";
+const SHORT_TITLE = "RAGTAG - Finnish tax GraphRAG";
+const DESCRIPTION =
+  "Multi-agent GraphRAG over the Finnish tax-law corpus (Finlex + Vero + KHO case law + treaties). Typed temporal graph, agent debate, cited answers. Aalto Prompt Finance Hackathon 2026.";
+
 export const metadata: Metadata = {
-  title: "RAGTAG · Retrieval Augmented Graph Tax Answer Generator",
-  description:
-    "Retrieval Augmented Graph Tax Answer Generator. Multi-agent retrieval and reasoning over Finlex + Vero. Aalto Prompt Finance Hackathon · Challenge by Taxxa AI.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: "%s - RAGTAG",
+  },
+  description: DESCRIPTION,
+  applicationName: "RAGTAG",
+  keywords: [
+    "RAGTAG",
+    "Taxxa",
+    "Finnish tax law",
+    "Finlex",
+    "Vero",
+    "GraphRAG",
+    "RAG",
+    "retrieval augmented generation",
+    "knowledge graph",
+    "legal AI",
+    "Aalto Prompt Finance Hackathon",
+    "tax research",
+  ],
+  authors: [{ name: "Team Lex Atlas / RAGTAG" }],
+  creator: "Team Lex Atlas / RAGTAG",
+  publisher: "Team Lex Atlas / RAGTAG",
+  category: "Legal technology",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "RAGTAG",
-    description: "Retrieval Augmented Graph Tax Answer Generator.",
     type: "website",
+    siteName: "RAGTAG",
+    title: SHORT_TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SHORT_TITLE,
+    description: DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -52,7 +100,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${ebGaramond.variable} light`}
     >
       <head>
-        {/* Material Symbols — loaded async, won't block paint */}
+        {/* Material Symbols - loaded async, won't block paint */}
         <link
           rel="preconnect"
           href="https://fonts.googleapis.com"

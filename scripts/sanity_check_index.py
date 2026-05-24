@@ -1,15 +1,15 @@
-"""Step 4a.7 — Index sanity checks for the full LanceDB embedding pass.
+"""Step 4a.7 - Index sanity checks for the full LanceDB embedding pass.
 
 Reports written to ``findings/04a_index_sanity.md``. Four checks per the
 doc:
 
 1. Row count in LanceDB equals embedded-chunk count in ``chunks.jsonl``
    (with rounding for ``oversized=True`` chunks that were deliberately
-   skipped — we report both numbers and the delta).
+   skipped - we report both numbers and the delta).
 2. For 100 random vectors: ``chunk_id`` resolves to a chunk in
    ``chunks.jsonl`` and ``section_id`` resolves to a node in
    ``nodes_enriched.jsonl``.
-3. 20 Finnish tax queries (10 from the pilot + 10 new) — top-5 each.
+3. 20 Finnish tax queries (10 from the pilot + 10 new) - top-5 each.
    Human eyeball needed for "at least one relevant" per query.
 4. Metadata filter test: ``source="finlex_laki"`` → only finlex_laki chunks;
    ``node_type="SECTION"`` → only SECTION-anchored chunks.
@@ -34,7 +34,7 @@ NODES_IN = OUTPUT_DIR / "nodes_enriched.jsonl"
 NODES_FALLBACK = OUTPUT_DIR / "nodes.jsonl"
 REPORT = PROJECT_ROOT / "findings" / "04a_index_sanity.md"
 
-# 20 Finnish tax queries — first 10 are the pilot set (for continuity), last
+# 20 Finnish tax queries - first 10 are the pilot set (for continuity), last
 # 10 are new and probe topics not exercised in the pilot.
 QUERIES = [
     # --- pilot set (continuity) ---
@@ -117,7 +117,7 @@ def main() -> int:
     args = ap.parse_args()
 
     out: list[str] = []
-    out.append("# 04a Index sanity — full embedding pass\n")
+    out.append("# 04a Index sanity - full embedding pass\n")
     out.append(f"Vector store: `{args.db}`\n")
 
     # --- Check 1: row count parity ---
@@ -156,7 +156,7 @@ def main() -> int:
     print(f"[sanity]   sampled {len(sample_cids)} chunk_ids")
 
     # Fetch those chunk_ids from LanceDB via a filter.
-    # We use a single equality filter per id via individual searches — cheap
+    # We use a single equality filter per id via individual searches - cheap
     # for 100 rows but use IN clause for the whole set.
     quoted = ",".join("'" + cid.replace("'", "''") + "'" for cid in sample_cids)
     if store.table is None:

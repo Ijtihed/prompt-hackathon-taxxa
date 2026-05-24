@@ -6,7 +6,7 @@ from this file at request time (cheap json load), not from the 691 MB
 chunks.jsonl.
 
 When Track D ships, the real pipeline will fetch chunk text via GraphStore at
-query time — this static cache becomes dead code and can be deleted.
+query time - this static cache becomes dead code and can be deleted.
 
 Run:
     python -m web.data.build_source_meta
@@ -176,12 +176,12 @@ def _derive_label(chunk: dict) -> str:
     if m:
         return m.group(1).replace(":", " ", 1).replace("-", " ")
 
-    # Generic: "Law title — N § Subtitle" → "N § · Law title".
+    # Generic: "Law title - N § Subtitle" → "N § · Law title".
     # The section number lives in the LAST em-dash segment (the law title may
-    # itself contain "N § something" — e.g. "lain 2 ja 4 §:n muuttamisesta").
+    # itself contain "N § something" - e.g. "lain 2 ja 4 §:n muuttamisesta").
     head = text.split("\n", 1)[0]
-    if " — " in head:
-        parts = [p.strip() for p in head.split(" — ")]
+    if " - " in head:
+        parts = [p.strip() for p in head.split(" - ")]
         # Section header is in the middle segment if there are 3+ parts,
         # otherwise the last segment.
         section_part = parts[1] if len(parts) >= 3 else parts[-1]
@@ -195,9 +195,9 @@ def _derive_label(chunk: dict) -> str:
     sec = re.search(r"(\d+\s*[a-z]?\s*§)", head)
     if sec:
         return sec.group(1).strip()
-    # Vero guidance: "Title — section.id — Heading" → "Heading · Title"
-    if " — " in head:
-        parts = [p.strip() for p in head.split(" — ")]
+    # Vero guidance: "Title - section.id - Heading" → "Heading · Title"
+    if " - " in head:
+        parts = [p.strip() for p in head.split(" - ")]
         if len(parts) >= 3:
             return f"{parts[-1]} · {parts[0]}"
         if len(parts) == 2:
@@ -210,7 +210,7 @@ def _excerpt(chunk: dict, max_chars: int = 260) -> str:
     text = chunk.get("text", "")
     # Collapse whitespace
     text = re.sub(r"\s+", " ", text).strip()
-    # Drop the leading "Title — N § Subtitle" head if it's long
+    # Drop the leading "Title - N § Subtitle" head if it's long
     # (the label already shows it).
     if " kappale 1 " in text:
         text = text.split(" kappale 1 ", 1)[-1]

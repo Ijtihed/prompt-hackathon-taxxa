@@ -227,7 +227,7 @@ def _parse_section(
         ch = children[i]
         # Stop when we hit the next h2/h3 or the next h1 (new law).
         if ch.name in {"h1", "h2", "h3"}:
-            # Could be a § with text="2 § …" but coded as h3 — fine, we'll
+            # Could be a § with text="2 § …" but coded as h3 - fine, we'll
             # treat any h3 as a new section boundary.
             break
         if ch.name == "p":
@@ -277,7 +277,7 @@ def _parse_section(
                     law_id=law_root,
                 )
                 members.append(amt)
-        # else: silently skip <i>, <a>, divs we don't care about — they're
+        # else: silently skip <i>, <a>, divs we don't care about - they're
         # captured through parent <p> text already.
         i += 1
 
@@ -342,7 +342,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             return marker
         return f"{marker}-{used_markers[key]}"
 
-    # Skip leading preamble (text before first heading) — capture as TITLE node.
+    # Skip leading preamble (text before first heading) - capture as TITLE node.
     while i < n and children[i].name not in {"h1", "h2", "h3"}:
         # Look for a preamble line like "Eduskunnan päätöksen mukaisesti säädetään:"
         if children[i].name == "p":
@@ -372,7 +372,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
     while i < n:
         ch = children[i]
         if ch.name == "h1":
-            # A second h1 means we hit the start of the body again — skip.
+            # A second h1 means we hit the start of the body again - skip.
             i += 1
             continue
         if ch.name == "h2":
@@ -456,12 +456,12 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             # Emit as a 1-member bundle so amendments end up in chunks too.
             bundles.append(SectionBundle(
                 section=amt,
-                head_text=f"{title} — muutos {txt}",
+                head_text=f"{title} - muutos {txt}",
                 members=[],
             ))
             i = j
             continue
-        # Floating <p> at root level (outside any §) — attach to law.
+        # Floating <p> at root level (outside any §) - attach to law.
         if ch.name == "p":
             txt = get_text(ch)
             if txt:
@@ -484,7 +484,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
         i += 1
 
     # If we found zero sections, fall back to one bundle covering the law
-    # title + any orphan paragraphs we just attached — so the file still
+    # title + any orphan paragraphs we just attached - so the file still
     # produces at least one chunk.
     if not bundles:
         orphan_p_nodes = [n_ for n_ in nodes if n_.type in {SUBSECTION, DEFINITION} and n_.parent_id == law_root]

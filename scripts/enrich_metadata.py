@@ -1,4 +1,4 @@
-"""B3.4 — Metadata enrichment runner.
+"""B3.4 - Metadata enrichment runner.
 
 Streams Step 1's ``output/nodes.jsonl`` and emits an enriched copy with
 ``metadata.{publication_date, effective_date, repeal_date, in_force,
@@ -6,15 +6,15 @@ authority, authority_rank, superseded_by, language, usable}`` populated.
 
 Algorithm:
 
-    Pass 1  — scan root nodes (LAW/GUIDE/CASE/TREATY), collect one
+    Pass 1  - scan root nodes (LAW/GUIDE/CASE/TREATY), collect one
               ``source_file`` per ``law_id``.
-    Pass 1b — open each unique HTML file once, dispatch to a
+    Pass 1b - open each unique HTML file once, dispatch to a
               source-specific extractor, store a ``law_id → RootMetadata``
               map in memory (~63k entries, fits easily).
-    Pass 1c — if ``output/edges.jsonl`` exists, walk ``amends``/``repeals``
+    Pass 1c - if ``output/edges.jsonl`` exists, walk ``amends``/``repeals``
               edges to set ``superseded_by`` per chain. Otherwise warn and
-              continue — Step 2 may not be done yet.
-    Pass 2  — stream every node again, attach root metadata + authority +
+              continue - Step 2 may not be done yet.
+    Pass 2  - stream every node again, attach root metadata + authority +
               composite ``usable``, write to
               ``output/nodes_enriched.jsonl``.
 
@@ -154,7 +154,7 @@ def walk_amendment_chains(edges_path: Path, root_metadata: dict[str, RootMetadat
     Defensive: per the Step 2 edge taxonomy, ``amends``/``repeals`` only
     flow ``finlex/* → finlex/*`` and only from a statute subcorpus
     (laki / asetus / *_skk). KHO precedents and Vero guidance can never
-    legally amend a statute — if Step 2's regex labels one that way it's
+    legally amend a statute - if Step 2's regex labels one that way it's
     noise, and we drop it here rather than corrupt ``superseded_by``.
     """
     if not edges_path.exists():
@@ -257,7 +257,7 @@ def rewrite_nodes(
             else:
                 counts["no_root_metadata"] += 1
 
-            # Authority is fixed-mapping — populated for every node.
+            # Authority is fixed-mapping - populated for every node.
             try:
                 authority, rank = authority_tag(n.get("source", ""), n.get("source_subcorpus", ""))
                 md["authority"] = authority
@@ -321,7 +321,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not NODES_IN.exists():
-        print(f"ERROR: {NODES_IN} not found — run Step 1 first.", file=sys.stderr)
+        print(f"ERROR: {NODES_IN} not found - run Step 1 first.", file=sys.stderr)
         return 1
 
     today = date.fromisoformat(args.today) if args.today else date.today()

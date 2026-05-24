@@ -303,7 +303,7 @@
   let PAYLOAD = {};
   try {
     const raw = (SCRIPT.textContent || '').trim();
-    // If the sentinel is still present, the server never substituted —
+    // If the sentinel is still present, the server never substituted -
     // happens only in raw-template previews. Fall back to empty payload.
     if (raw && !raw.startsWith('__CINEMATIC_PAYLOAD_')) {
       PAYLOAD = JSON.parse(raw);
@@ -333,7 +333,7 @@
   function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
 
   // ─────────────────────────────────────────────────────────────────
-  // Graph rendering — built from result.retrieval_paths
+  // Graph rendering - built from result.retrieval_paths
   // Layout: seed left-center, neighbors arrayed in arcs.
   // ─────────────────────────────────────────────────────────────────
   function publisherFor(chunkId) {
@@ -564,7 +564,7 @@
       schedule(ev.t, () => applyEvent(ev));
     });
 
-    // Final lock — snap counters at the end.
+    // Final lock - snap counters at the end.
     schedule(TIMELINE_END_S + 0.4, () => finalize());
 
     function applyEvent(ev) {
@@ -664,7 +664,7 @@
         $('badge-strategy').textContent = ev.text || 'Multi-hop';
         break;
       case 'agent_start':
-        // no-op — collapsed into agent_complete below
+        // no-op - collapsed into agent_complete below
         if (ev.text) $('ab-' + ev.id).innerHTML = `<span class="done">${escapeHtml(ev.text)}</span>`;
         break;
       case 'agent_complete': {

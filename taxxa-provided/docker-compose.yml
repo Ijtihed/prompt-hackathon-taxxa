@@ -7,7 +7,7 @@
 # Browser UI:  http://localhost:7474   (login: neo4j / password)
 # Bolt URI:    bolt://localhost:7687
 #
-# APOC is enabled — useful for bulk imports and graph algorithms.
+# APOC is enabled - useful for bulk imports and graph algorithms.
 # This is a convenience, not a requirement. NetworkX, Kuzu, DuckDB-PGQ,
 # or a single Python dict are all fine choices for a weekend project.
 

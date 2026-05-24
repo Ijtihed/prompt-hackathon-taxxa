@@ -1,4 +1,4 @@
-"""Metadata reranker — the single biggest quality lever in v1.
+"""Metadata reranker - the single biggest quality lever in v1.
 
 Without this step current Finlex sections sit at equal rank with old Vero
 guidance because the embedding model can't tell which one is authoritative.
@@ -18,20 +18,20 @@ from src.retrieval.vector_retriever import RetrievedHit
 
 
 # --------------------------------------------------------------------------
-# Weights — see brief §B5.3. Treat as starting point, tune on eval set.
+# Weights - see brief §B5.3. Treat as starting point, tune on eval set.
 # --------------------------------------------------------------------------
 W_AUTHORITY = 0.10  # multiplied by (authority_rank / 100)
 W_RECENCY = 0.05  # multiplied by ``_recency_signal`` (newest-in-set relative)
 W_FRESHNESS = 0.10  # multiplied by ``_absolute_freshness`` (today-relative)
 W_TERM_BONUS = 0.05  # added if query term appears in section title/path
-W_NOT_USABLE = 0.50  # subtracted when usable=false — legacy fallback
+W_NOT_USABLE = 0.50  # subtracted when usable=false - legacy fallback
 
 # ``W_RECENCY`` and ``W_FRESHNESS`` look similar but do different jobs.
-# Recency normalises against the *newest in the result set* — it
+# Recency normalises against the *newest in the result set* - it
 # differentiates within a query's hits but doesn't tell us whether the
 # set itself is recent. Freshness normalises against *today*, so a hit
 # from 1980 always scores 0 freshness regardless of what else is in the
-# set. This is the "prefer up-to-date sources" lever — load-bearing for
+# set. This is the "prefer up-to-date sources" lever - load-bearing for
 # questions about annual rates / thresholds where a current Verohallinto
 # päätös should beat an old amendment law even when both surface
 # equally relevant cosine-wise.
@@ -41,17 +41,17 @@ W_NOT_USABLE = 0.50  # subtracted when usable=false — legacy fallback
 # W_NOT_USABLE penalty when a status map is supplied to ``rerank``.
 #
 # Rationale (the "ancestor-aware" piece of the design):
-#   * "repealed" is a confirmed self- or ancestor-level repeal — never
+#   * "repealed" is a confirmed self- or ancestor-level repeal - never
 #     usable for current-law queries, but kept retrievable. Same magnitude
 #     as the old W_NOT_USABLE so legacy behavior matches when only repeals
 #     are present.
-#   * "stale" — the LAW root is superseded by a real successor act. The
+#   * "stale" - the LAW root is superseded by a real successor act. The
 #     section text the user sees may still be on-paper but the citation
 #     should not be relied on without checking the successor.
-#   * "suspect" — the section's LAW has amendments dated after this
+#   * "suspect" - the section's LAW has amendments dated after this
 #     chunk's publication_date. The chunk text *may* already reflect them
 #     (consolidated Finlex usually does), so the penalty is gentle.
-#   * "ok" — no temporal concerns.
+#   * "ok" - no temporal concerns.
 W_TEMPORAL_PENALTY: dict[str, float] = {
     "ok":       0.00,
     "suspect":  0.10,
@@ -74,7 +74,7 @@ RECENCY_HALFLIFE_DAYS = 3650.0
 class RerankedHit:
     """A ``RetrievedHit`` with the composite rerank score attached.
 
-    ``components`` is kept around for debugging — the CLI ``--verbose`` flag
+    ``components`` is kept around for debugging - the CLI ``--verbose`` flag
     surfaces it so reranker tuning isn't blind.
     """
 
@@ -84,7 +84,7 @@ class RerankedHit:
 
 
 _WORD_RE = re.compile(r"[\wäöåÄÖÅ§]+", re.UNICODE)
-# Tokens that carry no retrieval signal — stripped from the query before the
+# Tokens that carry no retrieval signal - stripped from the query before the
 # exact-term bonus check so we don't reward chunks for containing "mikä".
 _STOPWORDS = frozenset(
     {
@@ -124,7 +124,7 @@ def _parse_iso_date(s: str | None) -> date | None:
 def _recency_signal(hit_date: date | None, newest: date | None) -> float:
     """Map publication_date to [0, 1] relative to the freshest in the set.
 
-    Returns 0.0 when either date is missing — i.e. an unknown-date hit gets
+    Returns 0.0 when either date is missing - i.e. an unknown-date hit gets
     no recency bump, which is the safe default (we don't punish it either).
     """
     if hit_date is None or newest is None:
@@ -141,7 +141,7 @@ def _absolute_freshness(hit_date: date | None, today: date | None = None) -> flo
     A 2026-published Verohallinto päätös scores ~1.0 even if the result
     set is dominated by 1980s amendment laws. A 1990 chunk scores ~0
     even when it's the newest in its set. This is the "absolutely
-    recent" signal — pairs with ``_recency_signal``'s relative one.
+    recent" signal - pairs with ``_recency_signal``'s relative one.
 
     Linear decay across 10 years; future-dated chunks (consolidated
     text with a scheduled future amendment date) clamp to 1.0.
@@ -159,7 +159,7 @@ def _exact_term_bonus(query_terms: list[str], embedded_text: str | None) -> floa
     """Return 1.0 when any content-bearing query term appears in the title
     or path lines of the embedded_text, 0.0 otherwise.
 
-    We deliberately limit to the prefix — looking at the full chunk body
+    We deliberately limit to the prefix - looking at the full chunk body
     would reward generic vocabulary that appears in many chunks. The
     title/path lines are where the *named* legal handle lives.
     """
@@ -192,7 +192,7 @@ def rerank(
     ``temporal_status_map`` is keyed by ``section_id`` and maps to the
     ``temporal_status`` dict written by ``scripts.compute_temporal_status``.
     When supplied, the temporal penalty is graded by
-    ``effective_usable`` (ok/suspect/stale/repealed) — see
+    ``effective_usable`` (ok/suspect/stale/repealed) - see
     ``W_TEMPORAL_PENALTY``. When omitted (or when the entry is missing for
     a given hit), we fall back to the legacy binary penalty driven by
     ``hit.usable``, so callers without graph-store access keep working.
@@ -209,7 +209,7 @@ def rerank(
     out: list[RerankedHit] = []
     for hit, hit_date in zip(hits, dates):
         # ``authority_rank`` is None for nodes Step 3 couldn't classify. Treat
-        # as 0 — neutral rather than penalizing, matching the spec.
+        # as 0 - neutral rather than penalizing, matching the spec.
         auth = (hit.authority_rank or 0) / 100.0
         rec = _recency_signal(hit_date, newest)
         fresh = _absolute_freshness(hit_date)
@@ -242,7 +242,7 @@ def _temporal_penalty(
     """Return ``(penalty, grade_as_float)``.
 
     ``grade_as_float`` is a debug-only encoding so the rerank diagnostics
-    can show which bucket fired — 0=ok, 1=suspect, 2=stale, 3=repealed,
+    can show which bucket fired - 0=ok, 1=suspect, 2=stale, 3=repealed,
     -1=unknown (no status, legacy binary applied).
     """
     grade_to_num = {"ok": 0.0, "suspect": 1.0, "stale": 2.0, "repealed": 3.0}
@@ -253,14 +253,14 @@ def _temporal_penalty(
             grade = str(status.get("effective_usable") or "ok")
             return W_TEMPORAL_PENALTY.get(grade, 0.0), grade_to_num.get(grade, 0.0)
 
-    # Legacy path — no graph-store map. Honor the old binary signal.
+    # Legacy path - no graph-store map. Honor the old binary signal.
     if hit.usable is False:
         return W_NOT_USABLE, 3.0
     return 0.0, -1.0
 
 
 def top_n(reranked: list[RerankedHit], n: int) -> list[RerankedHit]:
-    """Convenience — keep the top ``n`` and re-emit. No tie-breaking change."""
+    """Convenience - keep the top ``n`` and re-emit. No tie-breaking change."""
     return reranked[:n]
 
 

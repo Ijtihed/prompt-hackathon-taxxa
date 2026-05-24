@@ -1,4 +1,4 @@
-# GraphRAG for Finnish Accounting Regulation — Plan Overview
+# GraphRAG for Finnish Accounting Regulation - Plan Overview
 
 ## Goal
 
@@ -10,7 +10,7 @@ Build a retrieval system over ~50,000 HTML documents from **Finlex** (laws, stat
 
 The spec for **node creation and chunking** (Step 1 of this plan) is the primary contract. Every downstream phase consumes its outputs (`nodes.jsonl`, `chunks.jsonl`, hierarchy index) without modifying the data model upstream.
 
-If a downstream phase needs additional fields, they are added as **annotations** on existing nodes/chunks — not by changing the Step 1 schema.
+If a downstream phase needs additional fields, they are added as **annotations** on existing nodes/chunks - not by changing the Step 1 schema.
 
 ## Strategy
 
@@ -18,7 +18,7 @@ Build **vector-first, graph-ready from day one**. Every chunk is anchored to a g
 
 ## Cross-reference principles (the structural backbone)
 
-Regulatory documents are defined by the references inside them. A chunk like `§ 102 AVL` is incomplete without `§ 114` (its exception), `§ 117` (the apportionment rule), and the Vero guidance that interprets it. Everything below is in service of making cross-references work — without these, you have RAG with extra steps.
+Regulatory documents are defined by the references inside them. A chunk like `§ 102 AVL` is incomplete without `§ 114` (its exception), `§ 117` (the apportionment rule), and the Vero guidance that interprets it. Everything below is in service of making cross-references work - without these, you have RAG with extra steps.
 
 Eight layers, each covered by one or more phases:
 
@@ -46,8 +46,8 @@ The first four (L1–L4) are the minimum viable graph. L5 and L8 are small chang
 | 4b | `04_embedding_and_indexing.md` | `graph.db` (SQLite) populated | Graph traversal substrate. Runs after 2 and 3. |
 | 5 | `05_retrieval_v1_vector_only.md` | Working baseline RAG with citations | End-to-end loop |
 | 6 | `06_evaluation_harness.md` | Test set + scoring | Measure before optimizing |
-| 7 | `07_retrieval_v2_graph_traversal.md` | GraphRAG retrieval | Phase 2 of the brief — graph walk |
-| 8 | `08_agentic_workflow.md` | Planner / Extractor / Verifier / Clarifier | Phase 3 of the brief — agents |
+| 7 | `07_retrieval_v2_graph_traversal.md` | GraphRAG retrieval | Phase 2 of the brief - graph walk |
+| 8 | `08_agentic_workflow.md` | Planner / Extractor / Verifier / Clarifier | Phase 3 of the brief - agents |
 
 ## Concurrent execution
 
@@ -57,13 +57,13 @@ Steps 2, 3, and 4a can run in parallel from Step 1's outputs. They write to disj
 
 Each phase is a self-contained brief. Each contains:
 
-- **Inputs** — what artifacts must exist before starting
-- **Verification tasks** — quick checks against real data to confirm the spec holds (always small, focused)
-- **Build tasks** — implementation
-- **Outputs** — concrete artifacts produced
-- **Done when** — checkable exit criteria
+- **Inputs** - what artifacts must exist before starting
+- **Verification tasks** - quick checks against real data to confirm the spec holds (always small, focused)
+- **Build tasks** - implementation
+- **Outputs** - concrete artifacts produced
+- **Done when** - checkable exit criteria
 
-Verification tasks exist because the Step 1 spec makes assumptions about HTML structure that must hold across 50k documents. Don't skip them — they take little time and prevent late-stage rework.
+Verification tasks exist because the Step 1 spec makes assumptions about HTML structure that must hold across 50k documents. Don't skip them - they take little time and prevent late-stage rework.
 
 ## Repo layout
 

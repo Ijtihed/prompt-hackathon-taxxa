@@ -1,9 +1,9 @@
-# Step 9 — Ancestor-aware temporal awareness (amendments, repeals, interpretations)
+# Step 9 - Ancestor-aware temporal awareness (amendments, repeals, interpretations)
 
 Closes the gap raised in the audit: the v1/v2 pipelines did fine semantic
 matching but were blind to whether a semantically-related chunk was
 outdated by a downstream amendment, repeal, or higher-court interpretation.
-Worse, they only consulted each chunk's own `usable` flag — a SUBSECTION
+Worse, they only consulted each chunk's own `usable` flag - a SUBSECTION
 sitting under an amended SECTION inherited no signal from its ancestor.
 
 This step makes both pipelines (v1 + v2) ancestor-aware end-to-end:
@@ -20,9 +20,9 @@ Headline numbers from the existing 1.97M-node graph, today=2026-05-24:
 | Typed `amends` edges                    |    24 | 14,032 |
 | Typed `repeals` edges                   |    24 |    161 |
 | Nodes with `temporal_status` field      |     0 | 1,967,776 |
-| Nodes graded `suspect`                  |     — |  62,467 |
-| Nodes graded `stale`                    |     — |    203 |
-| Nodes graded `repealed`                 |     — |  50,830 |
+| Nodes graded `suspect`                  |     - |  62,467 |
+| Nodes graded `stale`                    |     - |    203 |
+| Nodes graded `repealed`                 |     - |  50,830 |
 
 ## Five moves
 
@@ -44,11 +44,11 @@ scripts/
 src/
 ├── models.py                          # +AmendmentCaveat, +AnswerResult.amendment_caveats
 ├── indexing/
-│   └── graph_store.py                 # +get_temporal_status_map(node_ids) — bulk lookup
+│   └── graph_store.py                 # +get_temporal_status_map(node_ids) - bulk lookup
 └── retrieval/
     ├── rerank.py                      # graded W_TEMPORAL_PENALTY, accepts temporal_status_map
     ├── assemble.py                    # _temporal_lines() per source block; status= flag in header
-    ├── caveats.py                     # NEW — build_amendment_caveats(...) with 3-tier fallback
+    ├── caveats.py                     # NEW - build_amendment_caveats(...) with 3-tier fallback
     ├── pipeline.py                    # v1: bulk lookup → rerank → caveats
     ├── pipeline_v2.py                 # v2: bulk lookup → rerank (CE + vector) → caveats
     └── generate.py                    # +SYSTEM_PROMPT instructions for "Huomioitavaa:"
@@ -59,7 +59,7 @@ output/
 └── graph.db                           # nodes.metadata_json now carries temporal_status
 ```
 
-## Concept — why ancestor-aware
+## Concept - why ancestor-aware
 
 The user's brief framed it: *"even if a section is not outdated based on
 the edges immediately connected to it, edges connected to its parent
@@ -76,19 +76,19 @@ LAW root, every amendment ever applied to that LAW, every direct repeal
 edge, and every KHO/KVL interpretation on file, what is the chunk's
 **effective** temporal grade?"* Four buckets:
 
-- **ok** — clean ancestor history.
-- **suspect** — the parent LAW has amendments with effective dates after
+- **ok** - clean ancestor history.
+- **suspect** - the parent LAW has amendments with effective dates after
   this chunk's publication. Consolidated text usually reflects them, so
   the penalty is light (0.10).
-- **stale** — the parent LAW is superseded by a successor act (not a
-  "muuttamisesta annetun lain kumoamisesta" meta-repeal — see below).
-- **repealed** — the chunk or its LAW root has been explicitly repealed
+- **stale** - the parent LAW is superseded by a successor act (not a
+  "muuttamisesta annetun lain kumoamisesta" meta-repeal - see below).
+- **repealed** - the chunk or its LAW root has been explicitly repealed
   or marked `in_force=false`.
 
 Each grade maps directly to a `W_TEMPORAL_PENALTY` value the reranker
 subtracts from the composite score.
 
-## Move 1 — `scripts/backfill_amendment_edges.py`
+## Move 1 - `scripts/backfill_amendment_edges.py`
 
 The Step-1 parser emits ~14k `AMENDMENT_BLOCK` nodes (one per
 `14.5.2010/409`-style h4 heading) but Step 2's regex extractor only
@@ -102,7 +102,7 @@ This script closes the gap. For each AMENDMENT_BLOCK:
 1. Parses the label (`14.5.2010/409`) → `enactment_date`, `act_number`.
 2. Parses the body's `tulee voimaan ...` clause → `effective_date`.
    The scoping regex (`_VOIMAAN_WINDOW_RE`) matches the *first date
-   within the voimaantulo window* — without that, blocks that mention an
+   within the voimaantulo window* - without that, blocks that mention an
    older asetus they repeal ("kumotaan ... 24 päivänä helmikuuta 1873")
    would grab the 1873 date as the new law's effective date. (This bug
    was caught at dry-run stage on the 1947/623 block.)
@@ -111,17 +111,17 @@ This script closes the gap. For each AMENDMENT_BLOCK:
 4. Emits one `amends` (or `repeals`) edge to the LAW root, with the
    parsed dates in `properties_json`.
 
-Idempotent via `extracted_by='backfill_amendment'` — re-runs delete the
+Idempotent via `extracted_by='backfill_amendment'` - re-runs delete the
 previous backfill before inserting fresh edges. Companion JSONL at
 `output/edges_amendments.jsonl` for inclusion in a future
 `load_graph --rebuild`. Also refreshes the per-node `degree` map for
 affected ids so the v2 expansion's degree caps stay accurate.
 
 The script targets WAL-mode SQLite via `timeout=30s` (the demo UI is a
-concurrent reader) and stays in WAL throughout — `journal_mode=OFF`
+concurrent reader) and stays in WAL throughout - `journal_mode=OFF`
 needs an exclusive lock we can't get while the UI is open.
 
-## Move 2 — `scripts/compute_temporal_status.py` (priority)
+## Move 2 - `scripts/compute_temporal_status.py` (priority)
 
 Three-pass streaming computation:
 
@@ -138,7 +138,7 @@ Three-pass streaming computation:
    - Inherit the LAW summary; fold in the node's own repeal_date /
      in_force.
    - `ancestor_amended = (LAW's latest_amendment_date > node's
-     publication_date)` — for consolidated Finlex children whose
+     publication_date)` - for consolidated Finlex children whose
      publication_date matches the latest amendment, this is False (no
      surprise: their text already reflects the amendment). For external
      citing chunks (KHO/Vero with older publication_date), this fires.
@@ -153,7 +153,7 @@ Step 3's `enrich_metadata.walk_amendment_chains` greedily fills
 `superseded_by` from any inbound amends/repeals edge. That made TVL
 appear superseded by
 `finlex-laki-laki-tuloverolain-53-n-muuttamisesta-annetun-lain-kumoamisesta-html-…`
-— a "law repealing the law about amending TVL § 53". It's a one-shot
+- a "law repealing the law about amending TVL § 53". It's a one-shot
 meta-repeal of a stray amendment instrument, not a real successor act.
 
 `_is_meta_repeal_id()` detects this with a single-line heuristic:
@@ -169,7 +169,7 @@ When a LAW's `superseded_by` matches that pattern, the law_status stays
 `effective_usable` is `suspect` (it has 239 real amendments, latest
 effective 2027-07-01) rather than the previous wrong `usable=false`.
 
-## Move 3 — graded reranker penalty
+## Move 3 - graded reranker penalty
 
 `src/retrieval/rerank.py` now takes an optional `temporal_status_map:
 dict[str, dict|None]` keyed by `section_id`. When supplied, the legacy
@@ -185,7 +185,7 @@ W_TEMPORAL_PENALTY = {
 ```
 
 Both pipelines fetch the map once per `answer()` call via the new
-`GraphStore.get_temporal_status_map(node_ids)` — one SQL roundtrip
+`GraphStore.get_temporal_status_map(node_ids)` - one SQL roundtrip
 regardless of `k`. Hits without a status entry fall back to the legacy
 `hit.usable` check inside `rerank()` so callers without graph-store
 access keep working (e.g. the v1 unit-test path that constructs synthetic
@@ -197,20 +197,20 @@ vector reranker is in charge. The v2 vector path (`_rerank_vector`)
 forwards the map to `metadata_rerank` directly.
 
 The diagnostic component name `not_usable_penalty` was kept so `--verbose`
-output and any dashboards reading it don't break — the value is now
+output and any dashboards reading it don't break - the value is now
 graded. An additional `temporal_grade` debug component (0/1/2/3/-1)
 exposes which bucket fired per hit.
 
-## Move 4 — temporal lines in the assembled prompt
+## Move 4 - temporal lines in the assembled prompt
 
 `src/retrieval/assemble.py` now adds `_temporal_lines(temporal_status)`
 under each `[Source N]` block. Lines are emitted only when there's
 something to say, so clean sources stay compact:
 
 ```
-[Source 3] Finlex laki · Tuloverolaki — 124 § (in force, authority_rank=100, 2026-04-24, status=suspect)
+[Source 3] Finlex laki · Tuloverolaki - 124 § (in force, authority_rank=100, 2026-04-24, status=suspect)
   Path: Tuloverolaki > Luku 4 > § 124
-  Amendments to parent LAW: 239 (latest effective 2027-07-01 — may post-date this text)
+  Amendments to parent LAW: 239 (latest effective 2027-07-01 - may post-date this text)
   Interpretations on file: 6934 (latest 2024-…)
 
   ...body...
@@ -219,9 +219,9 @@ something to say, so clean sources stay compact:
 The header line gained `status=suspect|stale|repealed` (silent for `ok`)
 so the LLM sees the ancestor-aware grade alongside the binary `in force`
 flag. One graph roundtrip per `assemble()` call (same map shape as
-rerank uses — could be deduped in a future pass).
+rerank uses - could be deduped in a future pass).
 
-## Move 5 — `AmendmentCaveat` on `AnswerResult`
+## Move 5 - `AmendmentCaveat` on `AnswerResult`
 
 `src/models.py` gains `AmendmentCaveat` and
 `AnswerResult.amendment_caveats: list[AmendmentCaveat]`. Empty list =
@@ -233,17 +233,17 @@ from the actually-cited chunks (post-generation) via a **three-tier
 fallback**, picked per cited section:
 
 1. **The section's own `temporal_status`** if flagged.
-2. **Amendment-instrument target lookup** — when the citation lives in
+2. **Amendment-instrument target lookup** - when the citation lives in
    a `…-muuttamisesta-…` LAW (single-shot amendment act whose own status
    is `ok` because the act itself has no further amendments), follow
-   outbound `amends` edges; if there are none (the common case — Step 2
+   outbound `amends` edges; if there are none (the common case - Step 2
    covered only a few dozen), infer the target by Finnish-genitive→
    nominative slug transformation:
    `rikoslain` → `rikoslaki`, `tuloverolain` → `tuloverolaki`,
    `arvonlisäverolain` → `arvonlisäverolaki`, `asetuksen` → `asetus`.
    Search the LAW table by id-suffix (`%-<nominative>-html-%`),
    preferring the consolidated Laki edition over Säädöskokoelma.
-3. **Cross-source interprets/cites lookup** — for citations from Vero
+3. **Cross-source interprets/cites lookup** - for citations from Vero
    ohjeet and KHO cases, walk outbound `interprets`/`cites` edges on the
    section *and its leaf descendants* (most typed edges live one
    structural hop down from the chunk-anchoring SECTION). Pick the
@@ -253,7 +253,7 @@ Each caveat carries `chunk_id`, `section_id`, `kind`,
 `nearest_amendment_id`, `amendment_effective_date`,
 `amendment_count_in_law`, `interpreted_count`,
 `latest_interpretation_date`, and a Finnish `explanation_fi` produced by
-`_format_explanation_fi` — a small templating function that selects
+`_format_explanation_fi` - a small templating function that selects
 phrasing by grade and folds in the amendment/interpretation counts when
 available.
 
@@ -261,7 +261,7 @@ The LLM system prompt in `generate.py` was extended with a "Temporal
 awareness" section instructing the model to read the new context lines
 and write a short "Huomioitavaa:" / "Note:" block when a cited source is
 suspect/stale/repealed. The pipeline still populates
-`amendment_caveats` independently of whether the LLM mentions them —
+`amendment_caveats` independently of whether the LLM mentions them -
 the UI is the authoritative renderer for caveats; the prompt change is a
 best-effort nudge.
 
@@ -271,11 +271,11 @@ Five queries through `scripts.ask --json` against the full corpus:
 
 | Query | Caveats fired | Driven by |
 |-------|--------------:|-----------|
-| `Mikä on pääomatulon verokanta?` | 2 | suspect — rajoitetusti-verovelvollisen tulon law, 60 amendments |
-| `Rikoslain virkamiehen lahjominen` | 4 | suspect — rikoslaki, **467 amendments** (via slug inference from `rikoslain-muuttamisesta-14`) |
-| `Yleishyödyllisen yhteisön verovapauden edellytykset` | 2 | suspect — TVL, **239 amendments**, 6,934 interpretations |
-| `Mikä on arvonlisäveron vähennysoikeus?` | 1 | stale — AVL (via cross-source from Vero ohje's outbound interprets) |
-| `Mikä on pääomatulon verokanta?` (specific § 124 amendment law) | 0 | the cited amendment act is itself a one-shot — own status `ok`, no flagged target to fall back on |
+| `Mikä on pääomatulon verokanta?` | 2 | suspect - rajoitetusti-verovelvollisen tulon law, 60 amendments |
+| `Rikoslain virkamiehen lahjominen` | 4 | suspect - rikoslaki, **467 amendments** (via slug inference from `rikoslain-muuttamisesta-14`) |
+| `Yleishyödyllisen yhteisön verovapauden edellytykset` | 2 | suspect - TVL, **239 amendments**, 6,934 interpretations |
+| `Mikä on arvonlisäveron vähennysoikeus?` | 1 | stale - AVL (via cross-source from Vero ohje's outbound interprets) |
+| `Mikä on pääomatulon verokanta?` (specific § 124 amendment law) | 0 | the cited amendment act is itself a one-shot - own status `ok`, no flagged target to fall back on |
 
 Example Finnish explanation produced by Move 5 for the rikoslaki case:
 
@@ -287,7 +287,7 @@ Example Finnish explanation produced by Move 5 for the rikoslaki case:
 ### `temporal_status` written to graph.db, not nodes_enriched.jsonl
 
 Both routes were viable. Writing to `metadata_json` in-place means the
-field is available the moment the script finishes — no
+field is available the moment the script finishes - no
 `load_graph --rebuild` needed, which matters because the demo UI is
 holding a read connection. The jsonl is the authoritative source-of-truth
 for a full rebuild; users should re-run `compute_temporal_status` after
@@ -296,7 +296,7 @@ any rebuild. Documented at the bottom of the README.
 ### Severity priority repealed > stale > suspect > ok, never additive
 
 A node could plausibly be both "in a stale parent LAW" and "with
-amendments after publication" — additive penalties would compound. The
+amendments after publication" - additive penalties would compound. The
 priority ladder picks the strongest signal so penalties stay capped at
 0.50. The lighter signals are still recorded in the status dict
 (`law_stale`, `ancestor_amended` are independent bools) so a future
@@ -352,13 +352,13 @@ readable.
 Move 3 (rerank) and Move 4 (assemble) each call
 `get_temporal_status_map` for the section ids they handle. They could
 share a cache, but rerank's set is `k`-sized (~20) and assemble's is
-`n`-sized (~8) — both small, both already issued in a single roundtrip.
+`n`-sized (~8) - both small, both already issued in a single roundtrip.
 Premature consolidation would couple two modules that should stay
 independent. The cost is two ~1ms queries instead of one.
 
 ### Caveats built post-generation, not pre
 
-Caveats fire from `gen.cited_chunk_ids` — the chunks the LLM actually
+Caveats fire from `gen.cited_chunk_ids` - the chunks the LLM actually
 cited, not everything in the candidate pool. This makes the caveat list
 strictly relevant to the answer the user sees. A pre-generation alternative
 (caveat every retrieved chunk) would dump 8+ caveats on every query.
@@ -375,7 +375,7 @@ default for callers that don't have graph-store access.
 ### LLM prompt change is best-effort, not load-bearing
 
 The added "Temporal awareness" section in `SYSTEM_PROMPT` asks the LLM
-to render a "Huomioitavaa:" block. DeepSeek doesn't always comply — and
+to render a "Huomioitavaa:" block. DeepSeek doesn't always comply - and
 that's fine. The authoritative source of caveats is the
 `AnswerResult.amendment_caveats` field, populated independently of
 generation. The prompt is a nudge for inline prose; the structured field
@@ -385,7 +385,7 @@ is the contract for the UI.
 
 - **The koiravero case**: the dog tax law was repealed in 2010 by `Laki
   koiraverosta annetun lain kumoamisesta`. The kumoamisesta act emits no
-  outbound `repeals` edge to the koiraverosta law — Step 2's regex
+  outbound `repeals` edge to the koiraverosta law - Step 2's regex
   didn't catch it. A query about `Koiravero verovapaus` therefore
   produces zero caveats because every cited section's status reads
   `ok`. The architecture is sound; the missing data is one `repeals`
@@ -395,7 +395,7 @@ is the contract for the UI.
   bucket ~62k chunks today. This is signal, not noise: those chunks
   really do precede an upcoming amendment. The UI can choose to suppress
   caveats for `effective_date > today` if it wants strict
-  "what-was-the-law-on-date-X" semantics — the data to do so is in the
+  "what-was-the-law-on-date-X" semantics - the data to do so is in the
   status dict.
 - **Per-section amendment tracking is unchanged**. Move 1 attaches
   amendment edges at LAW-root granularity. The known SECTION-parsing
@@ -406,7 +406,7 @@ is the contract for the UI.
 - **Some KHO publication dates are wildly out of range** (one chunk's
   inherited `publication_date` is `2073-01-01`). This is an upstream
   Step-3 extractor bug, not a Move-2 bug. The downstream effect on
-  `latest_interpretation_date` is cosmetic — the caveat phrasing
+  `latest_interpretation_date` is cosmetic - the caveat phrasing
   surfaces the bad date but doesn't act on it.
 
 ## How to run
@@ -436,7 +436,7 @@ reproducible runs (the script's repeal-by-date logic depends on it).
 - **v2 / GraphRAG benefits the same as v1**. Both rerank modes
   (cross-encoder + vector) plumb the temporal_status map through.
 - **The Verifier agent** (`src/agents/verifier.py`, Step 8) is unchanged
-  but is the natural next consumer of `amendment_caveats` — a future
+  but is the natural next consumer of `amendment_caveats` - a future
   pass could have it cross-check the LLM's prose against the caveat
   list and surface unhandled caveats in `conflicts`.
 
@@ -445,7 +445,7 @@ reproducible runs (the script's repeal-by-date logic depends on it).
 - [ ] Backfill `repeals` edges from `Laki X annetun lain kumoamisesta`
       acts whose titles encode the target (parallel to Move 5's
       slug-inference for amendments). Would unblock the koiravero case.
-- [ ] Section-level amendment resolution — requires a Step-2 refresh on
+- [ ] Section-level amendment resolution - requires a Step-2 refresh on
       "Laki X muuttamisesta" body parsing.
 - [ ] UI: render `amendment_caveats` as a styled "Huomioitavaa:" block
       under the answer, with each caveat's `nearest_amendment_id`

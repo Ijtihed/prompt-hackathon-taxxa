@@ -4,7 +4,7 @@ import { useGraphStore } from "@/lib/store";
 import { formatCents } from "@/lib/utils";
 
 /**
- * CostMeter — the live per-query cost readout, ticking up as the agent runs.
+ * CostMeter - the live per-query cost readout, ticking up as the agent runs.
  *
  * Reads from the Zustand store. The store is updated by the `cost` SSE event
  * dispatched by AnswerStream on every Drafter token-batch.
@@ -15,7 +15,7 @@ import { formatCents } from "@/lib/utils";
  */
 
 interface CostMeterProps {
-  /** Cap in cents — defaults to 100 (€1.00 per the hackathon brief). */
+  /** Cap in cents - defaults to 100 (€1.00 per the hackathon brief). */
   capCents?: number;
   variant?: "stat" | "bar";
 }

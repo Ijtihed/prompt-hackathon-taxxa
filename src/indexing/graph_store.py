@@ -52,7 +52,7 @@ def _row_to_node(row: _NodeRow) -> Node:
         text=row.text,
         parent_id=row.parent_id,
         label=row.label,
-        # Step 4b doesn't store the full source_subcorpus/title/etc. — those
+        # Step 4b doesn't store the full source_subcorpus/title/etc. - those
         # round-trip through nodes.jsonl, not the graph DB. Callers that need
         # them should reach for the node_index instead.
         source_subcorpus="laki",  # placeholder; not used by graph-only callers
@@ -81,7 +81,7 @@ class GraphStore:
         self.path = str(path)
         self.conn = sqlite3.connect(self.path)
         self.conn.row_factory = sqlite3.Row
-        # Read-mostly settings — we never write in this adapter.
+        # Read-mostly settings - we never write in this adapter.
         self.conn.execute("PRAGMA query_only=ON")
 
     # ----- node lookup ----------------------------------------------------
@@ -192,12 +192,12 @@ class GraphStore:
         """BFS expansion. Returns one RetrievalPath per discovered node.
 
         ``degree_cap`` skips expansion *through* a node whose degree on the
-        relevant edge type exceeds the cap — keeps hub nodes (e.g. heavily
+        relevant edge type exceeds the cap - keeps hub nodes (e.g. heavily
         cited statutes) from blowing up the frontier. The seed itself is
         never gated this way; only intermediate nodes are.
         """
         results: dict[str, RetrievalPath] = {}
-        # Seeds are hop 0 — recorded with via="graph" so Layer-8 citation can
+        # Seeds are hop 0 - recorded with via="graph" so Layer-8 citation can
         # still tell vector-seed nodes apart by storing them separately upstream.
         frontier: deque[tuple[str, int, str | None, str | None]] = deque()
         for sid in seed_ids:
@@ -244,7 +244,7 @@ class GraphStore:
     ) -> dict[str, dict | None]:
         """Bulk lookup of ``metadata.temporal_status`` for many nodes.
 
-        Returns ``{node_id: status_dict_or_None}`` — None when the node is
+        Returns ``{node_id: status_dict_or_None}`` - None when the node is
         missing from the graph or doesn't have ``temporal_status`` set
         (e.g. an older graph DB built before ``scripts.compute_temporal_status``
         was run). Callers should treat missing entries as "unknown" and
@@ -256,7 +256,7 @@ class GraphStore:
         if not node_ids:
             return {}
         out: dict[str, dict | None] = {}
-        # Chunk under SQLite's IN-list limit. 500 is conservative — the
+        # Chunk under SQLite's IN-list limit. 500 is conservative - the
         # actual limit is 999 placeholders in older builds.
         BATCH = 500
         for i in range(0, len(node_ids), BATCH):
@@ -277,7 +277,7 @@ class GraphStore:
             out.setdefault(nid, None)
         return out
 
-    # ----- text_at — Step 10 / Move 4 point-in-time playback -------------
+    # ----- text_at - Step 10 / Move 4 point-in-time playback -------------
 
     def text_at(
         self,
@@ -292,16 +292,16 @@ class GraphStore:
         forward up to and including ``as_of``. Each step's verb is
         applied:
 
-          * ``original`` / ``muutetaan`` / ``lisätään`` — set text to
+          * ``original`` / ``muutetaan`` / ``lisätään`` - set text to
             the step's ``new_text`` (or keep prior when ``new_text`` is
-            missing — a known data hole for chain_complex ops).
-          * ``kumotaan`` — set text to ``None`` (the section is repealed
+            missing - a known data hole for chain_complex ops).
+          * ``kumotaan`` - set text to ``None`` (the section is repealed
             as of this date).
 
         When the section has no ``version_chain`` (clean ancestor
         history), we return a single-step chain consisting of just the
         original SECTION text, with ``has_future_amendments=False``.
-        That keeps callers simple — they don't have to special-case
+        That keeps callers simple - they don't have to special-case
         unchanged sections.
 
         ``as_of`` defaults to ``date.today()``. ``is_current`` is True
@@ -318,7 +318,7 @@ class GraphStore:
         )
         row = cur.fetchone()
         if row is None:
-            # Missing section — return an empty chain so the assembler
+            # Missing section - return an empty chain so the assembler
             # still gets a typed result. The caller treats this the same
             # as a regular missing chunk.
             return EffectiveText(
@@ -362,7 +362,7 @@ class GraphStore:
                 continue
             step = _to_version_step(raw)
             eff = step.effective_date
-            # Steps with no date are treated as "always applied" — they
+            # Steps with no date are treated as "always applied" - they
             # came from Move 1 ops that couldn't parse a voimaantulo
             # clause, and dropping them silently would lose work. We
             # apply them in declaration order, *before* checking the
@@ -418,12 +418,12 @@ def _apply_step(current: str | None, step: VersionStep) -> str | None:
     """Play one step against the running text.
 
     Semantics:
-      * ``original`` / ``muutetaan`` / ``lisätään`` — replace the running
+      * ``original`` / ``muutetaan`` / ``lisätään`` - replace the running
         text with the step's ``text`` *unless* the step carries no text
         (some chain_complex ops have None new_text; keep current). For
         ``lisätään`` on a section that didn't exist before, ``current``
         is None and the step provides the birth-of-§ text.
-      * ``kumotaan`` — the section is repealed. We set text to None and
+      * ``kumotaan`` - the section is repealed. We set text to None and
         downstream callers render it as the explicit absence.
     """
     if step.provenance == "kumotaan":

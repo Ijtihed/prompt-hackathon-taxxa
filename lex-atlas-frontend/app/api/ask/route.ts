@@ -1,5 +1,5 @@
 /**
- * /api/ask — SSE proxy from Next.js to the Python agent sidecar.
+ * /api/ask - SSE proxy from Next.js to the Python agent sidecar.
  *
  * Per 2026 Next.js best practices:
  *   - `runtime = "nodejs"` (edge has 30s timeout; agent runs ~8-15s)
@@ -40,7 +40,7 @@ interface AskBody {
 }
 
 export async function POST(req: NextRequest) {
-  // req.json() throws on empty body (e.g. EventSource reconnect probe) — guard it.
+  // req.json() throws on empty body (e.g. EventSource reconnect probe) - guard it.
   let body: AskBody;
   try {
     body = (await req.json()) as AskBody;
@@ -81,11 +81,11 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch {
-        // Connection refused, DNS error, etc. — falls through to fixture replay
+        // Connection refused, DNS error, etc. - falls through to fixture replay
       }
 
       if (!sidecarOk) {
-        // Sidecar unreachable — replay the demo fixture so the UI still works
+        // Sidecar unreachable - replay the demo fixture so the UI still works
         try {
           await replayFixture(send, body);
         } catch (e) {
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 /* ───────────────────────────────────────────────────────────────────────── */
 
 /**
- * Demo fixture replay — for when the Python sidecar is down. Walks through
+ * Demo fixture replay - for when the Python sidecar is down. Walks through
  * a canned event sequence at realistic timing so the UI shows the full
  * demo motion. Pass `instant: true` to skip all delays (used for
  * screenshots and e2e tests).
@@ -161,7 +161,7 @@ async function replayFixture(
   }
 }
 
-/** Q4 fixture — the avainhenkilö withholding question, deterministic path. */
+/** Q4 fixture - the avainhenkilö withholding question, deterministic path. */
 function buildQ4Fixture(): Array<[number, object]> {
   return [
     [200, { type: "ner_pulse", entityNodeIds: ["concept:avainhenkilo", "concept:lahdevero", "work:avainhenkilolaki"] }],
@@ -204,7 +204,7 @@ function buildQ4Fixture(): Array<[number, object]> {
   ];
 }
 
-/** Debate fixture — KHO ruling vs Vero ohje on a contested §, AgenticSimLaw-style. */
+/** Debate fixture - KHO ruling vs Vero ohje on a contested §, AgenticSimLaw-style. */
 function buildDebateFixture(): Array<[number, object]> {
   return [
     [200, { type: "ner_pulse", entityNodeIds: ["concept:reverse-charge", "work:avl", "case:kho-2024-19"] }],
@@ -264,12 +264,12 @@ function buildDebateFixture(): Array<[number, object]> {
 }
 
 /**
- * N1 fixture — the triangular VAT simplification question (DE supplier →
+ * N1 fixture - the triangular VAT simplification question (DE supplier →
  * FI middle → SE customer, single transport). Deterministic chain through
  * AVL §63h, the EU VAT Directive Article 141 anchor, the Vero ohje on
  * kolmikantakauppa, and a recent KHO ruling that confirms the conditions.
  *
- * No conflict / debate — this is a "structural" path question: the answer
+ * No conflict / debate - this is a "structural" path question: the answer
  * is a checklist of conditions plus an invoice-marking caveat. The orbit
  * shows EU law as the parent of the Finnish §, with guidance + case law
  * as interpreters of the same node.
@@ -440,7 +440,7 @@ function buildN1Fixture(): Array<[number, object]> {
         ],
       },
     ],
-    [2900, { type: "draft_token", text: "Yes — the triangular VAT simplification applies, provided the three standard conditions are met. " }],
+    [2900, { type: "draft_token", text: "Yes - the triangular VAT simplification applies, provided the three standard conditions are met. " }],
     [3200, { type: "draft_token", text: "Under " }],
     [3300, { type: "draft_token", text: "[cite:node:comp:avl:§63h]AVL §63h[/cite] " }],
     [3450, { type: "draft_token", text: "(implementing " }],
@@ -456,7 +456,7 @@ function buildN1Fixture(): Array<[number, object]> {
     [5750, { type: "draft_token", text: "and " }],
     [5850, { type: "draft_token", text: "[cite:node:work:vero-ohje:kolmikantakauppa-2022]Vero ohje on kolmikantakauppa[/cite]" }],
     [6000, { type: "draft_token", text: ", the invoice to the Swedish customer must carry the explicit marking " }],
-    [6250, { type: "draft_token", text: "\"Käännetty verovelvollisuus — kolmikantakauppa\" (Reverse charge — triangular transaction) " }],
+    [6250, { type: "draft_token", text: "\"Käännetty verovelvollisuus - kolmikantakauppa\" (Reverse charge - triangular transaction) " }],
     [6500, { type: "draft_token", text: "and reference Article 141. " }],
     [6750, { type: "draft_token", text: "The conditions were confirmed in " }],
     [6900, { type: "draft_token", text: "[cite:node:case:kho-2018-117]KHO 2018:117[/cite]" }],

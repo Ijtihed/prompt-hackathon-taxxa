@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProvenanceTimeline — Stitch's design for the Ask page side panel.
+ * ProvenanceTimeline - Stitch's design for the Ask page side panel.
  *
  * Vertical timeline with colored dots (one per OrbitNode), each labelled by
  * authority class. Replaces the radial Provenance Orbit on the chat surface

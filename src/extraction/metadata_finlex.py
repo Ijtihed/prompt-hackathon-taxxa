@@ -1,4 +1,4 @@
-"""B3.1 — Finlex metadata extractor.
+"""B3.1 - Finlex metadata extractor.
 
 Covers both the säädöskokoelma (clean consolidated laws) and the
 Laki/Asetus amendment files. Both share the same HTML root shape:
@@ -11,18 +11,18 @@ Laki/Asetus amendment files. Both share the same HTML root shape:
 
 What we extract:
 
-- ``publication_date`` — from the latest amendment ``<h4>`` if present;
+- ``publication_date`` - from the latest amendment ``<h4>`` if present;
   else from the ``Annettu ...`` clause; else from ``tulee voimaan`` as a
   fallback (better than nothing).
-- ``effective_date`` — from ``tulee voimaan ...``.
-- ``repeal_date`` — from ``kumotaan/kumottu ... lailla NNN/YYYY`` markers
+- ``effective_date`` - from ``tulee voimaan ...``.
+- ``repeal_date`` - from ``kumotaan/kumottu ... lailla NNN/YYYY`` markers
   when a parseable date is nearby. The vast majority of files won't have
-  this — that's expected per the spec's coverage table.
-- ``in_force`` — False if the document title contains ``kumoamisesta``
+  this - that's expected per the spec's coverage table.
+- ``in_force`` - False if the document title contains ``kumoamisesta``
   ("about repealing"), or if a top-level marker says ``ei voimassa`` /
   the document is itself a repeal act. Otherwise True.
-- ``language`` — from ``<html lang>`` or default ``"fi"``.
-- ``superseded_by`` — left null here; the pipeline runner walks
+- ``language`` - from ``<html lang>`` or default ``"fi"``.
+- ``superseded_by`` - left null here; the pipeline runner walks
   ``edges.jsonl`` to fill this in (only available after Step 2).
 """
 from __future__ import annotations
@@ -54,7 +54,7 @@ _VOIMAAN_RE = re.compile(
     re.IGNORECASE,
 )
 
-# "kumotaan ... lailla 658/2015" — finds an explicit repeal source.
+# "kumotaan ... lailla 658/2015" - finds an explicit repeal source.
 # We can't always get the date of repeal from the number; just flag a
 # repeal context. The pipeline runner walks `repeals` edges in Step 2 to
 # set repeal_date precisely.
@@ -77,7 +77,7 @@ def extract(html: str, *, title: str | None = None) -> RootMetadata:
     """Return Finlex root metadata for one HTML document.
 
     ``title`` is the parser-supplied root title (Step 1's ``Node.title``).
-    We use it for the ``kumoamisesta`` heuristic — the filename and h1
+    We use it for the ``kumoamisesta`` heuristic - the filename and h1
     typically match, but the parser already trimmed it.
     """
     language = _extract_language(html)
@@ -115,7 +115,7 @@ def _extract_publication(html: str) -> date | None:
         return parse_spelled(m.group(1))
 
     # Last resort: latest year mentioned in the body (typically a "/YYYY"
-    # law-number suffix or a "vuonna YYYY" clause). Coarse Jan-1 anchor —
+    # law-number suffix or a "vuonna YYYY" clause). Coarse Jan-1 anchor -
     # better than null for date-range retrieval. Only used when nothing
     # structured was found.
     y = latest_year(html)
@@ -140,7 +140,7 @@ def _extract_in_force(html: str, title: str | None) -> bool:
     if "ei voimassa" in html.lower():
         return False
     # Don't flip in_force=False just because the document mentions
-    # "kumotaan" — it's commonly used to describe what *this* statute
+    # "kumotaan" - it's commonly used to describe what *this* statute
     # repeals from older statutes, not its own status. Leave the more
     # precise repeal_date propagation to the pipeline runner.
     _ = _KUMOTTU_RE  # silence unused-name

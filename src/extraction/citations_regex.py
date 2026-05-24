@@ -1,9 +1,9 @@
-"""B2.3 — Regex citation extractors.
+"""B2.3 - Regex citation extractors.
 
 Run a small ordered list of named regex extractors over a node's text and
 yield `RawMatch` records. Patterns are ordered most-specific first; each
 pattern marks consumed character spans so later, broader patterns skip
-overlapping text. No I/O, no resolution — resolution is done downstream
+overlapping text. No I/O, no resolution - resolution is done downstream
 by `src.extraction.resolve` via `NodeIndex`.
 """
 from __future__ import annotations

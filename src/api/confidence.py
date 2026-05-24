@@ -11,7 +11,7 @@ Design notes:
   OpenAI client and the FEATHERLESS_API_KEY discovery logic.
 - Caps at ``max_tokens=4`` so the cost overhead per query is negligible
   (well under 1% of the main generation cost).
-- Soft-fails to ``"medium"`` on any LLM error — the worst outcome of a
+- Soft-fails to ``"medium"`` on any LLM error - the worst outcome of a
   failed eval is showing the neutral pill, not blocking the answer.
 - Confidence is graded against the *question*, the *answer*, and a
   truncated *context preview*. Including the answer itself is
@@ -32,7 +32,7 @@ logger = logging.getLogger("lex_atlas.confidence")
 Confidence = Literal["high", "medium", "low"]
 
 # Default we return on any failure path. Medium is the right neutral
-# default — high implies the LLM signed off, low triggers the
+# default - high implies the LLM signed off, low triggers the
 # "ask specialist" path which is wrong if eval just timed out.
 _FALLBACK: Confidence = "medium"
 
@@ -46,11 +46,11 @@ should rely on this answer.
 
 Grading rubric:
 
-- high   — Every factual claim is plainly supported by the sources, the
+- high   - Every factual claim is plainly supported by the sources, the
            answer is unambiguous, and no critical caveat is missing.
-- medium — Mostly supported, but with hedging language, partial coverage
+- medium - Mostly supported, but with hedging language, partial coverage
            of the question, or a missing edge case.
-- low    — The answer leans on inference past what the sources say, the
+- low    - The answer leans on inference past what the sources say, the
            sources contradict each other, the topic isn't in scope, or
            the LLM declined to answer.
 
@@ -71,7 +71,7 @@ SOURCE EXCERPTS (first {n} of {total}):
 
 
 # Cap on the context bytes we feed the grader. The full assembled context
-# can be 10-15k chars; we don't need it all to judge — a couple of
+# can be 10-15k chars; we don't need it all to judge - a couple of
 # headers + the first few hundred chars of each block is plenty.
 _CONTEXT_PREVIEW_CHARS = 2400
 
@@ -142,12 +142,12 @@ def evaluate_confidence(
         )
         elapsed_ms = int((time.perf_counter() - t0) * 1000)
     except Exception as e:
-        logger.warning("confidence eval failed: %s — defaulting to %s", e, _FALLBACK)
+        logger.warning("confidence eval failed: %s - defaulting to %s", e, _FALLBACK)
         return _FALLBACK
 
     raw = (resp.choices[0].message.content or "").strip().lower()
     # Pick the FIRST recognized token. The grader might respond with
-    # "low.", "Low", "low confidence", etc. — tolerate light noise.
+    # "low.", "Low", "low confidence", etc. - tolerate light noise.
     for token in ("high", "medium", "low"):
         if token in raw.split():
             logger.info("confidence=%s · raw=%r · %d ms", token, raw, elapsed_ms)
@@ -156,5 +156,5 @@ def evaluate_confidence(
     if raw in {"high", "medium", "low"}:
         logger.info("confidence=%s · %d ms", raw, elapsed_ms)
         return raw  # type: ignore[return-value]
-    logger.warning("confidence: unrecognized response %r — defaulting to %s", raw, _FALLBACK)
+    logger.warning("confidence: unrecognized response %r - defaulting to %s", raw, _FALLBACK)
     return _FALLBACK

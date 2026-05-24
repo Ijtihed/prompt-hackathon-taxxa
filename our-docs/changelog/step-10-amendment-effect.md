@@ -1,11 +1,11 @@
-# Step 10 — Amendment effect integration (point-in-time text)
+# Step 10 - Amendment effect integration (point-in-time text)
 
 Closes the gap raised on top of Step 9: the pipeline now *recognised* that
 a parent LAW was amended, but couldn't tell what § the amendment touched
 or what the law actually says after the amendment is applied. Step 9
 surfaced *"this might be stale"* Finnish caveats; Step 10 surfaces
 *"here is the wording that was in force on the date the question is
-about"* — and a Verifier check that catches the LLM if it quotes from
+about"* - and a Verifier check that catches the LLM if it quotes from
 the wrong version.
 
 Headline numbers from the 1.97M-node graph today, today=2026-05-24, from
@@ -18,9 +18,9 @@ parser; numbers in parentheses):
 | AmendmentOps with parsed verb + target  |     0 | 840   | ~75,000 |
 | Sections with non-trivial version_chain |     0 | _depends on Move 2 resolution_ | _est. ~40,000_ |
 | `text_at(section_id, as_of)` available  |   no  | yes (all sections, returns trivial chain for clean §) | yes |
-| `AnswerResult.as_of_date_used`          |   —   | populated   | populated |
-| `AnswerResult.effective_text_provenance`|   —   | per cited chunk   | per cited chunk |
-| `TemporalMismatch` conflicts            |   —   | wired into `conflicts[]` | wired |
+| `AnswerResult.as_of_date_used`          |   -   | populated   | populated |
+| `AnswerResult.effective_text_provenance`|   -   | per cited chunk   | per cited chunk |
+| `TemporalMismatch` conflicts            |   -   | wired into `conflicts[]` | wired |
 
 The full-corpus extrapolation assumes the 200-instrument smoke's
 4.2 ops/instrument generalises across the remaining 18,683 instruments
@@ -35,15 +35,15 @@ in the smoke).
 | 2 | Resolve `(verb, §)` → typed `amends_section` edge in graph.db | done |
 | 3 | Build chronological `version_chain` per affected SECTION | done |
 | 4 | `GraphStore.text_at(section_id, as_of)` plays the chain back | done |
-| 5 | Filters, assemble, pipelines, verifier — wire the new contract end-to-end | done |
+| 5 | Filters, assemble, pipelines, verifier - wire the new contract end-to-end | done |
 
 ## What was built
 
 ```
 scripts/
-├── extract_amendment_ops.py        # Move 1 — directive parser → amendment_ops.jsonl
-├── resolve_amendment_targets.py    # Move 2 — slug + section resolution → graph.db
-└── compute_version_chains.py       # Move 3 — per-SECTION chain → metadata_json
+├── extract_amendment_ops.py        # Move 1 - directive parser → amendment_ops.jsonl
+├── resolve_amendment_targets.py    # Move 2 - slug + section resolution → graph.db
+└── compute_version_chains.py       # Move 3 - per-SECTION chain → metadata_json
 
 src/
 ├── models.py                        # +EdgeType "amends_section", AmendmentOp,
@@ -63,19 +63,19 @@ src/
     └── verifier.py                  # +check_temporal_mismatches(answer, cited, as_of)
 
 output/
-├── amendment_ops.jsonl              # Move 1 — one AmendmentOp per line
+├── amendment_ops.jsonl              # Move 1 - one AmendmentOp per line
 ├── amendment_ops_stats.json
-├── edges_amends_section.jsonl       # Move 2 — companion to graph.db inserts
-├── amendment_ops_unresolved.jsonl   # Move 2 — diagnostic
+├── edges_amends_section.jsonl       # Move 2 - companion to graph.db inserts
+├── amendment_ops_unresolved.jsonl   # Move 2 - diagnostic
 ├── amends_section_stats.json
 └── version_chain_stats.json         # Move 3
 ```
 
-## Concept — why "effect", not just "recognition"
+## Concept - why "effect", not just "recognition"
 
 Step 9 made the pipeline ancestor-aware: every node carries a
 `temporal_status` summarising whether the parent LAW has been amended,
-repealed, or interpreted. That is the *recognition* layer — *"this
+repealed, or interpreted. That is the *recognition* layer - *"this
 chunk might be stale"*. It penalises stale chunks in rerank, surfaces
 Finnish caveats, and lets the demo say *"Huomioitavaa: emolaissa on
 239 muutosta"*.
@@ -83,8 +83,8 @@ Finnish caveats, and lets the demo say *"Huomioitavaa: emolaissa on
 What Step 9 deliberately didn't do:
 
 - **Section-level resolution.** All amendment edges attached at LAW
-  root. So *"TVL has been amended 239 times"* — yes, but *"is § 124
-  one of the amended ones?"* — unknown.
+  root. So *"TVL has been amended 239 times"* - yes, but *"is § 124
+  one of the amended ones?"* - unknown.
 - **Operative playback.** No way to compute *"the text of TVL § 124
   on 2018-06-01"*. The LLM either got the consolidated current text
   (with its own publication_date) and had to reason its way back to
@@ -94,13 +94,13 @@ What Step 9 deliberately didn't do:
   conflicts (Finlex vs Vero) but not version conflicts (today's
   wording vs the LLM-quoted wording).
 
-Step 10 fills these gaps. The chain is parser-level — no LLM merges,
+Step 10 fills these gaps. The chain is parser-level - no LLM merges,
 no fuzzy logic. ``muutetaan`` replaces text, ``kumotaan`` removes it,
 ``lisätään`` is the birth point of a § that didn't exist before.
 ``text_at(as_of)`` plays the ops chronologically up to ``as_of`` and
 returns what was in force at that moment.
 
-## Move 1 — `scripts/extract_amendment_ops.py`
+## Move 1 - `scripts/extract_amendment_ops.py`
 
 Walks the 18,878 amendment-instrument LAWs (id pattern
 `*-muuttamisesta-*` or `*-kumoamisesta-*`) and, for each, parses the
@@ -129,15 +129,15 @@ The directive parser:
 3. Within the scope, captures every ``\d+\s*[a-z]?\s*§`` as a target
    identifier. Optional momentti via ``§:n N momentti`` attaches to
    the most recent target within 80 characters.
-4. Looks up the matching SECTION child (by normalised label —
+4. Looks up the matching SECTION child (by normalised label -
    ``"11 a §"`` → ``"11a"``) and extracts the new wording from its
    subtree, stripping any trailing voimaantulo momentti.
 5. For pure-``kumotaan`` instruments with no SECTION children (the
    directive *is* the whole text), emits ``kumotaan`` ops with
    ``new_text=None``.
 
-Range markers (`5–8 §`, `5—8 §`) downgrade confidence and set
-``chain_complex=True`` rather than expand — the v1 expander would
+Range markers (`5–8 §`, `5-8 §`) downgrade confidence and set
+``chain_complex=True`` rather than expand - the v1 expander would
 guess at which §s in the range actually exist in the target LAW, and
 a wrong expansion is worse than a missed one.
 
@@ -146,7 +146,7 @@ The 200-instrument smoke produces 840 ops in 94 s
 the regex). Full run is ~2.5 hours; not blocking the rest of the
 pipeline.
 
-## Move 2 — `scripts/resolve_amendment_targets.py`
+## Move 2 - `scripts/resolve_amendment_targets.py`
 
 Reads ``amendment_ops.jsonl`` and, per op, resolves
 ``(block_law_id, target_section_label)`` to a concrete SECTION id in
@@ -157,7 +157,7 @@ Two independent resolvers:
 1. **Target LAW inference** via slug genitive → nominative
    (`-rikoslain-` → `rikoslaki`, `-asetuksen-` → `asetus`). Identical
    logic to ``src/retrieval/caveats._amends_target_for`` and
-   ``scripts/backfill_muuttamisesta_edges`` — three callers, one rule.
+   ``scripts/backfill_muuttamisesta_edges`` - three callers, one rule.
    A pre-built ``{stem: [law_id]}`` index over the 55k Finlex LAWs
    makes lookup O(1).
 2. **Section matching** in the target LAW. Section ids follow
@@ -168,8 +168,8 @@ Two independent resolvers:
    once per resolver pass.
 
 For ``lisätään`` ops that target a § not yet materialised in the
-consolidated LAW — by construction, ``lisätään`` *creates* the
-section — the resolver emits a dangling ``amends_section`` edge
+consolidated LAW - by construction, ``lisätään`` *creates* the
+section - the resolver emits a dangling ``amends_section`` edge
 with ``dangling_reason='not_yet_parsed'``. The next consolidated
 re-ingestion that materialises the new § will close the dangle.
 
@@ -179,7 +179,7 @@ via ``extracted_by='amends_section_resolve'``. Companion JSONL at
 ``amendment_ops_unresolved.jsonl`` with per-op failure reasons
 (``target_law_not_found``, ``bad_section_label``, ``section_not_found``).
 
-## Move 3 — `scripts/compute_version_chains.py`
+## Move 3 - `scripts/compute_version_chains.py`
 
 For every SECTION with inbound ``amends_section`` edges, builds:
 
@@ -196,17 +196,17 @@ metadata.version_chain = [
 ]
 ```
 
-Steps with no parsable ``effective_date`` (rare — the voimaantulo
+Steps with no parsable ``effective_date`` (rare - the voimaantulo
 parser already covers >95% of cases) land at the end of the list in
 declaration order. ``text_at`` applies them in that order, so they're
-treated as "always applied" — better than silently dropping work.
+treated as "always applied" - better than silently dropping work.
 
 Sections with zero inbound ``amends_section`` edges are left
 untouched. The script doesn't read or write their ``metadata_json``,
 so a partial rebuild is cheap. A full ``load_graph --rebuild`` wipes
 ``metadata_json`` and requires a re-run.
 
-## Move 4 — `GraphStore.text_at(section_id, as_of)`
+## Move 4 - `GraphStore.text_at(section_id, as_of)`
 
 Point-in-time playback. Reads ``metadata.version_chain``, applies
 each step whose ``effective_date <= as_of``, and returns:
@@ -220,7 +220,7 @@ EffectiveText(
 )
 ```
 
-For sections without a chain — the overwhelming majority — the method
+For sections without a chain - the overwhelming majority - the method
 returns a single-step trivial chain pointing at the section's own
 text. That keeps callers free of branching on "has chain" vs "no chain"
 and turns the assembler into a uniform consumer.
@@ -233,9 +233,9 @@ The verb semantics:
 - ``kumotaan`` → running text becomes None. Subsequent ``muutetaan``
   would revive it; subsequent ``kumotaan`` is a no-op.
 
-## Move 5 — pipeline + verifier wiring
+## Move 5 - pipeline + verifier wiring
 
-### 5a — `infer_as_of_date(query)`
+### 5a - `infer_as_of_date(query)`
 
 Returns ``(date, explicit)``:
 
@@ -250,12 +250,12 @@ The ``explicit`` flag propagates to the Verifier (Move 5d): a strict
 explicit date upgrades a TemporalMismatch from advisory to a real
 conflict.
 
-### 5b — `assemble.assemble(..., as_of=...)`
+### 5b - `assemble.assemble(..., as_of=...)`
 
 For every shown SECTION the assembler calls
 ``graph.text_at(section_id, as_of=as_of)`` and uses the effective
 body when the section has a non-trivial chain. Sections with no
-chain render their original chunk body — unchanged from Step 9.
+chain render their original chunk body - unchanged from Step 9.
 
 When the most recent applied step is ``kumotaan`` and ``as_of`` is
 on or after its effective date, the body is replaced with a short
@@ -266,30 +266,30 @@ explicit placeholder:
   Path: …
   Version chain (as of 2026-05-24):
     · 1995-01-01 original
-    · 2010-12-31 kumotaan — current text used
+    · 2010-12-31 kumotaan - current text used
   
-  [Section repealed as of 2026-05-24 — no operative text.]
+  [Section repealed as of 2026-05-24 - no operative text.]
 ```
 
 The version-chain annotation lines are silent when the chain has only
 the ``original`` step. That keeps the prompt compact on the 98%-plus
 of sections that have no amendments.
 
-### 5c — pipeline.py + pipeline_v2.py
+### 5c - pipeline.py + pipeline_v2.py
 
 Both pipelines now call ``infer_as_of_date`` early, forward ``as_of``
 into ``assemble``, build ``effective_text_provenance`` from the
 returned ``AssembledContext.sources``, and populate two new fields
 on ``AnswerResult``:
 
-- ``as_of_date_used: date`` — the date the assembler used.
+- ``as_of_date_used: date`` - the date the assembler used.
 - ``effective_text_provenance: dict[chunk_id, list[VersionStep dict]]``
-  — only for chunks whose section had a non-trivial chain.
+  - only for chunks whose section had a non-trivial chain.
 
 When ``as_of_explicit=True`` is detected, an extra entry lands in
 ``assumptions``: *"Answer reflects rules effective as of YYYY-MM-DD."*
 
-### 5d — `check_temporal_mismatches`
+### 5d - `check_temporal_mismatches`
 
 Deterministic, no LLM. For every cited SECTION with a non-trivial
 chain, scores the LLM's answer against every step's text via
@@ -316,7 +316,7 @@ UI can render it next to a Finlex-vs-Vero conflict callout with a
 *"the LLM appears to be quoting an older version"* annotation.
 
 A floor (``similarity_to_quoted >= 0.20``) prevents firing when the
-LLM paraphrased rather than quoted — paraphrase mismatches would be
+LLM paraphrased rather than quoted - paraphrase mismatches would be
 mostly noise.
 
 ## Decisions and tradeoffs
@@ -348,7 +348,7 @@ verbatim.
 *"muutetaan 53 § 2 momentti"* op replaces the whole § text in the
 chain even though only momentti 2 changed. Correct behaviour needs
 parsing the new wording into momentti units and substituting at
-the right index — out of scope for v1.
+the right index - out of scope for v1.
 
 The cost: the LLM occasionally sees a slightly broader replacement
 than the directive actually authorised. Mitigation: the
@@ -372,7 +372,7 @@ may not be contiguous in the target LAW (5 and 8 exist, 6 was
 repealed long ago); (b) the AmendmentOp's ``new_text`` is hard to
 divide back into 4 sections without parsing the new wording's own
 structure. We flag ``chain_complex=True`` and emit one op with the
-range header verbatim — the LLM can read it and the Verifier
+range header verbatim - the LLM can read it and the Verifier
 treats the section as advisory.
 
 ### TemporalMismatch is advisory, not gating
@@ -381,8 +381,8 @@ The Verifier's existing claim-by-claim verification can trigger one
 regenerate pass. ``check_temporal_mismatches`` does not. Reasoning:
 
 1. SequenceMatcher similarity is a rough heuristic. A real false
-   positive — flagging the LLM as quoting an old version when it
-   actually quoted the new one — would be expensive to surface and
+   positive - flagging the LLM as quoting an old version when it
+   actually quoted the new one - would be expensive to surface and
    then *not* regenerate, but worse to surface and regenerate
    based on noise.
 2. The "correct" version under ``as_of`` is itself an inference. A
@@ -391,8 +391,8 @@ regenerate pass. ``check_temporal_mismatches`` does not. Reasoning:
    answer.
 3. The mismatch carries enough provenance (both effective dates,
    both similarities) that the UI can render it as *"the model
-   appears to be quoting from an older version — verify before
-   citing"* — better signal than a coerced rewrite.
+   appears to be quoting from an older version - verify before
+   citing"* - better signal than a coerced rewrite.
 
 If a sharper gate is wanted later, the ``as_of_explicit`` flag is
 available: only regenerate when the user *explicitly* asked about
@@ -403,7 +403,7 @@ a specific date and the LLM quoted the wrong one.
 - **Full Move-1 pass is ~2.5 hours** on the full 18,878-instrument
   corpus. The per-LAW children scan is the bottleneck (one ``LIKE``
   per LAW). A future refresh could swap this for a streaming
-  full-table scan grouped by id-prefix in Python — same disk read
+  full-table scan grouped by id-prefix in Python - same disk read
   once, lookup in memory.
 - **Section parsing gaps in Step 1 propagate**. AVL / TVL still have
   the consolidated-law section-parsing gaps documented in
@@ -417,7 +417,7 @@ a specific date and the LLM quoted the wrong one.
   those paragraphs in ``new_text``. Mitigation: ``chain_complex=True``
   flags the suspect ones; the LLM treats the text as approximate.
 - **Cross-LAW amendments (transitional acts)** that amend multiple
-  target laws in one instrument are partially handled — Move 1 emits
+  target laws in one instrument are partially handled - Move 1 emits
   one op per § without distinguishing the target LAWs; Move 2's
   slug inference picks the dominant target. Estimated <2% of
   instrument LAWs.
@@ -463,7 +463,7 @@ print('chain:', [(s.effective_date, s.provenance) for s in eff.chain])
   automatically as long as ``compute_version_chains`` has run. Without
   it, ``text_at`` falls back to the section's raw text and Step 10
   reduces to Step 9.
-- **Existing tests** in ``tests/`` aren't broken by Move 5b — the new
+- **Existing tests** in ``tests/`` aren't broken by Move 5b - the new
   ``assemble`` signature accepts ``as_of=None`` with no behaviour change.
 - **Step 8 Verifier is unchanged**. ``check_temporal_mismatches`` is a
   sibling function on the same module, called from the pipeline rather
@@ -474,7 +474,7 @@ print('chain:', [(s.effective_date, s.provenance) for s in eff.chain])
 
 ## Open items
 
-- [ ] Sub-section-level playback — apply ``target_subsection`` so a
+- [ ] Sub-section-level playback - apply ``target_subsection`` so a
       ``muutetaan 53 § 2 mom`` op replaces only the right momentti
       rather than the whole §.
 - [ ] Section-text extractor refresh on amendment instruments to
@@ -483,7 +483,7 @@ print('chain:', [(s.effective_date, s.provenance) for s in eff.chain])
       "Version chain" panel under each cited source, with the
       current step highlighted and future steps greyed.
 - [ ] Verifier integration: surface the regenerate signal when
-      ``as_of_explicit=True`` AND a TemporalMismatch fires — turn
+      ``as_of_explicit=True`` AND a TemporalMismatch fires - turn
       the advisory into a hard conflict for date-strict questions.
 - [ ] Performance: speed up Move 1 by replacing the per-LAW
       children ``LIKE`` with a single streaming full-table scan

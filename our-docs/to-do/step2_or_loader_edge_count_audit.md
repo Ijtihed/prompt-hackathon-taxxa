@@ -1,4 +1,4 @@
-# TO-DO — Audit Step 2 / Loader for Missing Edges (cites 10×, transposes missing)
+# TO-DO - Audit Step 2 / Loader for Missing Edges (cites 10×, transposes missing)
 
 **Owner:** Step 2 owner + Step 4b loader owner (one or both, depending on diagnosis)
 **Discovered by:** Track F kickoff scan vs. brief, 2026-05-23. Full numbers in `our-docs/edge_count_discrepancies.md`.

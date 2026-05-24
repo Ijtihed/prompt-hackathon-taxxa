@@ -34,7 +34,7 @@ VECTOR_TABLE = "chunks"
 _PUNCT_STRIP_RE = re.compile(r"[^\wäöåÄÖÅ%€]+", re.UNICODE)
 _WS_RE = re.compile(r"\s+")
 # Captures numbers like "30 000", "30.000", "30,5", "1.5". Trailing unit is
-# matched but unused — only the number group is normalized.
+# matched but unused - only the number group is normalized.
 _NUMBER_RE = re.compile(
     # Longer alternative first: thousand-separated form requires at least one
     # separator group, so a bare "30000" falls through to the simple \d+ form.
@@ -95,7 +95,7 @@ def _normalize_number(raw: str) -> str:
 
 
 def _is_year(num: str) -> bool:
-    """4-digit years 1900-2099 are context, not numeric facts — skip for matching."""
+    """4-digit years 1900-2099 are context, not numeric facts - skip for matching."""
     if "." in num or len(num) != 4 or not num.isdigit():
         return False
     return 1900 <= int(num) <= 2099
@@ -509,7 +509,7 @@ def grade_config(
                 "judge": judge_block,
                 "graded_at": _utcnow(),
             })
-        except Exception as e:  # noqa: BLE001 — never crash on a single row
+        except Exception as e:  # noqa: BLE001 - never crash on a single row
             print(f"[grade_eval] {config_id}/{qid}: failed: {e}", file=sys.stderr)
             written.append({
                 "config_id": config_id,

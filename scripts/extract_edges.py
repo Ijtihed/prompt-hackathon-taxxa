@@ -1,12 +1,12 @@
-"""B2.8 — Edge extraction pipeline runner.
+"""B2.8 - Edge extraction pipeline runner.
 
 Drives the full Step 2 workflow:
 
     1. Load `output/nodes.jsonl` into a `NodeIndex`.
-    2. Pass 1 — `parent_of` structural edges.
-    3. Pass 2 — anchor-based edges from raw HTML under `data/`.
-    4. Pass 3 — regex citation edges on each node's text.
-    5. Pass 4 — `defines` edges from DEFINITION → consumer nodes.
+    2. Pass 1 - `parent_of` structural edges.
+    3. Pass 2 - anchor-based edges from raw HTML under `data/`.
+    4. Pass 3 - regex citation edges on each node's text.
+    5. Pass 4 - `defines` edges from DEFINITION → consumer nodes.
     6. Refine edge types (`cites` → interprets/applies/amends/repeals/transposes).
     7. Resolve and split into `output/edges.jsonl` + `output/dangling_edges.log`.
     8. Write `output/edge_stats.json`.
@@ -20,7 +20,7 @@ Run from the repo root:
 Parallelism: anchor extraction is parallelized across HTML files via
 ``multiprocessing.Pool`` (fork on Linux/macOS so the NodeIndex is shared
 read-only). Structural, regex, and definition passes run in the parent
-process — they're already streaming and fast enough at corpus scale.
+process - they're already streaming and fast enough at corpus scale.
 """
 from __future__ import annotations
 

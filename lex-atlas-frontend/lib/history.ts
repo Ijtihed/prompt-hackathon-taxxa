@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Local query history — persists every completed query to localStorage so
+ * Local query history - persists every completed query to localStorage so
  * the user can recall them later. SSR-safe (returns empty array on the
  * server). Cross-tab sync via the `storage` event so two open tabs stay
  * consistent.
@@ -57,14 +57,14 @@ export interface HistoryEntry {
   costCents?: number;
   /** Optional: was a debate detected and resolved? */
   hadDebate?: boolean;
-  /** v2 — frozen snapshot of the rendered synthesis. Missing on entries
+  /** v2 - frozen snapshot of the rendered synthesis. Missing on entries
    *  written by older builds; recall() falls back to a fresh run when
    *  absent. */
   cached?: CachedAnswer;
 }
 
 // v2: payload schema now includes ``cached``. Versioned key means old v1
-// entries are silently dropped on first read (no migration needed — they
+// entries are silently dropped on first read (no migration needed - they
 // were never load-bearing across sessions).
 const KEY = "lex-atlas:query-history:v2";
 // Older keys we want to cleanly forget so the dropdown doesn't pick up
@@ -113,7 +113,7 @@ function write(entries: HistoryEntry[]) {
   try {
     window.localStorage.setItem(KEY, JSON.stringify(entries.slice(0, MAX)));
   } catch {
-    /* quota exceeded or private-mode disables storage — soft-fail */
+    /* quota exceeded or private-mode disables storage - soft-fail */
   }
 }
 
@@ -141,10 +141,10 @@ export function useQueryHistory() {
   const push = useCallback((entry: Omit<HistoryEntry, "ts">) => {
     setEntries((prev) => {
       // Dedupe on TWO axes:
-      //   1. ``id`` — covers the "onComplete fired twice" path (React 19
+      //   1. ``id`` - covers the "onComplete fired twice" path (React 19
       //      StrictMode double-invoke, or any caller that retries push)
       //      and any pre-existing duplicate-id leftovers in localStorage.
-      //   2. ``question + asof`` — keeps the list reading like a normal
+      //   2. ``question + asof`` - keeps the list reading like a normal
       //      recent-files panel: re-asking the same thing bumps the
       //      existing entry to the top instead of stacking.
       const filtered = prev.filter(

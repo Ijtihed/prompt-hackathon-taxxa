@@ -1,4 +1,4 @@
-"""AgentEvent builders — keep the SSE wire format in lockstep with the frontend.
+"""AgentEvent builders - keep the SSE wire format in lockstep with the frontend.
 
 The TypeScript counterpart lives at ``lex-atlas-frontend/lib/types.ts``
 (``AgentEvent`` union). Any field renamed or added here must be mirrored
@@ -7,10 +7,10 @@ drop the event.
 
 Two mappings live in this module:
 
-* ``node_kind_for``  — the SECTION/LAW/GUIDE/CASE/... NodeType plus
+* ``node_kind_for``  - the SECTION/LAW/GUIDE/CASE/... NodeType plus
   ``source_subcorpus`` collapse into the 11 frontend NodeKinds used to color
   nodes in the constellation/orbit.
-* ``authority_rank_for_ui`` — the corpus's authority_rank is 0-100; the
+* ``authority_rank_for_ui`` - the corpus's authority_rank is 0-100; the
   frontend's ``OrbitNode.authorityRank`` is a 1-8 lattice. We bucket so
   KHO/laki/vero-ohje land on visually distinct tiers without re-tuning.
 """
@@ -46,7 +46,7 @@ ORBIT_EDGE_TYPES: tuple[str, ...] = (
 # 1551/1995 has ~100 SECTION children, and if every SECTION the assembler
 # brought back also lists a parent_of, the orbit would degenerate into a
 # starburst hub. We keep the top ones (sorted by graph_store insertion
-# order, which is doc-order) and drop the rest — the inspector still has
+# order, which is doc-order) and drop the rest - the inspector still has
 # the full graph if the user wants to drill in.
 _MAX_PARENT_OF_PER_SOURCE = 2
 
@@ -59,7 +59,7 @@ _MAX_PARENT_OF_PER_SOURCE = 2
 def node_kind_for(node_type: str | None, source_subcorpus: str | None) -> str:
     """Map (NodeType, SourceSubcorpus) → frontend NodeKind.
 
-    Subcorpus wins when present — a SECTION inside a KHO ruling should
+    Subcorpus wins when present - a SECTION inside a KHO ruling should
     paint as a "case" node, not a "ctv". Falls through to ``work`` when
     everything is unknown so the UI always has a renderable color.
     """
@@ -119,15 +119,15 @@ def _short_label(
 
     Composition (richest first, fall back as fields disappear):
 
-        "<label> · <title>"             — both present (e.g. "§ 3 · ...")
-        "<label> · <root_title>"        — section label inside a parent law (e.g.
-                                          "1.3 · Avainhenkilölaki") — keeps the
+        "<label> · <title>"             - both present (e.g. "§ 3 · ...")
+        "<label> · <root_title>"        - section label inside a parent law (e.g.
+                                          "1.3 · Avainhenkilölaki") - keeps the
                                           chip context-rich for deeply nested
                                           Vero/Finlex sections that otherwise
                                           render as bare numbers
-        "<title>"                       — root or guidance with title only
-        "<label>"                       — last resort before id sniffing
-        "<id_tail>"                     — pulled from the section_id
+        "<title>"                       - root or guidance with title only
+        "<label>"                       - last resort before id sniffing
+        "<id_tail>"                     - pulled from the section_id
     """
     title = (title or "").strip()
     node_label = (node_label or "").strip()
@@ -183,7 +183,7 @@ def build_orbit(
     Returns (orbit_nodes, orbit_edges, source_by_chunk_id). The third value is
     a small index callers reuse for citation rewriting.
 
-    A source is marked ``isCenter=True`` when it tops the rerank list — that
+    A source is marked ``isCenter=True`` when it tops the rerank list - that
     becomes the centerpiece of the OrbitGraph. Anything in ``cited_chunk_ids``
     is also marked active so the answer's cited sources sit at the front of
     the visual stack.
@@ -205,7 +205,7 @@ def build_orbit(
         root_title = _resolve_root_title(graph, node) if node else None
 
         # Pull subcorpus + flags off the chunk header that the rerank step
-        # already stashed onto the Source's rendered_block — but we have it
+        # already stashed onto the Source's rendered_block - but we have it
         # via the corpus metadata too. Cheapest read: hit the graph node.
         meta = node.metadata if node else None
         in_force = bool(getattr(meta, "in_force", None)) if meta else True
@@ -244,7 +244,7 @@ def build_orbit(
             }
         )
 
-    # Edges between assembled sources — wider type set than the LLM prompt
+    # Edges between assembled sources - wider type set than the LLM prompt
     # uses (see ORBIT_EDGE_TYPES comment).
     edges: list[dict[str, Any]] = []
     seen_edge: set[tuple[str, str, str]] = set()
@@ -278,7 +278,7 @@ def build_orbit(
 def _sniff_subcorpus(chunk_id: str, source_field: str | None) -> str | None:
     """Infer the source_subcorpus from a chunk_id when the graph node lacks it.
 
-    Our chunk_ids look like ``finlex/kho/...`` or ``vero/vero_ohje/...`` —
+    Our chunk_ids look like ``finlex/kho/...`` or ``vero/vero_ohje/...`` -
     the second path segment is the subcorpus.
     """
     parts = chunk_id.split("/")
@@ -288,7 +288,7 @@ def _sniff_subcorpus(chunk_id: str, source_field: str | None) -> str | None:
 
 
 # ---------------------------------------------------------------------------
-# Citation rewriting — [Source N] → [cite:node:<chunk_id>]Source N[/cite]
+# Citation rewriting - [Source N] → [cite:node:<chunk_id>]Source N[/cite]
 # ---------------------------------------------------------------------------
 
 
@@ -316,7 +316,7 @@ def rewrite_citations(answer: str, context: AssembledContext) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Cost estimate — DeepSeek V4 Pro
+# Cost estimate - DeepSeek V4 Pro
 # ---------------------------------------------------------------------------
 
 # Published DeepSeek V4 Pro pricing (USD per 1 million tokens).
@@ -329,7 +329,7 @@ _DEEPSEEK_V4_PRO_OUTPUT_USD_PER_MTOK = 0.87
 
 # Chars-per-token heuristic. English averages ~4, Finnish closer to ~3
 # because of agglutinative morphology; we land in the middle so the
-# estimate doesn't lie either way. Coarse — fine for a meter, not for
+# estimate doesn't lie either way. Coarse - fine for a meter, not for
 # billing reconciliation.
 _CHARS_PER_TOKEN = 3.8
 
@@ -337,11 +337,11 @@ _CHARS_PER_TOKEN = 3.8
 # scaffolding + role tokens). We snapshot the system prompt length once
 # at import time so the cost meter doesn't dip into the LLM module on
 # every call. ``src.retrieval.generate.SYSTEM_PROMPT`` is currently ~1.9k
-# chars — well under the few-token noise floor of the estimate anyway.
+# chars - well under the few-token noise floor of the estimate anyway.
 try:
     from src.retrieval.generate import SYSTEM_PROMPT as _SYSTEM_PROMPT
     _SYSTEM_PROMPT_CHARS = len(_SYSTEM_PROMPT)
-except Exception:  # pragma: no cover — generate.py shouldn't fail to import
+except Exception:  # pragma: no cover - generate.py shouldn't fail to import
     _SYSTEM_PROMPT_CHARS = 1900
 
 _USER_TEMPLATE_OVERHEAD_CHARS = 32  # "Question: ...\n\nSources:\n...\n\nAnswer:"

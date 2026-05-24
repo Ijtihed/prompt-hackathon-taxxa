@@ -1,4 +1,4 @@
-"""HTTP sidecar package — wraps the GraphRAG pipeline for the Next.js frontend.
+"""HTTP sidecar package - wraps the GraphRAG pipeline for the Next.js frontend.
 
 The Next.js app proxies ``/api/ask`` and ``/api/excerpt`` to this service via
 ``AGENT_SIDECAR_URL`` (default ``http://localhost:8000``). Events are framed

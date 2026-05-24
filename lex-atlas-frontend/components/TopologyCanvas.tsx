@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * TopologyCanvas — the hero visualization on the landing page.
+ * TopologyCanvas - the hero visualization on the landing page.
  *
  * Ported directly from the Stitch mockup's vanilla-JS canvas. ~45 floating
  * nodes connecting when proximate, with KHO (court) nodes pulsing in
- * terracotta. Matches the architectural-grid aesthetic — the canvas draws
+ * terracotta. Matches the architectural-grid aesthetic - the canvas draws
  * its own 32px grid as the base layer so it blends with the page bg.
  *
  * Performance: requestAnimationFrame loop, O(n²) edge check (acceptable at
@@ -125,11 +125,11 @@ export function TopologyCanvas({
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
         if (n.type === "kho") {
-          ctx.fillStyle = "#944921"; // terracotta — KHO highlights
+          ctx.fillStyle = "#944921"; // terracotta - KHO highlights
           ctx.shadowBlur = 10;
           ctx.shadowColor = "#944921";
         } else {
-          ctx.fillStyle = "#1a1c1b"; // charcoal — finlex/vero default
+          ctx.fillStyle = "#1a1c1b"; // charcoal - finlex/vero default
           ctx.shadowBlur = 0;
         }
         ctx.fill();

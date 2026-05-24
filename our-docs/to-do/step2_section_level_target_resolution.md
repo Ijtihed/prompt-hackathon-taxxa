@@ -1,8 +1,8 @@
-# TO-DO — Step 2: `interprets` Falls Back to LAW Root When SECTION Exists
+# TO-DO - Step 2: `interprets` Falls Back to LAW Root When SECTION Exists
 
 **Owner:** Step 2 (edge extraction, specifically target-id resolution)
 **Discovered by:** Track F V7.2 pilot, 2026-05-23. See `findings/07_pilot_results.md`.
-**Priority:** Medium — bounded by `step1_consolidated_law_section_parsing.md`. Only worth fixing once Step 1 produces the SECTION nodes to resolve into.
+**Priority:** Medium - bounded by `step1_consolidated_law_section_parsing.md`. Only worth fixing once Step 1 produces the SECTION nodes to resolve into.
 
 ## Problem
 
@@ -39,7 +39,7 @@ The resolver tries (in order):
 1. Exact match of `target_ref` → existing node id.
 2. Fall back to LAW root if no SECTION-level match.
 
-Step (2) fires unconditionally when SECTION nodes are missing — which is true for almost all of TVL (0 SECTIONs in corpus) and most of AVL.
+Step (2) fires unconditionally when SECTION nodes are missing - which is true for almost all of TVL (0 SECTIONs in corpus) and most of AVL.
 
 ## Why this is gated by Step 1
 
@@ -51,7 +51,7 @@ If TVL has 0 SECTIONs in `output/nodes.jsonl`, there's nothing for the resolver 
 2. Decide whether existing law-root edges should be re-resolved (probably yes; one-pass re-walk over `edges.jsonl`).
 3. After re-resolution, re-load Step 4b graph.
 
-## Stretch goal — preserve coarse-grained edges too
+## Stretch goal - preserve coarse-grained edges too
 
 Some downstream queries genuinely want "what guidance is about this law overall" rather than "what guidance interprets §85 specifically." Consider emitting both:
 - `interprets target_id=<SECTION>` (specific)

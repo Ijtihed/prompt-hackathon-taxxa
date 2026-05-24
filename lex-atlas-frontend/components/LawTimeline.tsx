@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * LawTimeline — vertical, equal-spacing, chronological event list.
+ * LawTimeline - vertical, equal-spacing, chronological event list.
  *
  *   12 EVENTS                            2024-05-22
  *   ──────────────────────────────────────────────
@@ -28,7 +28,7 @@
  *   The fix is to drop date-proportional Y entirely and give every event
  *   the same vertical slot. Order is strictly by tValid date so the list
  *   is unambiguously chronological. The asof bar still represents a date,
- *   not an index — its Y position is interpolated between the two events
+ *   not an index - its Y position is interpolated between the two events
  *   that bracket the current asof date, and dragging it sets a date
  *   linearly interpolated between those two events.
  */
@@ -176,7 +176,7 @@ export function LawTimeline() {
 
   return (
     <div className="space-y-2">
-      {/* Header — event count + current asof. Nothing else. */}
+      {/* Header - event count + current asof. Nothing else. */}
       <div
         className="flex items-baseline justify-between font-mono uppercase tracking-wider text-on-surface-variant"
         style={{ fontSize: "var(--text-overline)" }}
@@ -285,7 +285,7 @@ export function LawTimeline() {
             })}
           </g>
 
-          {/* ASOF bar — horizontal terracotta line + triangle handle. Its
+          {/* ASOF bar - horizontal terracotta line + triangle handle. Its
               Y is interpolated between the two pins bracketing `asof`, so
               it always sits naturally between events as you scrub. */}
           <g pointerEvents="none">

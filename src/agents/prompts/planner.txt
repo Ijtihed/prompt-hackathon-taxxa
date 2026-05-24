@@ -4,17 +4,17 @@ Your job: decompose a compound question into 1–4 sub-questions, each tagged wi
 
 Categories (pick the most specific that fits each sub-question):
 
-- "single"          — one fact or one rule lookup; no decomposition needed.
-- "cross_source"    — requires BOTH a Finlex statute AND a Vero guidance to answer (e.g. "what does the law say" + "how does the tax authority interpret it").
-- "multi_hop"       — requires a rule plus an exception from a different statute section.
-- "cross_reference" — answer requires following a citation chain (`cites` edge) from one section to another.
-- "definition"      — answer depends on a defined term whose definition lives elsewhere in the corpus.
-- "conflict"        — sources at different authority tiers (Finlex vs Vero) disagree and the answer must resolve this.
+- "single"          - one fact or one rule lookup; no decomposition needed.
+- "cross_source"    - requires BOTH a Finlex statute AND a Vero guidance to answer (e.g. "what does the law say" + "how does the tax authority interpret it").
+- "multi_hop"       - requires a rule plus an exception from a different statute section.
+- "cross_reference" - answer requires following a citation chain (`cites` edge) from one section to another.
+- "definition"      - answer depends on a defined term whose definition lives elsewhere in the corpus.
+- "conflict"        - sources at different authority tiers (Finlex vs Vero) disagree and the answer must resolve this.
 
 Hard constraints:
 
 - 1 ≤ number of sub-questions ≤ 4. More than 4 is almost always a sign that the question was already decomposed in the source text (e.g. "(a)/(b)/(c)") OR that you are over-splitting; in that case, MERGE sub-questions that share the same statute/topic.
-- Each sub-question must be answerable on its own with no reference to the others — i.e. self-contained Finnish-tax queries.
+- Each sub-question must be answerable on its own with no reference to the others - i.e. self-contained Finnish-tax queries.
 - Preserve numeric facts, names, and dates from the original question verbatim into the relevant sub-question.
 - ``is_compound=false`` ONLY when len(sub_questions)==1 AND category=="single".
 

@@ -1,17 +1,17 @@
-"""B2.6 — Definition edges.
+"""B2.6 - Definition edges.
 
 Step 1 emits `DEFINITION` nodes whenever a paragraph's first 200 chars
 contain `tarkoitetaan` / `määritellään` / `defined as`. Step 2 connects
 each such definition to the SECTION/SUBSECTION/ITEM nodes in the same
 LAW that use the defined term.
 
-Term extraction is intentionally simple — the noun phrase immediately
+Term extraction is intentionally simple - the noun phrase immediately
 following `tarkoitetaan` / `määritellään` (the most common Finnish
 definition pattern is "X:llä tarkoitetaan ..." or "Tässä laissa
 tarkoitetaan: 1) X ..."). We don't attempt cross-LAW propagation in v1;
 the same word can carry different meanings in different statutes.
 
-Confidence is 0.7 — lower than regex citations because term matching
+Confidence is 0.7 - lower than regex citations because term matching
 is fuzzy: case-insensitive substring against the consumer node's text,
 no morphological agreement, no word-boundary check beyond Finnish-aware
 stripping.
@@ -27,7 +27,7 @@ from src.extraction.node_index import NodeIndex
 from src.models import Edge
 
 
-# A handful of Finnish suffixes we strip to get a search stem. Order matters —
+# A handful of Finnish suffixes we strip to get a search stem. Order matters -
 # longest first.
 _FI_SUFFIXES = (
     "llaan", "lleen", "ksensa", "nsa", "nsä",
@@ -58,12 +58,12 @@ def extract_defined_terms(text: str) -> list[str]:
     for m in _TRIGGER_RE.finditer(text):
         before = text[: m.start()].rstrip()
         after = text[m.end():].lstrip()
-        # Word before trigger — strip a possible ":lla" / ":llä" qualifier.
+        # Word before trigger - strip a possible ":lla" / ":llä" qualifier.
         if before:
             tail_match = re.search(r"([A-Za-zÄÖÅäöå\-]{4,})(?:[:\s][a-zäö]{2,4})?\s*$", before)
             if tail_match:
                 terms.append(tail_match.group(1))
-        # Word after trigger — first non-puncutation token > 4 chars.
+        # Word after trigger - first non-puncutation token > 4 chars.
         if after:
             head_match = re.match(r"\s*([A-Za-zÄÖÅäöå\-]{4,})", after)
             if head_match:
@@ -152,7 +152,7 @@ def extract_definition_edges(
                     continue
                 if emitted.get(def_id, 0) >= max_consumers_per_def:
                     continue
-                # First matching stem wins — avoids quadratic per-term scan.
+                # First matching stem wins - avoids quadratic per-term scan.
                 if any(stem in text_lc for stem in stems):
                     emitted[def_id] = emitted.get(def_id, 0) + 1
                     yield Edge(

@@ -6,7 +6,7 @@ the citations list. It carries:
   - authority rank label, e.g. "rank 100, binding"
   - hover tooltip with the excerpt
 
-Authority rank surfacing is a MANDATORY demo requirement — the V3.2 ranks are
+Authority rank surfacing is a MANDATORY demo requirement - the V3.2 ranks are
 provisional and the demo viewer must be able to spot rank errors. Rank text
 appears in the pill itself, not only in the tooltip.
 """
@@ -25,7 +25,7 @@ def render_pill_inline(idx: int, chunk_id: str) -> str:
     pub = (meta.get("publisher") or "unknown").lower()
     css = "pill pill-inline pill-" + pub
     rank = meta.get("authority_rank")
-    tier = meta.get("authority_tier") or "—"
+    tier = meta.get("authority_tier") or "-"
     tooltip = _tooltip_html(idx, chunk_id, meta)
     return (
         f'<span class="{css}" tabindex="0">'
@@ -42,7 +42,7 @@ def render_pill_full(idx: int, chunk_id: str) -> str:
     pub = (meta.get("publisher") or "unknown").lower()
     label = meta.get("label") or chunk_id.rsplit("/", 1)[-1]
     rank = meta.get("authority_rank") or 0
-    tier = meta.get("authority_tier") or "—"
+    tier = meta.get("authority_tier") or "-"
     publisher_name = _publisher_display(pub, meta.get("subcorpus") or "")
     tooltip = _tooltip_html(idx, chunk_id, meta)
     return (
@@ -62,7 +62,7 @@ def _tooltip_html(idx: int, chunk_id: str, meta: SourceMeta) -> str:
     pub = (meta.get("publisher") or "unknown").lower()
     pub_disp = _publisher_display(pub, meta.get("subcorpus") or "")
     rank = meta.get("authority_rank") or 0
-    tier = meta.get("authority_tier") or "—"
+    tier = meta.get("authority_tier") or "-"
     synth_flag = '<span class="pill-synth">synthetic</span>' if meta.get("synthetic") else ""
     return (
         '<span class="pill-tooltip">'

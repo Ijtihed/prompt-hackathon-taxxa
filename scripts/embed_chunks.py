@@ -1,4 +1,4 @@
-"""Step 4a.4 — Full corpus embedding pass.
+"""Step 4a.4 - Full corpus embedding pass.
 
 Streams output/chunks.jsonl, composes hierarchy-prefixed text, embeds via
 Voyage in batches of 128, writes to output/lancedb/chunks.
@@ -41,7 +41,7 @@ NODES_FALLBACK = OUTPUT_DIR / "nodes.jsonl"
 LANCEDB_PATH = OUTPUT_DIR / "lancedb"
 
 # Voyage doesn't ship a public tokenizer; cl100k_base is a reasonable proxy
-# for byte-pair sizing — overestimates by ~5-10% on Finnish, which gives us a
+# for byte-pair sizing - overestimates by ~5-10% on Finnish, which gives us a
 # conservative budget number rather than an optimistic one.
 _TOKENIZER = tiktoken.get_encoding("cl100k_base")
 
@@ -142,7 +142,7 @@ def main() -> int:
         t_call = time.time()
         embeddings, used = embed_batch(client, texts, input_type="document")
         dur = time.time() - t_call
-        # Per-batch line — terse, lets us see throughput in real time.
+        # Per-batch line - terse, lets us see throughput in real time.
         print(
             f"[batch] n={len(batch):3d}  est={est_tokens:>6d}  "
             f"used={used:>6d}  dur={dur:5.1f}s  "
@@ -196,7 +196,7 @@ def main() -> int:
 
             # If adding this chunk would exceed the per-batch token cap, flush
             # first. Always allow at least one chunk in a batch even if the
-            # single chunk itself is bigger than the cap — Voyage may still
+            # single chunk itself is bigger than the cap - Voyage may still
             # accept it, and we'd rather try than drop it.
             if batch and (batch_tokens + t_est > args.max_batch_tokens):
                 used = _flush(batch)
@@ -326,7 +326,7 @@ def _dry_run(args, node_index) -> int:
         )
     else:
         print(
-            f"[dry-run] OK — {total_tokens/1_000_000:.1f}M is under the "
+            f"[dry-run] OK - {total_tokens/1_000_000:.1f}M is under the "
             "180M caution threshold."
         )
     return 0

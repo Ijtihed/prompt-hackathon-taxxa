@@ -1,9 +1,9 @@
-# Step 7 — Retrieval v2 graph expansion primitives (Track F, done)
+# Step 7 - Retrieval v2 graph expansion primitives (Track F, done)
 
 Built the graph expansion layer for v2 per `07_retrieval_v2_graph_traversal.md`
 and the Track F brief in `parallel_execution_after_step4.md`. Track F's
-deliverable was the *primitives* — `graph_expand`, `strategy`,
-`cross_encoder_rerank`, and their tests — not the v2 pipeline integration
+deliverable was the *primitives* - `graph_expand`, `strategy`,
+`cross_encoder_rerank`, and their tests - not the v2 pipeline integration
 itself. The v1 → v2 pipeline swap belongs to the convergence step
 between Track D and Track F and is not part of this changelog.
 
@@ -17,9 +17,9 @@ became the module's load-bearing logic.
 
 ```
 src/retrieval/
-├── graph_expand.py             # B7.1 + B7.5 + B7.7 — strategy-aware BFS
-├── strategy.py                 # B7.2 — keyword router → ExpansionStrategy
-└── cross_encoder_rerank.py     # B7.4 — BAAI/bge-reranker-v2-m3 wrapper
+├── graph_expand.py             # B7.1 + B7.5 + B7.7 - strategy-aware BFS
+├── strategy.py                 # B7.2 - keyword router → ExpansionStrategy
+└── cross_encoder_rerank.py     # B7.4 - BAAI/bge-reranker-v2-m3 wrapper
 
 tests/
 └── test_graph_expand.py        # 19 tests, all green, in-memory SQLite fixture
@@ -37,12 +37,12 @@ our-docs/
     └── step2_or_loader_edge_count_audit.md
 ```
 
-## V7.2 pilot — what we found
+## V7.2 pilot - what we found
 
 Three hard-tier questions (Q32 PerVL §38, Q34 Finland-Ireland treaty,
 Q35 AVL §117) hand-walked through `GraphStore.bfs()` with edge sets
 `["parent_of", "cites", "interprets", "applies"]` (variant A) and
-`+ "defines"` (variant B). Zero Voyage calls — seeds picked by direct
+`+ "defines"` (variant B). Zero Voyage calls - seeds picked by direct
 `output/graph.db` lookup, not vector retrieval, so the pilot tests the
 *graph layer in isolation*.
 
@@ -72,7 +72,7 @@ case SUBSECTIONs. Running `max_hops=1` BFS from a TVL or AVL law seed
 exhausts a 500-node cap with `applies` edges *before* reaching the
 ~6,900 inbound `interprets` edges that are the actual cross-source
 signal. The original brief had `interprets_in=30`, `cites_out=15`,
-`parent_of_in=50` caps — no cap on `applies`. The pilot added
+`parent_of_in=50` caps - no cap on `applies`. The pilot added
 `applies_in=25`.
 
 ### 3. `interprets` resolves to LAW root, not SECTION.
@@ -134,7 +134,7 @@ out of the hackathon window.
 
 ## What was built (the modules)
 
-### `graph_expand.py` — strategy-aware BFS
+### `graph_expand.py` - strategy-aware BFS
 
 `expand(seed_ids, strategy, graph_store) -> dict[str, RetrievalPath]`.
 The signature stays close to the brief; the body adds:
@@ -153,35 +153,35 @@ The signature stays close to the brief; the body adds:
 - **`RetrievalPath` per discovered node** with `from_node_id`,
   `edge_type`, `hops`. Layer-8 path-aware citations get this for free.
 
-### `strategy.py` — keyword router
+### `strategy.py` - keyword router
 
 Six named strategies map 1:1 to the rows in `findings/07_expansion_strategies.md`:
 
 | name | edges | direction | max_hops | caps |
 |---|---|---|---:|---|
-| `default` | () | n/a | 0 | — |
+| `default` | () | n/a | 0 | - |
 | `multi_hop` | parent_of, cites | out | 2 | cites_out=15, parent_of_in=50 |
 | `cross_source` | interprets, parent_of | both | 2 | interprets_in=30 |
 | `case_law` | applies, interprets | both | 1 | **applies_in=25** (new) |
 | `definition` | defines, parent_of | both | 1 | defines_out=100 |
-| `recency` | amends, repeals, parent_of | both | 1 | — |
+| `recency` | amends, repeals, parent_of | both | 1 | - |
 
 `pick_strategy(query)` runs Finnish + English regexes in priority order
 (case_law → recency → definition → cross_source → multi_hop → default).
-Default is vector-only — when in doubt, v2 degrades to v1, no regression
+Default is vector-only - when in doubt, v2 degrades to v1, no regression
 risk. Conservative on purpose: the pilot showed graph expansion adds
 noise more often than signal on this corpus, so the router only commits
 to expansion when a strong marker fires.
 
-### `cross_encoder_rerank.py` — BAAI/bge-reranker-v2-m3 wrapper
+### `cross_encoder_rerank.py` - BAAI/bge-reranker-v2-m3 wrapper
 
 - `CrossEncoderReranker.score(query, candidates) -> list[ScoredCandidate]`
-- `combine_scores(candidates, weights) -> list[ScoredCandidate]` —
+- `combine_scores(candidates, weights) -> list[ScoredCandidate]` -
   pure-Python weighted blend of `(cross_score, cosine, metadata_score)`
   with redistribution when components are missing.
-- `get_reranker()` — module-level cache so the ~5-10s model load
+- `get_reranker()` - module-level cache so the ~5-10s model load
   happens once per process.
-- `finnish_smoke_check()` — one-question Finnish sanity probe; designed
+- `finnish_smoke_check()` - one-question Finnish sanity probe; designed
   to be run after the first model download to catch silent multilingual
   regressions.
 
@@ -272,7 +272,7 @@ expansion paths. The sixth (`default`) is the vast majority of
 real-world tax questions, which are single-fact lookups answerable by
 vector alone. Graph expansion on those questions adds noise more often
 than signal. The router's `default` branch is therefore zero-hop
-vector-only — v2 reuses Track D's vector retrieval unchanged, and only
+vector-only - v2 reuses Track D's vector retrieval unchanged, and only
 the questions whose markers fire strongly get graph expansion. This
 preserves "v2 ≥ v1" as a baseline guarantee.
 
@@ -299,7 +299,7 @@ Track D's `pipeline_v2.py` (not Track F's responsibility) will need:
 
 - A vector-retriever call to produce `seed_k` chunks.
 - A way to look up the chunk's `section_id` (Track D already does this
-  for v1's assembly) — that section becomes the BFS seed.
+  for v1's assembly) - that section becomes the BFS seed.
 - A call to `graph_expand.expand(section_ids, strategy, graph_store)`.
 - A call to `cross_encoder_rerank.get_reranker().score(...)` followed by
   `combine_scores(...)`.
@@ -311,9 +311,9 @@ Track F's modules are self-contained; convergence is the wiring.
 
 | File | Owner | Priority |
 |---|---|---|
-| `our-docs/to-do/step1_consolidated_law_section_parsing.md` | Step 1 | High — unlocks SECTION-level retrieval for TVL/AVL |
-| `our-docs/to-do/step2_pervl_interprets_extraction.md` | Step 2 | Medium — affects 5 eval questions |
-| `our-docs/to-do/step2_section_level_target_resolution.md` | Step 2 | Medium — gated by Step 1 fix |
+| `our-docs/to-do/step1_consolidated_law_section_parsing.md` | Step 1 | High - unlocks SECTION-level retrieval for TVL/AVL |
+| `our-docs/to-do/step2_pervl_interprets_extraction.md` | Step 2 | Medium - affects 5 eval questions |
+| `our-docs/to-do/step2_section_level_target_resolution.md` | Step 2 | Medium - gated by Step 1 fix |
 | `our-docs/to-do/step2_or_loader_edge_count_audit.md` | Step 2 + loader | Medium for `cites`, low for the rest |
 
 None of these block Track F's deliverables. All would lift v2's ceiling
@@ -373,13 +373,13 @@ outputs plus three new Python modules + tests.
   animation. The Layer-8 contract is already populated.
 - **Track H (Agents)** doesn't depend on Track F directly. The
   Verifier may use the graph for conflict detection independently of
-  `expand` — strategy router output is the right hook if it wants to
+  `expand` - strategy router output is the right hook if it wants to
   participate.
 
 ## Open items
 
 - [ ] `sentence-transformers` install (~2 GB pulls torch + the 1.1 GB
-      model) — deferred to convergence
+      model) - deferred to convergence
 - [ ] Run `finnish_smoke_check()` once the model is downloaded
 - [ ] Convergence step: wire `expand` + `cross_encoder_rerank` into
       `src/retrieval/pipeline_v2.py` (Track D, not Track F)

@@ -1,4 +1,4 @@
-# Step 2 — Edge extraction (done)
+# Step 2 - Edge extraction (done)
 
 Built the edge-extraction pipeline specified in `02_edge_extraction.md`.
 Step 1's per-document trees are now a cross-document graph in
@@ -12,12 +12,12 @@ src/extraction/
 ├── __init__.py                # package docstring
 ├── ids.py                     # CitationKey + URL/section-marker parsers
 ├── node_index.py              # streaming loader over nodes.jsonl + reverse indexes
-├── structural_edges.py        # B2.1 — parent_of from parent_id
-├── anchor_edges.py            # B2.2 — <a href> walking with DOM ancestry attribution
-├── citations_regex.py         # B2.3 — 10 ordered Finnish-legal citation patterns
-├── refine.py                  # B2.5 — cites → interprets/applies/amends/repeals/transposes
-├── definition_edges.py        # B2.6 — DEFINITION → same-law term users
-└── resolve.py                 # B2.7 — RawMatch → resolved or dangling Edge
+├── structural_edges.py        # B2.1 - parent_of from parent_id
+├── anchor_edges.py            # B2.2 - <a href> walking with DOM ancestry attribution
+├── citations_regex.py         # B2.3 - 10 ordered Finnish-legal citation patterns
+├── refine.py                  # B2.5 - cites → interprets/applies/amends/repeals/transposes
+├── definition_edges.py        # B2.6 - DEFINITION → same-law term users
+└── resolve.py                 # B2.7 - RawMatch → resolved or dangling Edge
 src/verify_edges.py            # B2.9 quality checks
 scripts/extract_edges.py       # B2.8 pipeline runner
 ```
@@ -25,13 +25,13 @@ scripts/extract_edges.py       # B2.8 pipeline runner
 ## Pipeline (single runner)
 
 1. Load `NodeIndex` from `output/nodes.jsonl` (~14 s, 1.97M records).
-2. Pass 1 — structural `parent_of` edges (~14 s).
-3. Pass 2 — anchor edges over `data/`, multiprocess fan-out across HTML
+2. Pass 1 - structural `parent_of` edges (~14 s).
+3. Pass 2 - anchor edges over `data/`, multiprocess fan-out across HTML
    files (9 workers, fork on macOS).
-4. Pass 3 — regex citation edges over node text (~10 patterns, ordered
+4. Pass 3 - regex citation edges over node text (~10 patterns, ordered
    most-specific first; spans consumed by anchors are excluded by
    exact-substring de-dup).
-5. Pass 4 — `defines` edges via two-pass scan of `nodes.jsonl`
+5. Pass 4 - `defines` edges via two-pass scan of `nodes.jsonl`
    (terms collected first, then consumer-node match within same `law_id`).
 6. Refine edge types based on source / target `source` and context snippet.
 7. Resolve each `CitationKey` via `NodeIndex`, splitting resolved → `edges.jsonl`,
@@ -43,12 +43,12 @@ scripts/extract_edges.py       # B2.8 pipeline runner
 M3, 9 workers, **~100 s** wall.
 
 ```
-parent_of:    1,904,115   (one per non-root node — matches exactly)
+parent_of:    1,904,115   (one per non-root node - matches exactly)
 defines:        234,570   (DEFINITION → same-law term users)
 cites:           67,834
 applies:         18,259   (KHO → Finlex)
 interprets:      16,613   (Vero → Finlex)
-transposes:       8,453   (EU directives — most dangle out_of_corpus)
+transposes:       8,453   (EU directives - most dangle out_of_corpus)
 repeals:            102
 amends:              75
 --------------------------------
@@ -115,7 +115,7 @@ Step 1 derived `law_id` from filenames (`Rajavyöhykelaki.html` →
 `https://www.finlex.fi/akn/fi/act/statute/1947/403` carry exactly that
 coordinate, so without a separate metadata source we cannot resolve them
 to the consolidated law node. `verify_edges` treats this as a warning, not
-a hard failure — the edges are still recorded with `target_ref` preserved
+a hard failure - the edges are still recorded with `target_ref` preserved
 and can be re-resolved later if Step 3 (metadata enrichment) populates a
 year/number → `law_id` reverse map.
 
@@ -123,7 +123,7 @@ year/number → `law_id` reverse map.
 Term extraction is intentionally simple: the closest noun-like token
 before/after the trigger (`tarkoitetaan` / `määritellään`), Finnish-suffix
 stemming, lowercased substring match against same-law consumer nodes.
-Confidence stamped at 0.7. Same-LAW scope only in v1 — cross-LAW
+Confidence stamped at 0.7. Same-LAW scope only in v1 - cross-LAW
 propagation is deferred (the same term often carries different meanings
 in different statutes). Per-definition fan-out capped at 200 consumers to
 prevent runaway counts on common-word definitions.
@@ -154,7 +154,7 @@ when the cited law sits outside the corpus and the edge dangles.
 | `dangling_edges.log`  |   21 M | same shape, `target_id=null`, with `dangling_reason`      |
 | `edge_stats.json`     |   8 K  | per-type / per-method / top-50 incoming counts            |
 
-## Step 2.5 — year/number relink (follow-up)
+## Step 2.5 - year/number relink (follow-up)
 
 Closed most `not_yet_parsed` dangles by bridging the gap between numeric
 statute references (`act/statute/YYYY/NNN` URLs) and the slug-based
@@ -178,7 +178,7 @@ Walks `data/finlex/{Laki,Asetus}/` amendment files; for each:
    edge and appended to `output/edges.jsonl`. Entries that still fail
    stay dangling.
 
-Purely additive — backs up `edges.jsonl` + `dangling_edges.log` before
+Purely additive - backs up `edges.jsonl` + `dangling_edges.log` before
 rewriting; never mutates `source_id` / `type` / `confidence` /
 embeddings / chunks.
 
@@ -191,7 +191,7 @@ embeddings / chunks.
 | resolved fraction                                   |     96.9% |     97.5% |
 | anchor `not_yet_parsed` in `dangling_edges.log`     |    34,073 |    22,703 |
 
-~12k dangles upgraded (combined across the relink's two passes — the
+~12k dangles upgraded (combined across the relink's two passes - the
 pub-year cross-check was tried, then dropped).
 
 ### Tradeoff: publication-year cross-check dropped
@@ -206,9 +206,9 @@ is dumped for debugging.
 
 ### Remaining dangles (expected, not bugs)
 
-- **23,141 `out_of_corpus`** — EU directives and HE bills. Outside our
+- **23,141 `out_of_corpus`** - EU directives and HE bills. Outside our
   ingestion scope; correct to dangle.
-- **34,124 `not_yet_parsed`** — references whose `(year, number)` is for
+- **34,124 `not_yet_parsed`** - references whose `(year, number)` is for
   a consolidated law whose amendment files use a multi-word base title
   (e.g. `Ahvenanmaan itsehallintolaki`). Closing these needs multi-word
   title-fragment matching; deferred.
@@ -223,4 +223,4 @@ is dumped for debugging.
 
 The relink only changes `target_id` values inside `edges.jsonl` and
 removes upgraded entries from `dangling_edges.log`. Nodes, chunks, and
-any chunk-derived vectors are untouched — no re-embedding required.
+any chunk-derived vectors are untouched - no re-embedding required.

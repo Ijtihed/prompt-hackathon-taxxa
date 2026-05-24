@@ -1,5 +1,5 @@
 /**
- * Editorial footer — Stitch port.
+ * Editorial footer - Stitch port.
  * White surface, hard border-top, mono link nav.
  */
 export function Footer() {

@@ -1,11 +1,11 @@
 /**
- * /about — what the shipping system actually does, with real numbers.
+ * /about - what the shipping system actually does, with real numbers.
  *
  * Two halves:
- *  - "The corpus" — counts pulled from ``output/graph.db`` and
+ *  - "The corpus" - counts pulled from ``output/graph.db`` and
  *    ``output/lancedb`` at the time of the last full ingest.
  *    Mirror these constants when you re-ingest.
- *  - "The pipeline" — a Mermaid flowchart of the RAG + Graph layers,
+ *  - "The pipeline" - a Mermaid flowchart of the RAG + Graph layers,
  *    plus narrative for each stage. Intentionally describes only the
  *    data + retrieval flow; frontend / sidecar wiring lives elsewhere.
  */
@@ -22,7 +22,7 @@ import { MermaidDiagram } from "@/components/MermaidDiagram";
 // ---------------------------------------------------------------------------
 
 const NODE_BREAKDOWN: Array<{ kind: string; count: number; note: string }> = [
-  { kind: "SUBSECTION",      count: 1_184_915, note: "momentit — atomic operative paragraphs" },
+  { kind: "SUBSECTION",      count: 1_184_915, note: "momentit - atomic operative paragraphs" },
   { kind: "SECTION",         count:   344_156, note: "§ inside a law/asetus" },
   { kind: "ITEM",            count:   320_453, note: "list items inside subsections" },
   { kind: "LAW",             count:    54_678, note: "root acts (laki / asetus / SK)" },
@@ -57,13 +57,13 @@ const LLM_MODEL = "DeepSeek V4 Pro · via Featherless";
 // Mermaid source. Two subgraphs:
 //   - Ingest: how the corpus becomes the typed graph + vector store.
 //   - Retrieve: how one question becomes an answer.
-// Intentionally omits the frontend / SSE plumbing — this is the
+// Intentionally omits the frontend / SSE plumbing - this is the
 // pipeline, not the app shell.
 // ---------------------------------------------------------------------------
 
 const ARCH_MERMAID = `flowchart LR
     %% ---------- Ingest ----------
-    subgraph Ingest [Ingest — build the graph]
+    subgraph Ingest [Ingest - build the graph]
         direction TB
         F[Finlex laki / asetus<br/>+ Säädöskokoelma] --> P{Parsers}
         V[Vero · ohje · kannanotto · päätös] --> P
@@ -79,7 +79,7 @@ const ARCH_MERMAID = `flowchart LR
     end
 
     %% ---------- Retrieve ----------
-    subgraph Retrieve [Retrieve — answer one question]
+    subgraph Retrieve [Retrieve - answer one question]
         direction TB
         Q[Question] --> QR[Query rewrite<br/>FI / EN synonyms]
         QR --> H[Hybrid search<br/>dense + BM25 RRF]
@@ -186,13 +186,13 @@ export default function AboutPage() {
 
           {/* Node breakdown */}
           <div className="mt-10">
-            <SubTitle>Nodes — by type</SubTitle>
+            <SubTitle>Nodes - by type</SubTitle>
             <BreakdownTable rows={NODE_BREAKDOWN} total={TOTAL_NODES} />
           </div>
 
           {/* Edge breakdown */}
           <div className="mt-10">
-            <SubTitle>Edges — by type</SubTitle>
+            <SubTitle>Edges - by type</SubTitle>
             <BreakdownTable rows={EDGE_BREAKDOWN} total={TOTAL_EDGES} />
           </div>
 
@@ -248,7 +248,7 @@ export default function AboutPage() {
             <Step
               num="Assemble"
               title="Context with typed edges"
-              body="The top-N reranked chunks are rendered into a single prompt where every cross-reference between cited sections is surfaced verbatim — `Source 1 cites → Source 3`, `Source 5 interprets → Source 2`. The LLM treats the sources as a small graph, not a bag."
+              body="The top-N reranked chunks are rendered into a single prompt where every cross-reference between cited sections is surfaced verbatim - `Source 1 cites → Source 3`, `Source 5 interprets → Source 2`. The LLM treats the sources as a small graph, not a bag."
             />
             <Step
               num="Generate"

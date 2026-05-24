@@ -1,5 +1,5 @@
 /**
- * Node-kind colors — light theme (Stitch palette).
+ * Node-kind colors - light theme (Stitch palette).
  *
  * statutes/concepts → charcoal (primary text)
  * amendments       → terracotta (the persuasive accent)

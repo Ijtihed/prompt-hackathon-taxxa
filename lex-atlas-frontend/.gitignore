@@ -42,14 +42,14 @@ yarn-error.log*
 *.swp
 *.swo
 
-# Data — ingest output is reproducible from scripts/ingest.py
+# Data - ingest output is reproducible from scripts/ingest.py
 data/raw/
 data/cache/
 data/embeddings/
 data/sparql_cache.json
 !data/seed/
 
-# Eval outputs — committed for traceability
+# Eval outputs - committed for traceability
 !data/results.json
 !data/sparql_validation.json
 

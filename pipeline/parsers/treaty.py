@@ -86,7 +86,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             head_parts.append(current_section.title)
         bundles.append(SectionBundle(
             section=current_section,
-            head_text=" — ".join(p for p in head_parts if p),
+            head_text=" - ".join(p for p in head_parts if p),
             members=list(current_members),
         ))
         current_section = None
@@ -114,7 +114,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
     for ch in children:
         name = ch.name or ""
         if name in {"h1"}:
-            # Document title — already handled.
+            # Document title - already handled.
             continue
         if name in {"h2", "h3", "h4"}:
             flush()

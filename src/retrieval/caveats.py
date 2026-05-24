@@ -9,7 +9,7 @@ Inputs:
 - A ``GraphStore`` to look up each section's ``temporal_status``.
 
 Output:
-- ``list[AmendmentCaveat]`` — empty when every cited chunk's parent chain
+- ``list[AmendmentCaveat]`` - empty when every cited chunk's parent chain
   is clean.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from src.models import AmendmentCaveat
 from src.retrieval.assemble import AssembledContext
 
 
-# Lowest grade that warrants a caveat. ``ok`` never produces one — the
+# Lowest grade that warrants a caveat. ``ok`` never produces one - the
 # absence of the entry in ``amendment_caveats`` is the signal.
 _FLAGGED = {"suspect", "stale", "repealed"}
 
@@ -35,7 +35,7 @@ def _is_amendment_instrument(law_id: str) -> bool:
     """True when the LAW root is itself a one-shot amendment instrument.
 
     Pattern: ``finlex/laki/...-muuttamisesta-...``. These are stable in
-    isolation — their own ``temporal_status`` will be "ok" — but the
+    isolation - their own ``temporal_status`` will be "ok" - but the
     *target* consolidated LAW they amend may have a richer amendment
     history we want to surface as a caveat for citations that quote them.
     """
@@ -109,11 +109,11 @@ def _amends_target_for(
     Two strategies, in order:
       1. Follow outbound ``amends`` edges (the Step-2 regex extractor
          resolved a few dozen of these).
-      2. If no edges exist (the common case — Step 2 missed most),
+      2. If no edges exist (the common case - Step 2 missed most),
          infer the target by inverting the Finnish genitive in the
          amendment law's id slug and searching the LAW table.
     """
-    # Strategy 1 — outbound edges from anywhere under this amendment law.
+    # Strategy 1 - outbound edges from anywhere under this amendment law.
     cur = graph.conn.execute(
         "SELECT target_id, COUNT(*) FROM edges "
         "WHERE source_id LIKE ? AND type = 'amends' AND target_id IS NOT NULL "
@@ -124,7 +124,7 @@ def _amends_target_for(
     if row:
         return row[0]
 
-    # Strategy 2 — slug-based inference. Robust for the common
+    # Strategy 2 - slug-based inference. Robust for the common
     # ``laki-X:n-muuttamisesta-...`` pattern; silently gives up otherwise.
     if "muuttamisesta" not in amendment_law_id.lower():
         return None
@@ -157,7 +157,7 @@ def _format_explanation_fi(status: dict) -> str:
     if grade == "repealed":
         # Self- or ancestor-level repeal. Short, direct.
         return (
-            "Tämä lähde tai sen emolaki on kumottu — älä käytä nykytilaa "
+            "Tämä lähde tai sen emolaki on kumottu - älä käytä nykytilaa "
             "koskevaan vastaukseen ilman varmistusta."
         )
 
@@ -177,7 +177,7 @@ def _format_explanation_fi(status: dict) -> str:
         )
     elif amendment_count:
         parts.append(
-            f"Emolaissa on {amendment_count} muutosta — varmista, että "
+            f"Emolaissa on {amendment_count} muutosta - varmista, että "
             f"tämä teksti vastaa nykyistä konsolidoitua versiota."
         )
     if interp_count and latest_interp:
@@ -191,7 +191,7 @@ def _format_explanation_fi(status: dict) -> str:
             f"oikeuskäytäntötulkintaa."
         )
     return " ".join(parts) or (
-        "Lähteen ajallinen status on epävarma — tarkista voimassaolo."
+        "Lähteen ajallinen status on epävarma - tarkista voimassaolo."
     )
 
 
@@ -212,7 +212,7 @@ def build_amendment_caveats(
 
     # Build a chunk_id → section_id index from the assembled sources. The
     # generator can cite chunks that landed in the context but not all
-    # context chunks are cited — we only fetch the ones we actually need.
+    # context chunks are cited - we only fetch the ones we actually need.
     chunk_to_section: dict[str, str] = {
         s.chunk_id: s.section_id for s in context.sources
     }
@@ -251,7 +251,7 @@ def build_amendment_caveats(
             if target and target != law_id:
                 amendment_targets[sid] = target
                 extra_lookup_ids.add(target)
-        # Outbound interprets/cites — collect target laws regardless of
+        # Outbound interprets/cites - collect target laws regardless of
         # whether the citation itself is an amendment instrument. The
         # caller will only consult these if the first two lookups don't
         # surface a flagged status.
@@ -288,7 +288,7 @@ def build_amendment_caveats(
 
             # Cross-source fallback: any LAW this citation interprets/cites
             # with a flagged status. Pick the *most-amended* one as the
-            # representative — that's the worst-case caveat.
+            # representative - that's the worst-case caveat.
             if chosen_status is None:
                 worst_status: dict | None = None
                 worst_count = -1

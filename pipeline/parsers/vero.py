@@ -2,7 +2,7 @@
 
 Source layout: data/vero/Syventävät vero-ohjeet/<bucket>/<doc-folder>/*.html
 Where <bucket> is one of:
-    Ohjeet                       (in-depth guidance — primary)
+    Ohjeet                       (in-depth guidance - primary)
     Päätökset                    (decisions)
     Kannanotot                   (positions)
     Keskusverolautakunnan ennakkoratkaisut  (advance rulings)
@@ -18,7 +18,7 @@ HTML shape:
 
 The first <h1> is the document title; the second h1 onward are section
 headings (note the document uses h1 for top-level numbered sections and h3
-for sub-sections — no h2 in practice). We treat any h1 *after* the title as
+for sub-sections - no h2 in practice). We treat any h1 *after* the title as
 CHAPTER, h2/h3/h4 as SECTION at decreasing depth. Each leaf heading section
 becomes one SectionBundle.
 
@@ -67,7 +67,7 @@ def detect_subcorpus(rel_path: str) -> str | None:
     for p in parts:
         if p in SUBCORPUS_BY_BUCKET:
             return SUBCORPUS_BY_BUCKET[p]
-    # Anything else under data/vero/ — generic.
+    # Anything else under data/vero/ - generic.
     return "vero_other"
 
 
@@ -105,7 +105,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
     soup = parse_html(raw)
     body = soup.body or soup
 
-    # Find the actual content root — Vero pages wrap in <article id="content-main">.
+    # Find the actual content root - Vero pages wrap in <article id="content-main">.
     article = soup.find("article", id="content-main") or body
 
     # Title: first taxxa-title h1 or first h1 with " - vero.fi"
@@ -161,7 +161,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             head_parts.append(current_section.label)
         if current_section.title and current_section.title != current_section.label:
             head_parts.append(current_section.title)
-        head = " — ".join(p for p in head_parts if p)
+        head = " - ".join(p for p in head_parts if p)
         bundles.append(SectionBundle(
             section=current_section,
             head_text=head,
@@ -196,7 +196,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
         name = ch.name or ""
         if name in {"h1", "h2", "h3", "h4", "h5", "h6"}:
             txt = get_text(ch)
-            # The first h1 we encounter is the doc title — skip it.
+            # The first h1 we encounter is the doc title - skip it.
             if not seen_title and _is_doc_title(ch):
                 seen_title = True
                 continue
@@ -245,7 +245,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
             current_members = []
             continue
 
-        # Body content — attach to the current section, or to the guide root if
+        # Body content - attach to the current section, or to the guide root if
         # we haven't seen a heading yet (intro text).
         target_parent = current_section.id if current_section else root_id
         if name == "p":
@@ -344,7 +344,7 @@ def parse(path: str, rel_path: str) -> Tuple[List[Node], List[SectionBundle]]:
 
     flush()
 
-    # If no section headings at all — fall back to a single bundle for the
+    # If no section headings at all - fall back to a single bundle for the
     # whole guide (common for tiny Päätökset / Kannanotot).
     if not bundles:
         orphan = [n_ for n_ in nodes if n_.parent_id == root_id and n_.type in {SUBSECTION, DEFINITION, ITEM}]

@@ -1,4 +1,4 @@
-# Step 7 — Retrieval v2 (Graph Traversal Layer)
+# Step 7 - Retrieval v2 (Graph Traversal Layer)
 
 > Add the graph walk that turns the system from RAG into GraphRAG. Vector search finds entry points; graph traversal expands them along typed edges; reranking culls back to a context-window-fitting set.
 >
@@ -6,14 +6,14 @@
 
 ## Inputs
 
-- v1 baseline metrics from Step 6 — the numbers to beat
-- `findings/05_baseline_failures.md` — concrete failure cases v2 must address
+- v1 baseline metrics from Step 6 - the numbers to beat
+- `findings/05_baseline_failures.md` - concrete failure cases v2 must address
 - Graph store fully populated with edges (Step 2) and metadata (Step 3)
 - Vector store from Step 4
 
 ## Verification tasks
 
-### V7.1 — Per-category expansion strategy
+### V7.1 - Per-category expansion strategy
 
 For each question category in `eval/questions.yaml`, decide which edges to traverse and how far. Starting proposal:
 
@@ -28,7 +28,7 @@ For each question category in `eval/questions.yaml`, decide which edges to trave
 
 Each strategy is a small config (edge types + direction + max hops + caps), not custom code per category. **Output:** `findings/07_expansion_strategies.md`.
 
-### V7.2 — Pilot one strategy
+### V7.2 - Pilot one strategy
 
 Before building all of v2, pick the multi-hop case (highest expected payoff) and hand-run the expansion on 3 questions:
 
@@ -43,7 +43,7 @@ If yes → build the full v2. If no → diagnose. Usually the cause is a missing
 
 ## Build tasks
 
-### B7.1 — Graph expansion module
+### B7.1 - Graph expansion module
 
 `src/retrieval/graph_expand.py`:
 
@@ -58,9 +58,9 @@ def expand(
     """BFS expansion over the graph store. Returns expanded set including seeds."""
 ```
 
-Boring BFS with a visited set, hard limits on hops and result count, and a **degree cap** to skip hub nodes (a widely cited statute article may have hundreds of incoming edges — without a cap, it dominates results).
+Boring BFS with a visited set, hard limits on hops and result count, and a **degree cap** to skip hub nodes (a widely cited statute article may have hundreds of incoming edges - without a cap, it dominates results).
 
-### B7.2 — Strategy router
+### B7.2 - Strategy router
 
 `src/retrieval/strategy.py` picks an expansion config from a lightweight classifier:
 
@@ -77,7 +77,7 @@ Keyword-based classification is fine for v2:
 
 Defer LLM-based planning to Step 8 (Planner agent). v2 uses deterministic routing so improvements are attributable to the graph, not to the planner.
 
-### B7.3 — v2 pipeline
+### B7.3 - v2 pipeline
 
 `src/retrieval/pipeline_v2.py`:
 
@@ -97,9 +97,9 @@ def answer_v2(question: str) -> AnswerResult:
 
 Same shape as v1 with one expansion step inserted. The same reranker handles the larger candidate set. `expand_with_paths` returns both the node set and the BFS provenance for each non-seed node (used by Layer 8 path-aware citations).
 
-### B7.4 — Cross-encoder rerank (mandatory at v2)
+### B7.4 - Cross-encoder rerank (mandatory at v2)
 
-After graph expansion the candidate set grows to 50–100 nodes. **Vector score alone is no longer enough discrimination** — without reranking, graph expansion typically makes results *worse* by adding plausible-but-irrelevant neighbors that share embedding space with the query. This is the single most important quality lever in Step 7.
+After graph expansion the candidate set grows to 50–100 nodes. **Vector score alone is no longer enough discrimination** - without reranking, graph expansion typically makes results *worse* by adding plausible-but-irrelevant neighbors that share embedding space with the query. This is the single most important quality lever in Step 7.
 
 - Use `BAAI/bge-reranker-v2-m3` (multilingual, handles Finnish) or `BAAI/bge-reranker-v2-gemma`
 - Apply only to the expanded set, not the initial vector search
@@ -111,40 +111,40 @@ After graph expansion the candidate set grows to 50–100 nodes. **Vector score 
 
 Without this step, expect v2 to *underperform* v1 on single-hop questions and only marginally improve multi-hop. With it, v2 should beat v1 across the board.
 
-### B7.5 — Degree caps and hub avoidance (Layer 4)
+### B7.5 - Degree caps and hub avoidance (Layer 4)
 
 A widely cited Finlex statute may have hundreds of incoming `interprets` edges from Vero guidance and dozens of outgoing `cites` edges. Naive 2-hop expansion through such a hub returns thousands of nodes.
 
 Three guards, all implemented in `graph_expand.py`:
 
-1. **Skip expansion through hubs.** When BFS visits a node with `degree[edge_type, direction] > HUB_THRESHOLD`, do not expand through it (but keep it in the result if it was a direct seed). Threshold per edge type — different edges have different natural fan-outs. Start with: `interprets_in > 30`, `cites_out > 15`, `parent_of_in > 50`. Tune from the data.
+1. **Skip expansion through hubs.** When BFS visits a node with `degree[edge_type, direction] > HUB_THRESHOLD`, do not expand through it (but keep it in the result if it was a direct seed). Threshold per edge type - different edges have different natural fan-outs. Start with: `interprets_in > 30`, `cites_out > 15`, `parent_of_in > 50`. Tune from the data.
 2. **Limit hops aggressively.** 2 hops is usually too many. Default `max_hops=1`. Only escalate to 2 for explicit multi-hop strategies, and even then only on specific edge types (e.g. `parent_of` chains are safer than `cites` chains).
 3. **Truncate by rerank score.** Even after caps, the expanded set may exceed the context budget. Cull to top-N by reranker score with a hard token-budget ceiling (default 25k tokens of context).
 
-Hub nodes are also fingerprinted at load time (Step 4 B4.2 computes `degree` per node) — at retrieval time, the lookup is O(1).
+Hub nodes are also fingerprinted at load time (Step 4 B4.2 computes `degree` per node) - at retrieval time, the lookup is O(1).
 
-### B7.6 — Edge-aware context assembly
+### B7.6 - Edge-aware context assembly
 
 The context assembler from Step 5 already renders edges between retrieved nodes (Layer 5). At v2 it does two additional things:
 
-1. **Renders one-hop-outside-set neighbors as "referenced but not included"** — short labels that tell the LLM what exists beyond the retrieved set. E.g. *"§ 114.2 AVL (referenced but not retrieved)"*. Helps the LLM say "the question requires X which I don't have full text for" instead of guessing.
+1. **Renders one-hop-outside-set neighbors as "referenced but not included"** - short labels that tell the LLM what exists beyond the retrieved set. E.g. *"§ 114.2 AVL (referenced but not retrieved)"*. Helps the LLM say "the question requires X which I don't have full text for" instead of guessing.
 2. **Groups sources by traversal path origin.** If three sources were reached by expanding from a single seed, they're presented as a cluster. Helps the LLM (and the Verifier) see which sources are mutually reinforcing vs independent.
 
-### B7.7 — Context bloat guards
+### B7.7 - Context bloat guards
 
 - **Token budget.** Hard limit of 25k tokens of context. Truncate by rerank score.
 - **Per-query degree cap.** Beyond the global hub cap, a per-query expansion cap of ~30 nodes prevents single questions from exploding.
 
-### B7.6 — Run the evaluation
+### B7.6 - Run the evaluation
 
 Run `eval/runner.py` against v2. Compare to v1:
 
 - Per-category metric deltas
 - Per-question diffs: which improved, which regressed
 - Did multi-hop recall@10 jump? Did statute-vs-guidance handling improve?
-- Single-hop must not regress significantly — if it does, expansion is adding noise for cases that didn't need it (lower max_hops, tighter edge type filtering)
+- Single-hop must not regress significantly - if it does, expansion is adding noise for cases that didn't need it (lower max_hops, tighter edge type filtering)
 
-**Output:** `findings/07_v2_eval.md` — v1 vs v2 per-category breakdown, honest about regressions.
+**Output:** `findings/07_v2_eval.md` - v1 vs v2 per-category breakdown, honest about regressions.
 
 ## Done when
 

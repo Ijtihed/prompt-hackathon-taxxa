@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Provenance Orbit — the per-query subgraph view modeled directly on Anthropic's
+ * Provenance Orbit - the per-query subgraph view modeled directly on Anthropic's
  * circuit-tracer interface. Five concentric rings indexed by authority rank
  * (binding law innermost, informal outermost), nodes glide into position when
  * the agent commits to a subgraph (the "orbital pull" moment).
@@ -105,7 +105,7 @@ export function ProvenanceOrbit() {
   if (nodes.length === 0) {
     return (
       <div className="flex h-full w-full items-center justify-center text-text-tertiary">
-        <span className="section-number">Provenance orbit — ask a question to populate</span>
+        <span className="section-number">Provenance orbit - ask a question to populate</span>
       </div>
     );
   }
@@ -115,7 +115,7 @@ export function ProvenanceOrbit() {
       viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
       className="h-full w-full"
       role="img"
-      aria-label="Provenance orbit — the subgraph supporting the current answer"
+      aria-label="Provenance orbit - the subgraph supporting the current answer"
     >
       {/* 1. Authority-rank concentric rings (faint) */}
       <g aria-hidden>
@@ -168,7 +168,7 @@ export function ProvenanceOrbit() {
         })}
       </g>
 
-      {/* 3. Conflict arcs (red dashed) — draw when Verifier surfaces equal-rank disagreement */}
+      {/* 3. Conflict arcs (red dashed) - draw when Verifier surfaces equal-rank disagreement */}
       <g>
         {conflictPairs.map(([aId, bId], i) => {
           const a = byId.get(aId);
@@ -190,7 +190,7 @@ export function ProvenanceOrbit() {
         })}
       </g>
 
-      {/* 4. Nodes — group per node with halo + core + label */}
+      {/* 4. Nodes - group per node with halo + core + label */}
       <g>
         <AnimatePresence>
           {placed.map((n) => {
@@ -235,7 +235,7 @@ export function ProvenanceOrbit() {
                   animate={{ opacity: coreOpacity }}
                   transition={{ duration: 0.2 }}
                 />
-                {/* Conflict marker — small red ring on conflicted nodes */}
+                {/* Conflict marker - small red ring on conflicted nodes */}
                 {n.isConflicted && (
                   <circle
                     r={coreR + 4}

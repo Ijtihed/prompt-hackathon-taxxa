@@ -1,9 +1,9 @@
-# Step 8 — Agentic workflow (Track H: agent prompts done)
+# Step 8 - Agentic workflow (Track H: agent prompts done)
 
 Built the four agent modules specified in `08_agentic_workflow.md` and
 `parallel_execution_after_step4.md` (Track H). Each agent is a standalone,
 synchronous callable that wraps one LLM call against an OpenAI-compatible
-HTTP endpoint. No retrieval-pipeline coupling — the orchestrator
+HTTP endpoint. No retrieval-pipeline coupling - the orchestrator
 (convergence step 2, not in this track) wires them together later.
 
 ## What was built
@@ -15,10 +15,10 @@ src/agents/
 ├── _llm.py                # stdlib-only OpenAI-compatible HTTP client +
 │                          # forgiving JSON-object parser (fences/preamble safe)
 ├── _prompts.py            # tiny loader that reads prompts/*.txt at import
-├── clarifier.py           # B8.1 — missing year / entity_type / jurisdiction
-├── planner.py             # B8.2 — decompose into 1–4 tagged sub-questions
-├── verifier.py            # B8.4 — conflict surfacing with explicit authority_rank
-├── extractor.py           # B8.3 — query-time citation extraction (dangling edges)
+├── clarifier.py           # B8.1 - missing year / entity_type / jurisdiction
+├── planner.py             # B8.2 - decompose into 1–4 tagged sub-questions
+├── verifier.py            # B8.4 - conflict surfacing with explicit authority_rank
+├── extractor.py           # B8.3 - query-time citation extraction (dangling edges)
 └── prompts/
     ├── clarifier.txt
     ├── planner.txt
@@ -40,7 +40,7 @@ plan; they are convergence work that runs after Track D delivers
 ## Agent contracts
 
 Each agent is one callable. Result types live in `src/agents/__init__.py`
-as frozen `dataclass`es — `src/models.py` is the locked Step 1–4 schema
+as frozen `dataclass`es - `src/models.py` is the locked Step 1–4 schema
 and was not touched.
 
 ```python
@@ -78,10 +78,10 @@ dependency) so the team can swap providers by flipping environment
 variables:
 
 ```
-FEATHERLESS_API_KEY    — required at call time
-FEATHERLESS_BASE_URL   — default https://api.featherless.ai/v1
-AGENT_MODEL            — default deepseek-ai/DeepSeek-V3
-AGENT_TIMEOUT_S        — default 60
+FEATHERLESS_API_KEY    - required at call time
+FEATHERLESS_BASE_URL   - default https://api.featherless.ai/v1
+AGENT_MODEL            - default deepseek-ai/DeepSeek-V3
+AGENT_TIMEOUT_S        - default 60
 ```
 
 JSON mode is requested via `response_format={"type":"json_object"}`. For
@@ -93,7 +93,7 @@ touching the shared client.
 
 ## Test suite
 
-`tests/test_agent_prompts.py` is **live-LLM only** — calibration, not
+`tests/test_agent_prompts.py` is **live-LLM only** - calibration, not
 regression. The whole module skips unless `FEATHERLESS_API_KEY` is set.
 No recorded fixtures by design (Track H is explicitly a prompt-iteration
 track; fixtures would freeze whatever the prompt did on first run).
@@ -105,7 +105,7 @@ track; fixtures would freeze whatever the prompt did on first run).
 | Clarifier | 10    | medium-tier questions from `eval/questions.json` with one dimension dropped per case |
 | Planner   | 11    | 10 hard-tier `(a)/(b)/(c)` questions + 1 atomic pass-through |
 | Verifier  | 7     | 5 hand-built conflict triples + 2 negative (agreement / unsupported) |
-| Extractor | 20    | Real sentences sampled from `output/chunks.jsonl` — 8 cites / 4 interprets / 4 amends / 2 defines / 2 negative-control prose |
+| Extractor | 20    | Real sentences sampled from `output/chunks.jsonl` - 8 cites / 4 interprets / 4 amends / 2 defines / 2 negative-control prose |
 
 Per-case assertions enforce the agent's invariants:
 
@@ -142,7 +142,7 @@ Test sources use the rank values established in
 | Vero guidance  |               60 |
 
 If Step 3's rank values shift, only the inlined sources in the test
-file need updating — the Verifier code reads ranks as an input and
+file need updating - the Verifier code reads ranks as an input and
 makes no assumptions about specific values beyond "integer, higher
 wins, equal → no prevailing".
 
@@ -153,7 +153,7 @@ wins, equal → no prevailing".
 `models.py` is the locked schema contract for Steps 1–4 and three
 parallel tracks read it. Polluting it with agent-layer types
 (`ClarifyResult`, `Plan`, `VerifyResult`) would create cross-track
-write contention for zero benefit — the orchestrator converts these to
+write contention for zero benefit - the orchestrator converts these to
 `AnswerResult`'s loose `conflicts: list[dict]` / `assumptions:
 list[str]` shape at the boundary.
 
@@ -169,7 +169,7 @@ them hash-able, immutable, and free of the Pydantic import that
 Featherless exposes an OpenAI-compatible endpoint. `urllib.request` is
 ~80 lines of glue and avoids dragging in the `openai` package (which
 would shadow the team's later decision on provider). Trade: no
-streaming support and no automatic retry on transient 5xx — the
+streaming support and no automatic retry on transient 5xx - the
 Verifier/Extractor calls are short and a hard fail is preferable to a
 silent retry that doubles token cost.
 
@@ -177,7 +177,7 @@ silent retry that doubles token cost.
 
 Every agent's output is structured. JSON mode handles most providers.
 The fallback parser (`parse_json_object`) strips ```json fences and
-extracts the first balanced `{...}` span — DeepSeek-V3 occasionally
+extracts the first balanced `{...}` span - DeepSeek-V3 occasionally
 preambles its output even in JSON mode, and this keeps the agents
 robust to that without retries.
 
@@ -186,7 +186,7 @@ robust to that without retries.
 Recorded fixtures freeze in whatever the prompt did on the first run
 and silently rot when prompts are tuned. Track H's whole purpose is
 prompt iteration, so the suite hits the live LLM by design. Without
-the API key the whole module skips — no false signal from a never-run
+the API key the whole module skips - no false signal from a never-run
 test.
 
 ### `target_id=None` everywhere from Extractor
@@ -195,7 +195,7 @@ The on-demand Extractor runs on retrieved chunks at query time with no
 node-resolution context. Even when the LLM produces an obvious "this is
 AVL §114", it would be wrong to claim resolution without checking the
 graph. Every edge dangles; the existing Step 2 resolver picks them up
-at write-back. The `@model_validator` on `Edge` enforces this — a
+at write-back. The `@model_validator` on `Edge` enforces this - a
 resolved edge with `dangling_reason` set raises, and vice versa, so the
 Extractor's contract is mechanically enforced.
 
@@ -204,7 +204,7 @@ Extractor's contract is mechanically enforced.
 Documented up front in `findings/08_agent_prompts.md`: 2 (Clarifier) /
 3 (Planner) / 3 (Verifier) / 2 (Extractor). If an agent needs more
 than its budget after the first live run, the next call is to escalate
-to the team — not to silently burn more tokens. Honest reporting per
+to the team - not to silently burn more tokens. Honest reporting per
 the Step 8 brief.
 
 ### Two-tier negative cases for the Extractor
@@ -234,7 +234,7 @@ export FEATHERLESS_BASE_URL=https://api.featherless.ai/v1
 .venv/bin/python -m pytest tests/test_agent_prompts.py -k extractor -v
 ```
 
-Without `FEATHERLESS_API_KEY` set, the whole module is `skipped` —
+Without `FEATHERLESS_API_KEY` set, the whole module is `skipped` -
 intentional, since no fake-LLM fixtures exist.
 
 ## Output artifacts
@@ -253,7 +253,7 @@ not here.
   pseudocode in `08_agentic_workflow.md §B8.5`. All four agents are
   callable now.
 - **Convergence step 3 (UI integration)** consumes the orchestrator's
-  `AnswerResult.conflicts` and `assumptions` fields — both are
+  `AnswerResult.conflicts` and `assumptions` fields - both are
   populated from Verifier and Clarifier outputs respectively via the
   orchestrator's dict-conversion at the boundary.
 - **Step 8.6 evaluation** runs after the orchestrator is wired. Not
@@ -261,11 +261,11 @@ not here.
 
 ## Open items (will close at convergence)
 
-- [ ] First live-LLM run — fill PASS/FAIL slots in
+- [ ] First live-LLM run - fill PASS/FAIL slots in
       `findings/08_agent_prompts.md`
 - [ ] Per-agent prompt revisions within the documented budget if any
       case fails
-- [ ] Orchestrator (`src/agents/orchestrator.py`) — convergence work,
+- [ ] Orchestrator (`src/agents/orchestrator.py`) - convergence work,
       not Track H
-- [ ] Extractor edge write-back to `output/edges.jsonl` — wired by the
+- [ ] Extractor edge write-back to `output/edges.jsonl` - wired by the
       orchestrator, not Track H

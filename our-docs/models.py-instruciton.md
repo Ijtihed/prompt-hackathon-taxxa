@@ -1,4 +1,4 @@
-# Coding Agent Brief — `src/models.py`
+# Coding Agent Brief - `src/models.py`
 
 > **Goal:** Define the Pydantic schemas that the next three steps of the GraphRAG pipeline write against. Three agents (Edges, Metadata, Embeddings) will run in parallel and all import from this file. **It must be written first and locked.**
 
@@ -6,13 +6,13 @@
 
 Produce a single Python file: `src/models.py`.
 
-Do **not** modify any other file. Do **not** load data. Do **not** write tests in this file — tests go in `tests/test_models.py` if produced.
+Do **not** modify any other file. Do **not** load data. Do **not** write tests in this file - tests go in `tests/test_models.py` if produced.
 
 This file is the schema contract between four pipeline stages:
-- Step 1 (already complete) — produces nodes and chunks in JSONL
-- Step 2 — produces edges (extraction agent)
-- Step 3 — produces metadata annotations (metadata agent)
-- Step 4a — embeds chunks (embeddings agent)
+- Step 1 (already complete) - produces nodes and chunks in JSONL
+- Step 2 - produces edges (extraction agent)
+- Step 3 - produces metadata annotations (metadata agent)
+- Step 4a - embeds chunks (embeddings agent)
 
 If a downstream agent needs a field not in this file, they are required to request a schema change rather than add it ad-hoc. This is enforced socially, not by code.
 
@@ -22,11 +22,11 @@ If a downstream agent needs a field not in this file, they are required to reque
 
 The team has already run the ingestion pipeline. The following files exist on disk:
 
-- `output/nodes.jsonl` — 1,967,776 nodes, one JSON object per line
-- `output/chunks.jsonl` — 402,098 chunks, one JSON object per line
-- `output/hierarchy.json` — `{law_id: {title, source, chapters[], sections[], ...}}`
+- `output/nodes.jsonl` - 1,967,776 nodes, one JSON object per line
+- `output/chunks.jsonl` - 402,098 chunks, one JSON object per line
+- `output/hierarchy.json` - `{law_id: {title, source, chapters[], sections[], ...}}`
 
-The schemas below must be **backward-compatible** with what's already on disk. **Do not invent field names — use what the data already has.** Open a few lines of `output/nodes.jsonl` to confirm field names if uncertain.
+The schemas below must be **backward-compatible** with what's already on disk. **Do not invent field names - use what the data already has.** Open a few lines of `output/nodes.jsonl` to confirm field names if uncertain.
 
 Known field names from Step 1 documentation:
 - Node: `id`, `type`, `text`, `parent_id`, `order`, `source_html_id`, `label` (optional), `source` (e.g. `"finlex_laki"`), `source_file`, `url` (optional)
@@ -58,20 +58,20 @@ Per-node metadata annotations written to `output/nodes_enriched.jsonl`. The enri
 - `repeal_date`: ISO date string or None
 - `in_force`: bool
 - `authority`: one of `Finlex`, `Vero`, `KHO`, `Treaty`
-- `authority_rank`: int (Finlex=100, KHO=80, Treaty=90, Vero=60 — final values are Step 3's decision; the schema just stores an int)
+- `authority_rank`: int (Finlex=100, KHO=80, Treaty=90, Vero=60 - final values are Step 3's decision; the schema just stores an int)
 - `superseded_by`: node ID string or None
 - `language`: `fi`, `sv`, or `en`
-- `usable`: bool (composite — see below)
+- `usable`: bool (composite - see below)
 - `degree`: dict mapping `{edge_type}_{direction}` → int, e.g. `{"interprets_in": 47, "cites_out": 3}`. Populated by Step 4 during graph loading, not Step 3.
 
 `usable = in_force AND (repeal_date is None OR repeal_date > today) AND superseded_by is None`. The schema stores it as a bool; the computation happens in Step 3.
 
 ### What Step 4a will produce
 
-Vector store records. Not file-based — the vector store is a LanceDB directory at `output/lancedb/`. Each vector record carries:
+Vector store records. Not file-based - the vector store is a LanceDB directory at `output/lancedb/`. Each vector record carries:
 
 - `chunk_id` (primary key)
-- `vector` (list[float], dim depends on the embedding model — likely 1024 for `voyage-3-large`)
+- `vector` (list[float], dim depends on the embedding model - likely 1024 for `voyage-3-large`)
 - `primary_node_id`
 - `source` (e.g. `finlex_laki`)
 - `authority_rank` (int, from node metadata)
@@ -119,11 +119,11 @@ Language = Literal["fi", "sv", "en"]
 Direction = Literal["out", "in", "both"]
 ```
 
-#### 2. `NodeMetadata` — populated by Step 3 + Step 4
+#### 2. `NodeMetadata` - populated by Step 3 + Step 4
 
 ```python
 class NodeMetadata(BaseModel):
-    """All fields optional — Step 1 emits empty metadata, Step 3 populates
+    """All fields optional - Step 1 emits empty metadata, Step 3 populates
     status/date/authority fields, Step 4 populates degree."""
 
     publication_date: date | None = None
@@ -139,13 +139,13 @@ class NodeMetadata(BaseModel):
     # Populated by Step 4 (graph loader), not Step 3
     degree: dict[str, int] = Field(default_factory=dict)
 
-    # Escape hatch — source-specific or extractor-specific fields. Keep small.
+    # Escape hatch - source-specific or extractor-specific fields. Keep small.
     extra: dict[str, Any] = Field(default_factory=dict)
 ```
 
 > **Compatibility note:** Step 3 writes this back into `output/nodes_enriched.jsonl` as a nested object under `node.metadata`. The field names above must match the JSON exactly.
 
-#### 3. `Node` — produced by Step 1, enriched by Step 3
+#### 3. `Node` - produced by Step 1, enriched by Step 3
 
 ```python
 class Node(BaseModel):
@@ -170,7 +170,7 @@ class Node(BaseModel):
     # validation. If a field becomes important, promote it to a real field.
 ```
 
-#### 4. `Chunk` — produced by Step 1, embedded by Step 4
+#### 4. `Chunk` - produced by Step 1, embedded by Step 4
 
 ```python
 class Chunk(BaseModel):
@@ -186,7 +186,7 @@ class Chunk(BaseModel):
     model_config = {"extra": "allow"}
 ```
 
-#### 5. `Edge` — produced by Step 2
+#### 5. `Edge` - produced by Step 2
 
 ```python
 class Edge(BaseModel):
@@ -213,7 +213,7 @@ class Edge(BaseModel):
         return self
 ```
 
-#### 6. `VectorRecord` — produced by Step 4a
+#### 6. `VectorRecord` - produced by Step 4a
 
 ```python
 class VectorRecord(BaseModel):
@@ -223,7 +223,7 @@ class VectorRecord(BaseModel):
     chunk_id: str                    # primary key
     vector: list[float]              # embedding, dim depends on model
 
-    # Filterable payload — populated from the chunk's primary node
+    # Filterable payload - populated from the chunk's primary node
     primary_node_id: str
     source: Source
     node_type: NodeType
@@ -233,19 +233,19 @@ class VectorRecord(BaseModel):
     publication_date: date | None = None
     language: Language | None = None
 
-    # For debugging — the exact text that was embedded (with hierarchy prefix
+    # For debugging - the exact text that was embedded (with hierarchy prefix
     # if any). Optional; can be omitted at write time to save space.
     embedded_text: str | None = None
 ```
 
-#### 7. Helpers — bidirectional traversal types
+#### 7. Helpers - bidirectional traversal types
 
 These aren't Pydantic models but small typed records used by the graph store adapter (Step 4) and retrieval (Steps 5, 7). Include them so all agents share the names.
 
 ```python
 @dataclass(frozen=True)
 class Neighbor:
-    """Returned by graph_store.get_neighbors() — pairs the connected node
+    """Returned by graph_store.get_neighbors() - pairs the connected node
     with the edge that connected it."""
 
     node_id: str
@@ -259,7 +259,7 @@ class RetrievalPath:
 
     via: Literal["vector", "graph"]
     score: float                     # cosine for vector, rerank for graph
-    from_node_id: str | None = None  # only for via="graph" — the seed we expanded from
+    from_node_id: str | None = None  # only for via="graph" - the seed we expanded from
     edge_type: EdgeType | None = None
     hops: int = 0                    # 0 for vector seed, 1+ for graph expansion
 ```
@@ -295,7 +295,7 @@ modify it without coordination.
 Conventions:
 - All node/chunk IDs are strings, deterministic, ASCII-safe.
 - Dangling edges (target_id=None) are kept; they are not errors.
-- NodeMetadata fields are all Optional — Step 1 emits empty metadata, later
+- NodeMetadata fields are all Optional - Step 1 emits empty metadata, later
   steps populate it incrementally.
 """
 ```
@@ -304,7 +304,7 @@ Conventions:
 
 - Do not add fields beyond those listed above. If a downstream step needs more, the convention is to use `metadata.extra` (free-form dict) or `edge.properties`, not to extend the schema.
 - Do not add validators beyond the dangling-edge consistency check on `Edge`. Heavier validation belongs in `pipeline/verify_*.py`, not in the model definition.
-- Do not import anything from `src/` — this file must have no internal dependencies. Every other module imports from here, not the other way around.
+- Do not import anything from `src/` - this file must have no internal dependencies. Every other module imports from here, not the other way around.
 - Do not write JSON serialization helpers. Pydantic v2's `.model_dump_json()` and `.model_validate_json()` are sufficient.
 - Do not write a `Database` or storage class. Storage adapters belong in `src/indexing/`.
 
@@ -317,7 +317,7 @@ Conventions:
   # Load 100 existing nodes from output/nodes.jsonl, validate each
   # through the Node schema, dump back to JSON, compare for equality.
   ```
-  If real data fails to validate, you have used the wrong field name — open `output/nodes.jsonl` and reconcile.
+  If real data fails to validate, you have used the wrong field name - open `output/nodes.jsonl` and reconcile.
 - Same round-trip on 100 chunks from `output/chunks.jsonl`.
 - A hand-built `Edge` with `target_id=None` and `dangling_reason=None` raises a validation error.
 - A hand-built `Edge` with `confidence=1.5` raises a validation error.

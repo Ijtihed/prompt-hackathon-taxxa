@@ -1,8 +1,8 @@
-"""B3.3 — Composite ``usable`` flag.
+"""B3.3 - Composite ``usable`` flag.
 
 A node is *usable* for default retrieval iff it is currently in force and
-has not been superseded by a newer version. Repealed nodes aren't deleted —
-historical queries still need them — but the default filter hides them.
+has not been superseded by a newer version. Repealed nodes aren't deleted -
+historical queries still need them - but the default filter hides them.
 """
 from __future__ import annotations
 

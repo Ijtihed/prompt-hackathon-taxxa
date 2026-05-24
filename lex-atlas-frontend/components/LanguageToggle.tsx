@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * LanguageToggle — FI / SV / EN selector matching Taxxa's product
+ * LanguageToggle - FI / SV / EN selector matching Taxxa's product
  * positioning. The query stays in the input language; the Drafter renders
  * the answer in the selected language. Maps 1:1 to the testimonial use
  * case from Rantalainen: "write my question in Swedish and receive an

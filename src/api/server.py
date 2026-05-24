@@ -3,18 +3,18 @@
 Endpoints
 ---------
 
-``POST /ask``       — Server-Sent Events stream. Body matches the frontend's
+``POST /ask``       - Server-Sent Events stream. Body matches the frontend's
                       ``AskBody`` (question, asof, lang, mode, instant).
                       Emits the same ``AgentEvent`` sequence the Q4 fixture
                       in ``app/api/ask/route.ts`` documents, but driven by
                       the real pipeline.
 
-``GET  /excerpt``   — Citation drawer payload. Looks up the chunk in
+``GET  /excerpt``   - Citation drawer payload. Looks up the chunk in
                       LanceDB and the section in the graph store, returns
                       ``ExcerptResponse``. Synthesizes a Finlex/Vero URL
                       from the node id when no canonical URL is stored.
 
-``GET  /healthz``   — Liveness probe. Returns 200 once the pipeline is loaded.
+``GET  /healthz``   - Liveness probe. Returns 200 once the pipeline is loaded.
 
 Run
 ---
@@ -61,7 +61,7 @@ from src.retrieval.rerank import RerankedHit, rerank
 # ----------------------------------------------------------------------
 
 # Configure the root logger once so uvicorn doesn't strip our formatter.
-# ``LEX_ATLAS_LOG_LEVEL`` is the lever for the demo console — set to DEBUG
+# ``LEX_ATLAS_LOG_LEVEL`` is the lever for the demo console - set to DEBUG
 # when you want per-hit detail and the full assembled context summary.
 _LOG_LEVEL = os.environ.get("LEX_ATLAS_LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
@@ -105,7 +105,7 @@ class _ReqLogger:
 
 
 def _new_request_id() -> str:
-    """8-char hex request id — short enough for a log prefix."""
+    """8-char hex request id - short enough for a log prefix."""
     return secrets.token_hex(4)
 
 
@@ -115,7 +115,7 @@ def _trunc(s: str, n: int = 120) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 # ----------------------------------------------------------------------
-# Globals — pipeline is process-singleton; first request pays warmup.
+# Globals - pipeline is process-singleton; first request pays warmup.
 # ----------------------------------------------------------------------
 
 # Default retrieval depth + context size for /ask. Mirrors the CLI command the
@@ -187,7 +187,7 @@ async def _on_worker(fn: Callable[[], T]) -> T:
 
 
 class ChatMessage(BaseModel):
-    """One prior conversation turn — OpenAI-format role/content pair.
+    """One prior conversation turn - OpenAI-format role/content pair.
 
     The frontend builds this list from completed turns and sends it on every
     follow-up. The current question is sent separately as ``question``; this
@@ -219,7 +219,7 @@ class AskBody(BaseModel):
     history: list[ChatMessage] = Field(default_factory=list)
 
     # Optional per-request overrides for the retrieval depth + context size.
-    # Defaults mirror ``python -m scripts.ask -k 50 -n 12`` — the command the
+    # Defaults mirror ``python -m scripts.ask -k 50 -n 12`` - the command the
     # frontend's /ask path is meant to be a streaming wrapper around.
     k: int | None = None
     n: int | None = None
@@ -271,13 +271,13 @@ async def access_log(request: Request, call_next) -> Any:
         response = await call_next(request)
     except Exception:
         ms = _ms_since(t0)
-        logger.exception("[%s] ✗ %s %s — crashed after %d ms", rid, method, path, ms)
+        logger.exception("[%s] ✗ %s %s - crashed after %d ms", rid, method, path, ms)
         raise
     ms = _ms_since(t0)
     response.headers["X-Request-Id"] = rid
     glyph = "✓" if response.status_code < 400 else "✗"
     logger.info(
-        "[%s] %s %s %s — %d in %d ms",
+        "[%s] %s %s %s - %d in %d ms",
         rid, glyph, method, path, response.status_code, ms,
     )
     return response
@@ -294,7 +294,7 @@ def healthz() -> dict[str, Any]:
 
 
 # ----------------------------------------------------------------------
-# /ask — SSE driven by a real PipelineV2 run
+# /ask - SSE driven by a real PipelineV2 run
 # ----------------------------------------------------------------------
 
 
@@ -310,12 +310,12 @@ def _sse(event: dict[str, Any]) -> bytes:
 
 # Tokenization for the draft stream.
 #
-# Two-stage split: first peel off cite tokens (so they stream as one piece —
+# Two-stage split: first peel off cite tokens (so they stream as one piece -
 # the client-side renderer regex needs them whole), then chunk each run of
 # in-between text into word-sized pieces while keeping every character.
 #
 # The previous one-shot regex ``(\[cite:node:...\]...\[/cite\]|\S+\s*)``
-# silently dropped any character that matched neither alternative — most
+# silently dropped any character that matched neither alternative - most
 # visibly the single space right after a cite token's closing ``[/cite]``,
 # because ``\S+`` requires a non-whitespace start, so finditer skipped the
 # space and the rendered text showed ``Source 1Yhtiöt`` (no separator).
@@ -355,7 +355,7 @@ def _draft_chunks(answer: str) -> list[str]:
 async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     """Async generator that drives the pipeline and emits SSE events.
 
-    Mirrors ``python -m scripts.ask -k {k} -n {n} "<question>"`` — the v1
+    Mirrors ``python -m scripts.ask -k {k} -n {n} "<question>"`` - the v1
     Pipeline (vector + rerank + assemble + generate, no graph expansion).
     Each blocking step runs inside ``_on_worker`` (a single-thread executor)
     so the SQLite/LanceDB connections stay bound to one thread and the
@@ -372,7 +372,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     # are bound to the same thread we'll use for every subsequent op.
     cold_start = _pipeline is None
     if cold_start:
-        log.info("pipeline cold start — loading vector + graph stores")
+        log.info("pipeline cold start - loading vector + graph stores")
     pipe = await _on_worker(_get_pipeline_sync)
     k = body.k or DEFAULT_K
     n = body.n or DEFAULT_N
@@ -385,7 +385,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     )
     log.info("ask · question: %s", _trunc(body.question, 160))
 
-    # Stage 1 — filters + as-of date. Cheap, inline.
+    # Stage 1 - filters + as-of date. Cheap, inline.
     filters = infer_filters(body.question)
     as_of, _as_of_explicit = infer_as_of_date(body.question)
     filter_summary = ", ".join(f"{k_}={v_}" for k_, v_ in filters.items()) or "none"
@@ -394,7 +394,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
         filter_summary, as_of.isoformat() if as_of else "today",
     )
 
-    # Stage 1.5 — emit a starter pulse so the empty state animates immediately.
+    # Stage 1.5 - emit a starter pulse so the empty state animates immediately.
     # We don't have real NER here; ship the inferred filter keys as the
     # entity ids so the UI's pulse fires (the AnswerStream uses any
     # ner_pulse to flip phase=planning).
@@ -403,7 +403,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
         "entityNodeIds": list(filters.keys()) or ["query"],
     })
 
-    # Stage 2 — query rewrite (LLM, can take 1-3 s on cold).
+    # Stage 2 - query rewrite (LLM, can take 1-3 s on cold).
     t = time.perf_counter()
     try:
         expanded: ExpandedQuery = await _on_worker(lambda: expand_query(body.question))
@@ -414,7 +414,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
             ",".join(expanded.finnish_keywords[:4]) or "(none)",
         )
     except Exception as e:  # soft-fail to original question
-        log.warning("query_rewrite FAILED (%s) — falling back to original", e)
+        log.warning("query_rewrite FAILED (%s) - falling back to original", e)
         expanded = ExpandedQuery(
             original=body.question, expanded=body.question,
             finnish_keywords=(), year=None, cached=False,
@@ -422,7 +422,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     timings["query_rewrite"] = _ms_since(t)
     retrieval_query = expanded.expanded
 
-    # Plan event — subQuestions surface the k/n + filters so the UI's
+    # Plan event - subQuestions surface the k/n + filters so the UI's
     # planning panel reads like a debugger trace. entityNodeIds becomes
     # the Finnish keyword chips the OrbitGraph pulses on.
     yield _sse({
@@ -435,7 +435,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
         "entityNodeIds": list(expanded.finnish_keywords or [])[:6],
     })
 
-    # Stage 3 — vector retrieve (k as supplied; default 50).
+    # Stage 3 - vector retrieve (k as supplied; default 50).
     t = time.perf_counter()
     hits = await _on_worker(
         lambda: pipe.retriever.retrieve(
@@ -460,7 +460,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     # has something to chew on while rerank runs.
     for i, h in enumerate(hits[:8], start=1):
         if await request.is_disconnected():
-            log.warning("client disconnected during walked events — aborting")
+            log.warning("client disconnected during walked events - aborting")
             return
         yield _sse({
             "type": "walked",
@@ -469,7 +469,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
             "step": i,
         })
 
-    # Stage 4 — rerank (cosine + authority + recency + term + repealed).
+    # Stage 4 - rerank (cosine + authority + recency + term + repealed).
     t = time.perf_counter()
     unique_section_ids = list({h.section_id for h in hits})
     temporal_status_map = await _on_worker(
@@ -488,7 +488,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
         timings["rerank"],
     )
 
-    # Stage 5 — assemble (n as supplied; default 12).
+    # Stage 5 - assemble (n as supplied; default 12).
     t = time.perf_counter()
     context: AssembledContext = await _on_worker(
         lambda: assemble(reranked, graph=pipe.graph, n=n, as_of=as_of)
@@ -506,7 +506,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
             )
 
     if not context.sources:
-        log.warning("no sources matched the question — emitting error event")
+        log.warning("no sources matched the question - emitting error event")
         yield _sse({"type": "error", "message": "No sources matched the question."})
         yield _sse({"type": "done"})
         return
@@ -544,7 +544,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
             prefetched, len(orbit_chunk_ids), _ms_since(t),
         )
 
-    # Stage 6 — generate.
+    # Stage 6 - generate.
     t = time.perf_counter()
     history_payload = [
         {"role": m.role, "content": m.content} for m in body.history
@@ -597,7 +597,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     )
 
     # Per-chunk delay so the typewriter effect is visible. The frontend
-    # passes ``instant: true`` for screenshots / e2e — honor that.
+    # passes ``instant: true`` for screenshots / e2e - honor that.
     delay = 0.0 if body.instant else 0.025
     aborted = False
     for i, chunk in enumerate(chunks):
@@ -612,10 +612,10 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
         if delay:
             await asyncio.sleep(delay)
 
-    # Confidence — small companion LLM call grading the draft answer.
+    # Confidence - small companion LLM call grading the draft answer.
     # Runs on the pinned worker so the OpenAI client doesn't fight the
     # generate() one for the SQLite/LanceDB thread. Soft-fails to
-    # "medium" inside ``evaluate_confidence`` — we never block done on it.
+    # "medium" inside ``evaluate_confidence`` - we never block done on it.
     t = time.perf_counter()
     confidence = await _on_worker(
         lambda: evaluate_confidence(
@@ -633,7 +633,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
     yield _sse({"type": "cost", "cents": cents})
     yield _sse({"type": "done"})
 
-    # End-of-request banner with the timing breakdown — one line per stage
+    # End-of-request banner with the timing breakdown - one line per stage
     # ordered so it reads like the pipeline diagram.
     log.info(
         "done · total=%d ms · breakdown=%s · cost~%.3f¢",
@@ -654,7 +654,7 @@ async def _ask_stream(body: AskBody, request: Request) -> AsyncIterator[bytes]:
 
 @app.post("/ask")
 async def ask(body: AskBody, request: Request) -> StreamingResponse:
-    # Ensure middleware has stamped a request id (defensive — middleware
+    # Ensure middleware has stamped a request id (defensive - middleware
     # always runs first, but the stream pulls from request.state).
     rid = getattr(request.state, "request_id", None) or _new_request_id()
     request.state.request_id = rid
@@ -671,7 +671,7 @@ async def ask(body: AskBody, request: Request) -> StreamingResponse:
 
 
 # ----------------------------------------------------------------------
-# /excerpt — citation drawer payload
+# /excerpt - citation drawer payload
 # ----------------------------------------------------------------------
 
 
@@ -743,7 +743,7 @@ def _lookup_chunk_row(chunk_id: str) -> dict[str, Any] | None:
             .limit(1)
             .to_arrow()
         )
-    except Exception as e:  # pragma: no cover — defensive
+    except Exception as e:  # pragma: no cover - defensive
         logger.warning("lancedb scan for %s failed: %s", chunk_id, e)
         return None
     rows = arrow.to_pylist()
@@ -779,7 +779,7 @@ def _prefetch_chunk_rows(pipe: Pipeline, chunk_ids: list[str]) -> int:
             .limit(len(todo) + 8)
             .to_arrow()
         )
-    except Exception as e:  # pragma: no cover — defensive
+    except Exception as e:  # pragma: no cover - defensive
         logger.warning("lancedb prefetch failed: %s", e)
         return 0
     warmed = 0
@@ -840,7 +840,7 @@ def _excerpt_payload(node_id: str) -> dict[str, Any] | None:
             "tInvalid": None,
         }
 
-    # No chunk row — maybe ``node_id`` is a graph node. Render its text.
+    # No chunk row - maybe ``node_id`` is a graph node. Render its text.
     node = pipe.graph.get_node(node_id)
     if node is None:
         return None
@@ -864,7 +864,7 @@ async def excerpt(node_id: str) -> JSONResponse:
 
     Accepts either a chunk_id (the values we send as cite anchors) or a
     section_id (LRMoo work / component handles). The chunk path is the
-    common case — every ``[cite:node:X]`` token holds a chunk_id.
+    common case - every ``[cite:node:X]`` token holds a chunk_id.
     """
     if not node_id:
         raise HTTPException(status_code=400, detail="missing node_id")

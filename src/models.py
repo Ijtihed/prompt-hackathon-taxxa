@@ -8,7 +8,7 @@ modify it without coordination.
 Conventions:
 - All node/chunk IDs are strings, deterministic, ASCII-safe.
 - Dangling edges (target_id=None) are kept; they are not errors.
-- NodeMetadata fields are all Optional — Step 1 emits empty metadata, later
+- NodeMetadata fields are all Optional - Step 1 emits empty metadata, later
   steps populate it incrementally.
 
 ----------------------------------------------------------------------
@@ -31,7 +31,7 @@ surprised.
    can pick whichever granularity they need.
 
 2. ``Chunk.primary_node_id`` → ``Chunk.section_id``
-   Step 1 anchors each chunk to its SECTION (or per-corpus equivalent —
+   Step 1 anchors each chunk to its SECTION (or per-corpus equivalent -
    the GUIDE/CASE/TREATY root). The field is called ``section_id`` on
    disk and is preserved here. ``VectorRecord`` mirrors the rename.
 
@@ -78,7 +78,7 @@ NodeType = Literal[
 ]
 
 # Publisher. The brief's collapsed Source literal is intentionally split into
-# (source, source_subcorpus) to match Step 1's on-disk shape — see the file
+# (source, source_subcorpus) to match Step 1's on-disk shape - see the file
 # header for details.
 Source = Literal["finlex", "vero"]
 
@@ -128,12 +128,12 @@ Direction = Literal["out", "in", "both"]
 
 
 # --------------------------------------------------------------------------
-# NodeMetadata — populated by Step 3 + Step 4
+# NodeMetadata - populated by Step 3 + Step 4
 # --------------------------------------------------------------------------
 
 
 class NodeMetadata(BaseModel):
-    """All fields optional — Step 1 emits empty metadata, Step 3 populates
+    """All fields optional - Step 1 emits empty metadata, Step 3 populates
     status/date/authority fields, Step 4 populates ``degree``.
 
     Step 1 sometimes writes small, source-specific extras into ``metadata``
@@ -157,14 +157,14 @@ class NodeMetadata(BaseModel):
     # Keys are "{edge_type}_{direction}" e.g. "interprets_in" / "cites_out".
     degree: dict[str, int] = Field(default_factory=dict)
 
-    # Escape hatch — source-specific or extractor-specific fields. Keep small.
+    # Escape hatch - source-specific or extractor-specific fields. Keep small.
     extra: dict[str, Any] = Field(default_factory=dict)
 
     model_config = {"extra": "allow"}
 
 
 # --------------------------------------------------------------------------
-# Node — produced by Step 1, enriched by Step 3
+# Node - produced by Step 1, enriched by Step 3
 # --------------------------------------------------------------------------
 
 
@@ -199,7 +199,7 @@ class Node(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# Chunk — produced by Step 1, embedded by Step 4
+# Chunk - produced by Step 1, embedded by Step 4
 # --------------------------------------------------------------------------
 
 
@@ -236,7 +236,7 @@ class Chunk(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# Edge — produced by Step 2
+# Edge - produced by Step 2
 # --------------------------------------------------------------------------
 
 
@@ -271,7 +271,7 @@ class Edge(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# VectorRecord — produced by Step 4a
+# VectorRecord - produced by Step 4a
 # --------------------------------------------------------------------------
 
 
@@ -287,7 +287,7 @@ class VectorRecord(BaseModel):
     chunk_id: str  # primary key
     vector: list[float]  # embedding, dim depends on model (1024 for voyage-3-large)
 
-    # Anchor + filterable payload — populated from the chunk's section root.
+    # Anchor + filterable payload - populated from the chunk's section root.
     section_id: str
     source: Source
     source_subcorpus: SourceSubcorpus
@@ -298,19 +298,19 @@ class VectorRecord(BaseModel):
     publication_date: date | None = None
     language: Language | None = None
 
-    # For debugging — the exact text that was embedded (with hierarchy prefix
+    # For debugging - the exact text that was embedded (with hierarchy prefix
     # if any). Optional; can be omitted at write time to save space.
     embedded_text: str | None = None
 
 
 # --------------------------------------------------------------------------
-# Helpers — bidirectional traversal types
+# Helpers - bidirectional traversal types
 # --------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class Neighbor:
-    """Returned by ``graph_store.get_neighbors()`` — pairs the connected node
+    """Returned by ``graph_store.get_neighbors()`` - pairs the connected node
     with the edge that connected it.
     """
 
@@ -325,13 +325,13 @@ class RetrievalPath:
 
     via: Literal["vector", "graph"]
     score: float  # cosine for vector, rerank for graph
-    from_node_id: str | None = None  # only for via="graph" — the seed we expanded from
+    from_node_id: str | None = None  # only for via="graph" - the seed we expanded from
     edge_type: EdgeType | None = None
     hops: int = 0  # 0 for vector seed, 1+ for graph expansion
 
 
 # --------------------------------------------------------------------------
-# AmendmentCaveat — surfaced by every pipeline when cited chunks are
+# AmendmentCaveat - surfaced by every pipeline when cited chunks are
 # touched by ancestor-level amendment/repeal/interpretation activity.
 # Produced from ``temporal_status`` written by ``compute_temporal_status``.
 # --------------------------------------------------------------------------
@@ -350,7 +350,7 @@ class AmendmentCaveat(BaseModel):
     section_id: str
 
     # Matches ``temporal_status.effective_usable``. We never emit a caveat
-    # for ``ok`` — the absence of the caveat is the signal.
+    # for ``ok`` - the absence of the caveat is the signal.
     kind: Literal["suspect", "stale", "repealed"]
 
     # The amendment id that triggered the flag (latest amendment to the
@@ -361,7 +361,7 @@ class AmendmentCaveat(BaseModel):
     # ISO date of the latest amendment to the parent LAW.
     amendment_effective_date: str | None = None
 
-    # Total number of amendments to the parent LAW — gives the reader a
+    # Total number of amendments to the parent LAW - gives the reader a
     # sense of how volatile this section is. 200+ amendments → high.
     amendment_count_in_law: int | None = None
 
@@ -376,7 +376,7 @@ class AmendmentCaveat(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# AnswerResult — produced by every retrieval pipeline (v1, v2, agentic)
+# AnswerResult - produced by every retrieval pipeline (v1, v2, agentic)
 # --------------------------------------------------------------------------
 
 
@@ -390,7 +390,7 @@ class AnswerResult(BaseModel):
     question: str
     answer: str
 
-    # IDs of nodes/chunks the answer cites — drives the citation UI.
+    # IDs of nodes/chunks the answer cites - drives the citation UI.
     cited_source_ids: list[str]
 
     # Chunk IDs surfaced by retrieval (pre-citation). ``cited_source_ids``
@@ -411,12 +411,12 @@ class AnswerResult(BaseModel):
     # Conflicts surfaced during synthesis (e.g. KHO vs Vero guidance).
     conflicts: list[dict[str, Any]] = Field(default_factory=list)
 
-    # Temporal caveats per cited chunk — populated when a cited section's
+    # Temporal caveats per cited chunk - populated when a cited section's
     # ``temporal_status.effective_usable`` is suspect/stale/repealed.
     # Empty list = every citation is on currently clean ancestor history.
     amendment_caveats: list[AmendmentCaveat] = Field(default_factory=list)
 
-    # Step 10 — point-in-time text resolution.
+    # Step 10 - point-in-time text resolution.
     # ``as_of_date_used`` is the date the assembler used when calling
     # ``GraphStore.text_at()``; defaults to today when no temporal marker
     # in the question. ``effective_text_provenance`` maps each cited
@@ -431,13 +431,13 @@ class AnswerResult(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# Step 10 — Amendment effect integration
+# Step 10 - Amendment effect integration
 #
 # These types support the point-in-time text resolution pipeline:
-#   AmendmentOp     — one operative directive parsed from an AMENDMENT_BLOCK
+#   AmendmentOp     - one operative directive parsed from an AMENDMENT_BLOCK
 #                     body ("muutetaan 53 §", "kumotaan 12 §", "lisätään 7 a §")
-#   VersionStep     — one entry in a section's chronological version chain
-#   EffectiveText   — the result of playing ops back up to ``as_of``
+#   VersionStep     - one entry in a section's chronological version chain
+#   EffectiveText   - the result of playing ops back up to ``as_of``
 # --------------------------------------------------------------------------
 
 
@@ -450,7 +450,7 @@ class AmendmentOp(BaseModel):
     Written to ``output/amendment_ops.jsonl`` by Move 1
     (``scripts/extract_amendment_ops.py``) and consumed by Move 2
     (``scripts/resolve_amendment_targets.py``) to produce ``amends_section``
-    edges. The directive is the smallest atomic action — one verb, one
+    edges. The directive is the smallest atomic action - one verb, one
     target section. Multi-section blocks emit one ``AmendmentOp`` per
     target.
     """
@@ -527,7 +527,7 @@ class EffectiveText(BaseModel):
 
     Returned by ``GraphStore.text_at(section_id, as_of)``. The chain is
     the sequence of ops actually applied (i.e. effective_date <= as_of).
-    Future ops in the version chain — those with effective_date > as_of —
+    Future ops in the version chain - those with effective_date > as_of -
     are not in ``chain`` but ``has_future_amendments`` is True so the UI
     can surface them.
     """
@@ -541,7 +541,7 @@ class EffectiveText(BaseModel):
 
 
 # --------------------------------------------------------------------------
-# TemporalMismatch — surfaced by the Verifier agent (Move 5d)
+# TemporalMismatch - surfaced by the Verifier agent (Move 5d)
 # --------------------------------------------------------------------------
 
 
